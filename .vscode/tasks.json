@@ -1,0 +1,24 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "G3: compilar",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["build", "G3AspNet.sln"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$msCompile"]
+    },
+    {
+      "label": "G3: ejecutar tests",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["test", "G3AspNet.sln"],
+      "group": "test",
+      "problemMatcher": ["$msCompile"]
+    }
+  ]
+}
