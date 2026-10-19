@@ -69,4 +69,4 @@ dotnet test
 
 - **Mensual:** `dotnet list package --vulnerable` y `--outdated`.
 - **Por cada parche de seguridad de .NET:** actualizar de inmediato.
-- **Cada versión mayor de .NET:** revisar el `global.json` y todos los `TargetFramework`.
+- **Cada versión mayor de .NET:** revisar el `global.json` y todos los `TargetFramework`. 
