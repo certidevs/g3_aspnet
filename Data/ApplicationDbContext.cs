@@ -6,10 +6,13 @@ namespace G3AspNet.Data;
 
 /// <summary>
 /// Contexto de EF Core: configura SQLite y reúne las tablas de la aplicación.
-/// Las entidades del dominio del proyecto se añadirán aquí.
 /// </summary>
 public sealed class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
+    public DbSet<Repair> Repairs { get; set; }
+    public DbSet<RepairPart> RepairParts { get; set; }
+    public DbSet<SparePart> SpareParts { get; set; }
+
     /// <summary>EF Core recibe estas opciones desde Program.cs para conectar con SQLite.</summary>
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -43,5 +46,17 @@ public sealed class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .HasForeignKey(v => v.OwnerId)
                   .OnDelete(DeleteBehavior.Restrict);
         });
+
+        // Cada pieza usada pertenece a una reparación, que puede tener varias piezas.
+        modelBuilder.Entity<RepairPart>()
+            .HasOne(part => part.Repair)
+            .WithMany(repair => repair.RepairParts)
+            .HasForeignKey(part => part.RepairId);
+
+        // Un recambio puede utilizarse en varias líneas, sin colección en SparePart.
+        modelBuilder.Entity<RepairPart>()
+            .HasOne(part => part.SparePart)
+            .WithMany()
+            .HasForeignKey(part => part.SparePartId);
     }
 }

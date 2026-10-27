@@ -95,6 +95,99 @@ namespace G3AspNet.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("G3AspNet.Models.Repair", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CompletedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("HourLyRate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("LaborHours")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("MechanicId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MileageAtEntry")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("OpenedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("RepairType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("VehicleId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Repairs");
+                });
+
+            modelBuilder.Entity("G3AspNet.Models.RepairPart", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("RepairId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SparePartId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RepairId");
+
+                    b.HasIndex("SparePartId");
+
+                    b.ToTable("RepairParts");
+                });
+
+            modelBuilder.Entity("G3AspNet.Models.SparePart", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Brand")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("MinStock")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("Stock")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal?>("UnitPrice")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SpareParts");
+                });
+
             modelBuilder.Entity("G3AspNet.Models.Vehicle", b =>
                 {
                     b.Property<int>("Id")
@@ -268,6 +361,25 @@ namespace G3AspNet.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("G3AspNet.Models.RepairPart", b =>
+                {
+                    b.HasOne("G3AspNet.Models.Repair", "Repair")
+                        .WithMany("RepairParts")
+                        .HasForeignKey("RepairId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("G3AspNet.Models.SparePart", "SparePart")
+                        .WithMany()
+                        .HasForeignKey("SparePartId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Repair");
+
+                    b.Navigation("SparePart");
+                });
+
             modelBuilder.Entity("G3AspNet.Models.Vehicle", b =>
                 {
                     b.HasOne("G3AspNet.Models.ApplicationUser", null)
@@ -326,6 +438,11 @@ namespace G3AspNet.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("G3AspNet.Models.Repair", b =>
+                {
+                    b.Navigation("RepairParts");
                 });
 #pragma warning restore 612, 618
         }
