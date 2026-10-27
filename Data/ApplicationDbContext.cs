@@ -16,7 +16,10 @@ public sealed class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
     }
 
-    /// <summary>Configura las columnas añadidas a la tabla de usuarios de Identity.</summary>
+    /// <summary>Tabla de vehículos gestionados en el taller.</summary>
+    public DbSet<Vehicle> Vehicles => Set<Vehicle>();
+
+    /// <summary>Configura las columnas añadidas a Identity y las entidades del dominio.</summary>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -26,6 +29,19 @@ public sealed class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(user => user.DisplayName).HasMaxLength(100);
             entity.Property(user => user.AvatarFileName).HasMaxLength(260);
             entity.Property(user => user.CreatedAt).IsRequired();
+        });
+
+        modelBuilder.Entity<Vehicle>(entity =>
+        {
+            // Matrícula única
+            entity.HasIndex(v => v.LicensePlate)
+                  .IsUnique();
+
+            // Relación N Vehicle -> 1 ApplicationUser (Propietario / Customer)
+            entity.HasOne<ApplicationUser>()
+                  .WithMany()
+                  .HasForeignKey(v => v.OwnerId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }
