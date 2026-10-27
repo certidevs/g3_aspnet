@@ -47,6 +47,19 @@ public sealed class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .OnDelete(DeleteBehavior.Restrict);
         });
 
+        // Cada reparación pertenece a un vehículo y tiene un mecánico asignado.
+        modelBuilder.Entity<Repair>()
+            .HasOne(repair => repair.Vehicle)
+            .WithMany()
+            .HasForeignKey(repair => repair.VehicleId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Repair>()
+            .HasOne(repair => repair.Mechanic)
+            .WithMany()
+            .HasForeignKey(repair => repair.MechanicId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // Cada pieza usada pertenece a una reparación, que puede tener varias piezas.
         modelBuilder.Entity<RepairPart>()
             .HasOne(part => part.Repair)
