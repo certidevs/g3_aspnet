@@ -22,6 +22,8 @@ public static class DbInitializer
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         await EnsureRoleAsync(roleManager, RoleNames.User);
         await EnsureRoleAsync(roleManager, RoleNames.Admin);
+        await EnsureRoleAsync(roleManager, RoleNames.Customer);
+        await EnsureRoleAsync(roleManager, RoleNames.Mechanic);
 
         var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
         await EnsureUserAsync(
@@ -31,6 +33,7 @@ public static class DbInitializer
             displayName: "Administrador",
             password: "Admin123!",
             role: RoleNames.Admin);
+
         await EnsureUserAsync(
             userManager,
             username: "user",
@@ -38,6 +41,22 @@ public static class DbInitializer
             displayName: "Usuario de demo",
             password: "User123!",
             role: RoleNames.User);
+
+        await EnsureUserAsync(
+            userManager,
+            username: "customer",
+            email: "customer@g3.local",
+            displayName: "Cliente Demo",
+            password: "Customer123!",
+            role: RoleNames.Customer);
+
+        await EnsureUserAsync(
+            userManager,
+            username: "mechanic",
+            email: "mechanic@g3.local",
+            displayName: "Mecánico Demo",
+            password: "Mechanic123!",
+            role: RoleNames.Mechanic);
     }
 
     private static async Task EnsureRoleAsync(RoleManager<IdentityRole> roleManager, string roleName)
