@@ -4,7 +4,7 @@ namespace G3AspNet.Models;
 public static class RoleNames
 {
     public const string Admin = "Admin";
-    public const string User = "User";
+    
     public const string Customer = "Customer";
     public const string Mechanic = "Mechanic";
 }
