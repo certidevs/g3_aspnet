@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations.Schema;
 using G3AspNet.Models.Enum;
 
 namespace G3AspNet.Models;
@@ -7,7 +7,7 @@ public class Repair
 {
     public int Id { get; set; }
     public int VehicleId { get; set; }
-    public int MechanicId { get; set; }
+    public string MechanicId { get; set; } = string.Empty;
     public RepairType RepairType { get; set; }
     public RepairStatus Status { get; set; }
     public DateTime OpenedAt { get; set; }
@@ -16,6 +16,9 @@ public class Repair
     public decimal LaborHours { get; set; }
     public decimal HourLyRate { get; set; }
 
+    public Vehicle Vehicle { get; set; } = null!;
+    public ApplicationUser Mechanic { get; set; } = null!;
+
     // Piezas asociadas: deben estar cargadas para que el total las incluya.
     public ICollection<RepairPart> RepairParts { get; set; } = new List<RepairPart>();
 
@@ -23,5 +26,40 @@ public class Repair
     // Se calcula al consultar la propiedad y no se almacena en la base de datos.
     [NotMapped]
     public decimal TotalCost => LaborHours * HourLyRate
-        + RepairParts.Sum(part => part.Quantity * part.UnitPrice);
+                                + RepairParts.Sum(part => part.Quantity * part.UnitPrice);
+
+    /// <summary>
+    /// Añade una pieza a la reparación y descuenta la cantidad del stock del recambio.
+    /// </summary>
+    public RepairPart AddPart(SparePart sparePart, int quantity, decimal? unitPrice = null)
+    {
+        ArgumentNullException.ThrowIfNull(sparePart);
+
+        if (quantity <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(quantity), "La cantidad debe ser mayor que cero.");
+        }
+
+        var availableStock = sparePart.Stock ?? 0;
+        if (availableStock < quantity)
+        {
+            throw new InvalidOperationException("No hay stock suficiente para el recambio seleccionado.");
+        }
+
+        sparePart.Stock = availableStock - quantity;
+
+        var repairPart = new RepairPart
+        {
+            Repair = this,
+            RepairId = Id,
+            SparePart = sparePart,
+            SparePartId = sparePart.Id,
+            Quantity = quantity,
+            UnitPrice = unitPrice ?? sparePart.UnitPrice ?? 0m
+        };
+
+        RepairParts.Add(repairPart);
+        return repairPart;
+    }
 }
+
