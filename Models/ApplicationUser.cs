@@ -16,7 +16,6 @@ public sealed class ApplicationUser : IdentityUser
 
     /// <summary>Fecha de alta de la cuenta.</summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
     /// <summary>Permite desactivar una cuenta sin borrar la información futura que posea.</summary>
     public bool IsActive { get; set; } = true;
 }

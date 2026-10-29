@@ -110,8 +110,9 @@ namespace G3AspNet.Data.Migrations
                     b.Property<decimal>("LaborHours")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("MechanicId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("MechanicId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("MileageAtEntry")
                         .HasColumnType("INTEGER");
@@ -129,6 +130,10 @@ namespace G3AspNet.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("MechanicId");
+
+                    b.HasIndex("VehicleId");
 
                     b.ToTable("Repairs");
                 });
@@ -359,6 +364,25 @@ namespace G3AspNet.Data.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("G3AspNet.Models.Repair", b =>
+                {
+                    b.HasOne("G3AspNet.Models.ApplicationUser", "Mechanic")
+                        .WithMany()
+                        .HasForeignKey("MechanicId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("G3AspNet.Models.Vehicle", "Vehicle")
+                        .WithMany()
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Mechanic");
+
+                    b.Navigation("Vehicle");
                 });
 
             modelBuilder.Entity("G3AspNet.Models.RepairPart", b =>

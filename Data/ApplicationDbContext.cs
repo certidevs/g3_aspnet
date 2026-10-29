@@ -23,9 +23,6 @@ public sealed class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     /// <summary>Tabla de vehículos gestionados en el taller.</summary>
     public DbSet<Vehicle> Vehicles => Set<Vehicle>();
 
-    // Tabla de SpareParts
-    public DbSet<SparePart> SpareParts => Set<SparePart>();
-
     /// <summary>Configura las columnas añadidas a Identity y las entidades del dominio.</summary>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -50,6 +47,19 @@ public sealed class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .HasForeignKey(v => v.OwnerId)
                   .OnDelete(DeleteBehavior.Restrict);
         });
+
+        // Cada reparación pertenece a un vehículo y tiene un mecánico asignado.
+        modelBuilder.Entity<Repair>()
+            .HasOne(repair => repair.Vehicle)
+            .WithMany()
+            .HasForeignKey(repair => repair.VehicleId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Repair>()
+            .HasOne(repair => repair.Mechanic)
+            .WithMany()
+            .HasForeignKey(repair => repair.MechanicId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Cada pieza usada pertenece a una reparación, que puede tener varias piezas.
         modelBuilder.Entity<RepairPart>()
