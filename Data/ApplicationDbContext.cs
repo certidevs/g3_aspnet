@@ -22,9 +22,6 @@ public sealed class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     /// <summary>Tabla de vehículos gestionados en el taller.</summary>
     public DbSet<Vehicle> Vehicles => Set<Vehicle>();
 
-    // Tabla de SpareParts
-    public DbSet<SparePart> SpareParts => Set<SparePart>();
-
     /// <summary>Configura las columnas añadidas a Identity y las entidades del dominio.</summary>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
