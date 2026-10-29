@@ -1,4 +1,4 @@
-@model RegisterViewModel
+﻿@model RegisterViewModel
 @{
     ViewData["Title"] = "Registro";
 }
@@ -10,10 +10,18 @@
                 <h1 class="h3 mb-3">Crear cuenta</h1>
                 <form method="post">
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+ 
                     <div class="mb-3">
                         <label asp-for="Username" class="form-label"></label>
                         <input asp-for="Username" class="form-control" autocomplete="username" autofocus />
                         <span asp-validation-for="Username" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Rol" class="form-label"></label>
+                        <select asp-for="Rol" asp-items="Model.RolesDisponibles" class="form-select">
+                            <option value="">-- Selecciona un rol --</option>
+                        </select>
+                     <span asp-validation-for="Rol" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
                         <label asp-for="Email" class="form-label"></label>

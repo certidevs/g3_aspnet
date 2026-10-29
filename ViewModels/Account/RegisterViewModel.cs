@@ -1,4 +1,5 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace G3AspNet.ViewModels.Account;
 
@@ -17,6 +18,13 @@ public sealed class RegisterViewModel
     [StringLength(100)]
     [Display(Name = "Nombre visible")]
     public string? DisplayName { get; set; }
+
+    [Required(ErrorMessage = "El rol es obligatorio.")]
+    [Display(Name = "Rol")]
+    public string Rol { get; set; } = string.Empty;
+
+    /// <summary>Opciones del desplegable de rol. Solo se usa para pintar la vista.</summary>
+    public List<SelectListItem> RolesDisponibles { get; set; } = new();
 
     [Required(ErrorMessage = "La contraseña es obligatoria.")]
     [StringLength(100, MinimumLength = 8)]
