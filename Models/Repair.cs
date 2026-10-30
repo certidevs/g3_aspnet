@@ -16,7 +16,12 @@ public class Repair
     public decimal LaborHours { get; set; }
     public decimal HourLyRate { get; set; }
 
+
+
+
+    [ForeignKey(nameof(VehicleId))]
     public Vehicle Vehicle { get; set; } = null!;
+    [ForeignKey(nameof(MechanicId))]
     public ApplicationUser Mechanic { get; set; } = null!;
 
     // Piezas asociadas: deben estar cargadas para que el total las incluya.

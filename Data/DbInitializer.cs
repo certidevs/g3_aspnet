@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using G3AspNet.Models;
+using G3AspNet.Models.Enum;
 
 namespace G3AspNet.Data;
 
@@ -57,6 +58,8 @@ public static class DbInitializer
             displayName: "Mecánico Demo",
             password: "Mechanic123!",
             role: RoleNames.Mechanic);
+
+        await EnsureVehiclesAsync(context, userManager);
     }
 
     private static async Task EnsureRoleAsync(RoleManager<IdentityRole> roleManager, string roleName)
@@ -105,5 +108,61 @@ public static class DbInitializer
                 throw new InvalidOperationException($"No se pudo asignar el rol {role} a {username}.");
             }
         }
+    }
+
+    private static async Task EnsureVehiclesAsync(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+    {
+        if (await context.Vehicles.AnyAsync())
+        {
+            return;
+        }
+
+        var customerUser = await userManager.FindByNameAsync("customer")
+                           ?? (await userManager.GetUsersInRoleAsync(RoleNames.Customer)).FirstOrDefault();
+
+        if (customerUser is null)
+        {
+            return;
+        }
+
+        var demoVehicles = new List<Vehicle>
+        {
+            new Vehicle
+            {
+                LicensePlate = "1234ABC",
+                VIN = "VF1BB050F12345678",
+                Brand = "Renault",
+                Model = "Clio 1.5 dCi",
+                Year = 2018,
+                FuelType = FuelType.Diesel,
+                Mileage = 87500,
+                OwnerId = customerUser.Id
+            },
+            new Vehicle
+            {
+                LicensePlate = "5678DEF",
+                VIN = "WVWZZZ3CZWE098765",
+                Brand = "Volkswagen",
+                Model = "Golf 1.5 TSI",
+                Year = 2021,
+                FuelType = FuelType.Petrol,
+                Mileage = 42300,
+                OwnerId = customerUser.Id
+            },
+            new Vehicle
+            {
+                LicensePlate = "9012GHI",
+                VIN = "JTDKN36U001234567",
+                Brand = "Toyota",
+                Model = "Yaris Hybrid",
+                Year = 2023,
+                FuelType = FuelType.Hybrid,
+                Mileage = 15800,
+                OwnerId = customerUser.Id
+            }
+        };
+
+        await context.Vehicles.AddRangeAsync(demoVehicles);
+        await context.SaveChangesAsync();
     }
 }

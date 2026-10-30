@@ -9,8 +9,6 @@ namespace G3AspNet.Data;
 /// </summary>
 public sealed class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
-
-
     /// <summary>EF Core recibe estas opciones desde Program.cs para conectar con SQLite.</summary>
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -23,7 +21,6 @@ public sealed class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     /// <summary>Tabla de vehículos gestionados en el taller.</summary>
     public DbSet<Vehicle> Vehicles => Set<Vehicle>();
 
-    //
     public DbSet<SparePart> SpareParts => Set<SparePart>();
 
     /// <summary>Configura las columnas añadidas a Identity y las entidades del dominio.</summary>
@@ -44,25 +41,32 @@ public sealed class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(v => v.LicensePlate)
                   .IsUnique();
 
-            // Relación N Vehicle -> 1 ApplicationUser (Propietario / Customer)
-            entity.HasOne<ApplicationUser>()
+            // Relación N Vehicle -> 1 ApplicationUser (Owner)
+            entity.HasOne(v => v.Owner)
                   .WithMany()
                   .HasForeignKey(v => v.OwnerId)
                   .OnDelete(DeleteBehavior.Restrict);
+
+            // Relación 1 Vehicle -> N Repair
+            entity.HasMany(v => v.Repairs)
+                  .WithOne(r => r.Vehicle)
+                  .HasForeignKey(r => r.VehicleId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // Cada reparación pertenece a un vehículo y tiene un mecánico asignado.
-        modelBuilder.Entity<Repair>()
-            .HasOne(repair => repair.Vehicle)
-            .WithMany()
-            .HasForeignKey(repair => repair.VehicleId)
-            .OnDelete(DeleteBehavior.Restrict);
+        // Cada reparación pertenece a un vehículo (con su colección Repairs) y tiene un mecánico asignado.
+        modelBuilder.Entity<Repair>(entity =>
+        {
+            entity.HasOne(repair => repair.Vehicle)
+                  .WithMany(v => v.Repairs)
+                  .HasForeignKey(repair => repair.VehicleId)
+                  .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<Repair>()
-            .HasOne(repair => repair.Mechanic)
-            .WithMany()
-            .HasForeignKey(repair => repair.MechanicId)
-            .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(repair => repair.Mechanic)
+                  .WithMany()
+                  .HasForeignKey(repair => repair.MechanicId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
 
         // Cada pieza usada pertenece a una reparación, que puede tener varias piezas.
         modelBuilder.Entity<RepairPart>()
