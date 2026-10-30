@@ -57,6 +57,36 @@ public static class DbInitializer
             displayName: "Mecánico Demo",
             password: "Mechanic123!",
             role: RoleNames.Mechanic);
+
+        if (!await context.Vehicles.AnyAsync())
+        {
+            var customerUser = await userManager.FindByNameAsync("customer");
+            if (customerUser != null)
+            {
+                context.Vehicles.Add(new Vehicle
+                {
+                    LicensePlate = "1234-BBB",
+                    VIN = "VF11234567890ABCD",
+                    Brand = "Seat",
+                    Model = "Ibiza",
+                    Year = 2020,
+                    FuelType = G3AspNet.Models.Enum.FuelType.Petrol,
+                    Mileage = 45000,
+                    OwnerId = customerUser.Id
+                });
+                await context.SaveChangesAsync();
+            }
+        }
+
+        if (!await context.SpareParts.AnyAsync())
+        {
+            context.SpareParts.AddRange(
+                new SparePart { Name = "Filtro de aceite", Brand = "Bosch", UnitPrice = 14.50m, Stock = 20, MinStock = 5 },
+                new SparePart { Name = "Pastillas de freno", Brand = "Brembo", UnitPrice = 45.00m, Stock = 12, MinStock = 4 },
+                new SparePart { Name = "Aceite 5W30 5L", Brand = "Castrol", UnitPrice = 38.90m, Stock = 15, MinStock = 3 }
+            );
+            await context.SaveChangesAsync();
+        }
     }
 
     private static async Task EnsureRoleAsync(RoleManager<IdentityRole> roleManager, string roleName)
