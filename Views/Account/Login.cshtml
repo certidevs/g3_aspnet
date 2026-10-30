@@ -23,7 +23,13 @@
                     </div>
                     <div class="mb-3">
                         <label asp-for="Password" class="form-label"></label>
-                        <input asp-for="Password" class="form-control" autocomplete="current-password" />
+                        <div class="input-group">
+                            <input asp-for="Password" class="form-control" autocomplete="current-password" />
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword"
+                                    aria-controls="Password" aria-label="Mostrar contraseña" aria-pressed="false">
+                                <i class="fa-solid fa-eye" id="togglePasswordIcon" aria-hidden="true"></i>
+                            </button>
+                        </div>
                         <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
                     <div class="form-check mb-3">
@@ -40,4 +46,20 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        const passwordInput = document.getElementById("Password");
+        const togglePasswordButton = document.getElementById("togglePassword");
+        const togglePasswordIcon = document.getElementById("togglePasswordIcon");
+
+        togglePasswordButton.addEventListener("click", () => {
+            const isPasswordHidden = passwordInput.type === "password";
+            passwordInput.type = isPasswordHidden ? "text" : "password";
+            togglePasswordIcon.classList.toggle("fa-eye", !isPasswordHidden);
+            togglePasswordIcon.classList.toggle("fa-eye-slash", isPasswordHidden);
+            togglePasswordButton.setAttribute("aria-label", isPasswordHidden
+                ? "Ocultar contraseña"
+                : "Mostrar contraseña");
+            togglePasswordButton.setAttribute("aria-pressed", isPasswordHidden.toString());
+        });
+    </script>
 }
