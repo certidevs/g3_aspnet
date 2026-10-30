@@ -1,0 +1,19 @@
+@model Repair
+@{
+    ViewData["Title"] = "Eliminar reparación";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card border-danger">
+            <div class="card-body p-4">
+                <h1 class="h3 text-danger">Eliminar reparación #@Model.Id</h1>
+                <p>Vas a eliminar la reparación del vehículo <strong>@Model.Vehicle?.LicensePlate</strong>. Esta acción no se puede deshacer.</p>
+                <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="d-flex gap-2">
+                    <button class="btn btn-danger" type="submit">Eliminar definitivamente</button>
+                    <a class="btn btn-outline-secondary" asp-action="Details" asp-route-id="@Model.Id">Cancelar</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
