@@ -101,7 +101,7 @@ namespace G3AspNet.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("CompletedAt")
+                    b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("HourLyRate")
@@ -396,7 +396,7 @@ namespace G3AspNet.Data.Migrations
                     b.HasOne("G3AspNet.Models.SparePart", "SparePart")
                         .WithMany()
                         .HasForeignKey("SparePartId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Repair");
