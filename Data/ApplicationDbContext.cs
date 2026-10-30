@@ -74,6 +74,7 @@ public sealed class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         modelBuilder.Entity<RepairPart>()
             .HasOne(part => part.SparePart)
             .WithMany()
-            .HasForeignKey(part => part.SparePartId);
+            .HasForeignKey(part => part.SparePartId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

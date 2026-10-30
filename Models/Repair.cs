@@ -11,7 +11,7 @@ public class Repair
     public RepairType RepairType { get; set; }
     public RepairStatus Status { get; set; }
     public DateTime OpenedAt { get; set; }
-    public DateTime CompletedAt { get; set; }
+    public DateTime? CompletedAt { get; set; }
     public int MileageAtEntry { get; set; }
     public decimal LaborHours { get; set; }
     public decimal HourLyRate { get; set; }
