@@ -11,9 +11,4 @@ public class SparePart
     public int? Stock {get; set;}
     public int? MinStock {get; set;}
 
-//Relacion con RepairPart
-
-    public int RepairPartID {get; set;}
-    public RepairPart? repairPart {get; set;}
-
 }
