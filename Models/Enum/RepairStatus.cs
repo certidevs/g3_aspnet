@@ -4,8 +4,8 @@ namespace G3AspNet.Models.Enum;
 
 public enum RepairStatus
 {
-    [Display(Name = "Finalizando")] 
-    Ending,
+    [Display(Name = "Pendiente")]
+    Pending,
     [Display(Name = "En progreso")] 
     InProgress,
     [Display(Name = "Esperando repuestos")]

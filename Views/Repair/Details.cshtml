@@ -20,6 +20,9 @@
             <dt class="col-sm-3">Mecánico</dt>
             <dd class="col-sm-9">@(Model.Mechanic?.DisplayName ?? Model.Mechanic?.UserName)</dd>
 
+            <dt class="col-sm-3">Descripción</dt>
+            <dd class="col-sm-9">@Model.Description</dd>
+
             <dt class="col-sm-3">Estado</dt>
             <dd class="col-sm-9">@Model.Status</dd>
 
@@ -31,4 +34,3 @@
         <a class="btn btn-outline-secondary" asp-action="Index">Volver al listado</a>
     </div>
 </div>
-

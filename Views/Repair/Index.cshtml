@@ -19,6 +19,7 @@ else
                 <th scope="col">ID</th>
                 <th scope="col">Vehículo</th>
                 <th scope="col">Mecánico</th>
+                <th scope="col">Descripción</th>
                 <th scope="col">Tipo</th>
                 <th scope="col">Estado</th>
                 <th scope="col" class="text-end">Acciones</th>
@@ -31,6 +32,7 @@ else
                     <td>@item.Id</td>
                     <td>@item.Vehicle?.LicensePlate</td>
                     <td>@(item.Mechanic?.DisplayName ?? item.Mechanic?.UserName)</td>
+                    <td>@item.Description</td>
                     <td>@item.RepairType</td>
                     <td><span class="badge text-bg-secondary">@item.Status</span></td>
                     <td class="text-end text-nowrap">
