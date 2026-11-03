@@ -208,6 +208,7 @@ namespace G3AspNet.Data.Migrations
 
                     b.Property<string>("LicensePlate")
                         .IsRequired()
+                        .HasMaxLength(10)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Mileage")
@@ -223,6 +224,7 @@ namespace G3AspNet.Data.Migrations
 
                     b.Property<string>("VIN")
                         .IsRequired()
+                        .HasMaxLength(17)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Year")
@@ -375,9 +377,9 @@ namespace G3AspNet.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("G3AspNet.Models.Vehicle", "Vehicle")
-                        .WithMany()
+                        .WithMany("Repairs")
                         .HasForeignKey("VehicleId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Mechanic");
@@ -406,11 +408,13 @@ namespace G3AspNet.Data.Migrations
 
             modelBuilder.Entity("G3AspNet.Models.Vehicle", b =>
                 {
-                    b.HasOne("G3AspNet.Models.ApplicationUser", null)
+                    b.HasOne("G3AspNet.Models.ApplicationUser", "Owner")
                         .WithMany()
                         .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -467,6 +471,11 @@ namespace G3AspNet.Data.Migrations
             modelBuilder.Entity("G3AspNet.Models.Repair", b =>
                 {
                     b.Navigation("RepairParts");
+                });
+
+            modelBuilder.Entity("G3AspNet.Models.Vehicle", b =>
+                {
+                    b.Navigation("Repairs");
                 });
 #pragma warning restore 612, 618
         }
