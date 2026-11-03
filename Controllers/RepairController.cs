@@ -170,6 +170,7 @@ public class RepairController : Controller
         repair.MileageAtEntry = model.MileageAtEntry;
         repair.LaborHours = model.LaborHours;
         repair.HourlyRate = model.HourlyRate;
+        repair.Description = model.Description;
 
         await context.SaveChangesAsync();
 

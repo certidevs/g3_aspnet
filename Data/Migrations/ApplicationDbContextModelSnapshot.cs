@@ -104,7 +104,12 @@ namespace G3AspNet.Data.Migrations
                     b.Property<DateTime>("CompletedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal>("HourLyRate")
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("HourlyRate")
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("LaborHours")
