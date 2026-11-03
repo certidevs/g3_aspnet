@@ -1,0 +1,73 @@
+@model Repair
+@{
+    ViewData["Title"] = "Nueva reparación";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h2 mb-0">Nueva reparación</h1>
+    <a class="btn btn-outline-secondary" asp-action="Index">Cancelar</a>
+</div>
+
+<form asp-action="Create" method="post" class="card">
+    <div class="card-body p-4">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label asp-for="VehicleId" class="form-label">Vehículo</label>
+                <select asp-for="VehicleId" asp-items="ViewBag.Vehicles" class="form-select">
+                    <option value="">-- Seleccionar vehículo --</option>
+                </select>
+                <span asp-validation-for="VehicleId" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="MechanicId" class="form-label">Mecánico</label>
+                <select asp-for="MechanicId" asp-items="ViewBag.Mechanics" class="form-select">
+                    <option value="">-- Seleccionar mecánico --</option>
+                </select>
+                <span asp-validation-for="MechanicId" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="RepairType" class="form-label">Tipo de reparación</label>
+                <select asp-for="RepairType" asp-items="Html.GetEnumSelectList<G3AspNet.Models.Enum.RepairType>()" class="form-select"></select>
+                <span asp-validation-for="RepairType" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Status" class="form-label">Estado</label>
+                <select asp-for="Status" asp-items="Html.GetEnumSelectList<G3AspNet.Models.Enum.RepairStatus>()" class="form-select"></select>
+                <span asp-validation-for="Status" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="OpenedAt" class="form-label">Fecha de apertura</label>
+                <input asp-for="OpenedAt" type="datetime-local" asp-format="{0:yyyy-MM-ddTHH:mm}" class="form-control" />
+                <span asp-validation-for="OpenedAt" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="CompletedAt" class="form-label">Fecha de finalización</label>
+                <input asp-for="CompletedAt" type="datetime-local" asp-format="{0:yyyy-MM-ddTHH:mm}" class="form-control" />
+                <span asp-validation-for="CompletedAt" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="MileageAtEntry" class="form-label">Kilometraje de entrada</label>
+                <input asp-for="MileageAtEntry" type="number" class="form-control" />
+                <span asp-validation-for="MileageAtEntry" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="LaborHours" class="form-label">Horas de mano de obra</label>
+                <input asp-for="LaborHours" type="number" step="0.01" class="form-control" />
+                <span asp-validation-for="LaborHours" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="HourLyRate" class="form-label">Tarifa por hora</label>
+                <input asp-for="HourLyRate" type="number" step="0.01" class="form-control" />
+                <span asp-validation-for="HourLyRate" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+    <div class="card-footer bg-transparent text-end">
+        <button class="btn btn-primary" type="submit">Crear reparación</button>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
