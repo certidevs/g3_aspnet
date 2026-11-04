@@ -45,15 +45,47 @@
 }
 
 .navbar {
-  --bs-navbar-color: #000000;          /* normal: negro */
-  --bs-navbar-hover-color: #ea271c;    /* hover: rojo del proyecto */
-  --bs-navbar-active-color: #000000;   /* página actual: negro */
+  --bs-navbar-color: #000000;          
+  --bs-navbar-hover-color: #ea271c;    
+  --bs-navbar-active-color: #000000;   
   --bs-navbar-active-hover-color: #ea271c;
 }
 .navbar-nav .nav-link.active:hover,
 .navbar-nav .nav-link.active:focus {
   color: var(--bs-navbar-hover-color);
 }
+.btn-toggle-password {
+  /* Estado normal: discreto, a juego con el borde del input */
+  --bs-btn-color: #6c757d;
+  --bs-btn-bg: #ffffff;
+  --bs-btn-border-color: #ffffff;
+
+  /* Hover: rojo del proyecto */
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-hover-bg: #ea271c;
+  --bs-btn-hover-border-color: #ea271c;
+
+  /* Pulsado (clic) */
+  --bs-btn-active-color: #ffffff;
+  --bs-btn-active-bg: #a51c15;
+  --bs-btn-active-border-color: #a51c15;
+  
+  /* Tamaño del botón */
+  min-width: 0;
+  width: 2.75rem;
+
+  /* Posición del ojo */
+  display: inline-flex;
+  align-items: center;       
+  justify-content: center;
+}
+
+/* Mientras la contraseña está visible (aria-pressed="true") */
+.btn-toggle-password[aria-pressed="true"] {
+  color: #ea271c;
+  border-color: #ea271c;
+}
+
 .no-spinners::-webkit-outer-spin-button,
 .no-spinners::-webkit-inner-spin-button {
   -webkit-appearance: none;

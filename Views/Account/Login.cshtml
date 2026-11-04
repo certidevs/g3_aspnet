@@ -25,10 +25,10 @@
                         <label asp-for="Password" class="form-label"></label>
                         <div class="input-group">
                             <input asp-for="Password" class="form-control" autocomplete="current-password" />
-                            <button class="btn btn-outline-secondary" type="button" id="togglePassword"
-                                    aria-controls="Password" aria-label="Mostrar contraseña" aria-pressed="false">
-                                <i class="fa-solid fa-eye" id="togglePasswordIcon" aria-hidden="true"></i>
-                            </button>
+                    <button class="btn btn-toggle-password" type="button" id="togglePassword"
+                            aria-controls="Password" aria-label="Mostrar contraseña" aria-pressed="false">
+                        <i class="fa-eye fa-solid" id="togglePasswordIcon" aria-hidden="true"></i>
+                    </button>
                         </div>
                         <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
