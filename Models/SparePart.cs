@@ -1,3 +1,4 @@
+using System.Security.Cryptography.Xml;
 using Microsoft.AspNetCore.Identity;
 
 namespace G3AspNet.Models;
@@ -10,5 +11,10 @@ public class SparePart
     public decimal? UnitPrice {get; set;}
     public int? Stock {get; set;}
     public int? MinStock {get; set;}
+    public string? Reference {get; set;}
+
+    // relaciones
+    public int RepairPartId {get; set;}
+    public RepairPart? RepairPart {get; set;}
 
 }
