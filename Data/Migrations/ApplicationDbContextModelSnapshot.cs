@@ -182,6 +182,9 @@ namespace G3AspNet.Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Reference")
+                        .HasColumnType("TEXT");
+
                     b.Property<int?>("Stock")
                         .HasColumnType("INTEGER");
 
@@ -396,7 +399,7 @@ namespace G3AspNet.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("G3AspNet.Models.SparePart", "SparePart")
-                        .WithMany()
+                        .WithMany("RepairParts")
                         .HasForeignKey("SparePartId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -469,6 +472,11 @@ namespace G3AspNet.Data.Migrations
                 });
 
             modelBuilder.Entity("G3AspNet.Models.Repair", b =>
+                {
+                    b.Navigation("RepairParts");
+                });
+
+            modelBuilder.Entity("G3AspNet.Models.SparePart", b =>
                 {
                     b.Navigation("RepairParts");
                 });
