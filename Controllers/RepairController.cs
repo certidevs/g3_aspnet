@@ -75,14 +75,9 @@ public class RepairController : Controller
     {
         await PopulateDropdownsAsync();
 
-        var madridTz = TimeZoneInfo.FindSystemTimeZoneById("Europe/Madrid");
-        var madridNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, madridTz);
-        var defaultTime = new DateTime(madridNow.Year, madridNow.Month, madridNow.Day, madridNow.Hour, madridNow.Minute, 0);
-
         return View(new Repair
         {
-            OpenedAt = defaultTime,
-            CompletedAt = defaultTime
+            CompletedAt = DateTime.UtcNow
         });
     }
 
@@ -179,7 +174,8 @@ public class RepairController : Controller
         repair.CompletedAt = model.CompletedAt;
         repair.MileageAtEntry = model.MileageAtEntry;
         repair.LaborHours = model.LaborHours;
-        repair.HourLyRate = model.HourLyRate;
+        repair.HourlyRate = model.HourlyRate;
+        repair.Description = model.Description;
 
         await context.SaveChangesAsync();
 

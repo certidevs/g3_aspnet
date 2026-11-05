@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using G3AspNet.Models;
 
@@ -74,10 +74,10 @@ public sealed class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .WithMany(repair => repair.RepairParts)
             .HasForeignKey(part => part.RepairId);
 
-        // Un recambio puede utilizarse en varias líneas, sin colección en SparePart.
+        // Un recambio puede utilizarse en varias líneas de reparación
         modelBuilder.Entity<RepairPart>()
             .HasOne(part => part.SparePart)
-            .WithMany()
+            .WithMany(sparePart => sparePart.RepairParts)
             .HasForeignKey(part => part.SparePartId)
             .OnDelete(DeleteBehavior.Restrict);
     }

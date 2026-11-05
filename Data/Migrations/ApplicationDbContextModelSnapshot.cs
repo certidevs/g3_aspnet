@@ -104,7 +104,12 @@ namespace G3AspNet.Data.Migrations
                     b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal>("HourLyRate")
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("HourlyRate")
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("LaborHours")
@@ -184,12 +189,6 @@ namespace G3AspNet.Data.Migrations
 
                     b.Property<string>("Reference")
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("RepairPartId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("RepairPartId1")
-                        .HasColumnType("INTEGER");
 
                     b.Property<int?>("Stock")
                         .HasColumnType("INTEGER");
@@ -407,7 +406,7 @@ namespace G3AspNet.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("G3AspNet.Models.SparePart", "SparePart")
-                        .WithMany()
+                        .WithMany("RepairParts")
                         .HasForeignKey("SparePartId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -489,6 +488,11 @@ namespace G3AspNet.Data.Migrations
                 });
 
             modelBuilder.Entity("G3AspNet.Models.Repair", b =>
+                {
+                    b.Navigation("RepairParts");
+                });
+
+            modelBuilder.Entity("G3AspNet.Models.SparePart", b =>
                 {
                     b.Navigation("RepairParts");
                 });

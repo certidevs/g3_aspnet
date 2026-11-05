@@ -1,4 +1,4 @@
-using System.Security.Cryptography.Xml;
+﻿using System.Security.Cryptography.Xml;
 using Microsoft.AspNetCore.Identity;
 
 namespace G3AspNet.Models;
@@ -13,8 +13,6 @@ public class SparePart
     public int? MinStock {get; set;}
     public string? Reference {get; set;}
 
-    // relaciones
-    public int RepairPartId {get; set;}
-    public RepairPart? RepairPart {get; set;}
-
+    // relación
+    public ICollection<RepairPart> RepairParts { get; set; } = new List<RepairPart>();
 }
