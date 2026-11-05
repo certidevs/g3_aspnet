@@ -1,5 +1,6 @@
 using G3AspNet.Data;
 using G3AspNet.Models;
+using G3AspNet.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -10,12 +11,12 @@ namespace G3AspNet.Controllers;
 
 [Authorize]
 /// <summary>Gestiona la consulta, creación, edición y eliminación de reparaciones y las piezas empleadas en cada intervención.</summary>
-public class RepairController : Controller
+public class RepairsController : Controller
 {
     private readonly ApplicationDbContext context;
     private readonly UserManager<ApplicationUser> userManager;
 
-    public RepairController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+    public RepairsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
     {
         this.context = context;
         this.userManager = userManager;
@@ -37,11 +38,27 @@ public class RepairController : Controller
         }), "Id", "Name", repair?.MechanicId);
     }
 
+    // Un Customer (sin rol Admin/Mechanic) solo accede a reparaciones de sus propios vehículos.
+    private IQueryable<Repair> VisibleRepairs()
+    {
+        var query = context.Repairs.AsQueryable();
+        var restricted = User.IsInRole(RoleNames.Customer)
+                         && !User.IsInRole(RoleNames.Admin)
+                         && !User.IsInRole(RoleNames.Mechanic);
+        if (!restricted)
+        {
+            return query;
+        }
+
+        var userId = User.GetRequiredUserId();
+        return query.Where(r => r.Vehicle.OwnerId == userId);
+    }
+
     /// <summary>Lista todas las reparaciones incluyendo su vehículo y mecánico asignado.</summary>
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var repairs = await context.Repairs
+        var repairs = await VisibleRepairs()
             .Include(repair => repair.Vehicle)
             .Include(repair => repair.Mechanic)
             .ToListAsync();
@@ -54,7 +71,7 @@ public class RepairController : Controller
     public async Task<IActionResult> Details(int id)
     {
         // Se cargan las relaciones necesarias para mostrar los datos y calcular TotalCost.
-        var repair = await context.Repairs
+        var repair = await VisibleRepairs()
             .Include(repair => repair.Vehicle)
             .Include(repair => repair.Mechanic)
             .Include(repair => repair.RepairParts)
