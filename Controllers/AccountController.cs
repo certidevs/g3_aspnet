@@ -1,8 +1,9 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using G3AspNet.Models;
 using G3AspNet.ViewModels.Account;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace G3AspNet.Controllers;
 
@@ -69,14 +70,26 @@ public sealed class AccountController : Controller
 
     [HttpGet]
     [AllowAnonymous]
-    public IActionResult Register() => View(new RegisterViewModel());
+    public IActionResult Register()
+    {
+        var model = new RegisterViewModel();
+        CargarRoles(model);
+        return View(model);
+    }
 
     [HttpPost]
     [AllowAnonymous]
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
+        // Validación en servidor: el valor del <select> se puede manipular desde el navegador.
+        if (!RolesPermitidos.Contains(model.Rol))
+        {
+            ModelState.AddModelError(nameof(model.Rol), "El rol seleccionado no es válido.");
+        }
+
         if (!ModelState.IsValid)
         {
+            CargarRoles(model);
             return View(model);
         }
 
@@ -95,14 +108,16 @@ public sealed class AccountController : Controller
         if (!result.Succeeded)
         {
             AddIdentityErrors(result);
+            CargarRoles(model);
             return View(model);
         }
 
-        var roleResult = await userManager.AddToRoleAsync(user, RoleNames.User);
+        var roleResult = await userManager.AddToRoleAsync(user, model.Rol);
         if (!roleResult.Succeeded)
         {
             await userManager.DeleteAsync(user);
             AddIdentityErrors(roleResult);
+            CargarRoles(model);
             return View(model);
         }
 
@@ -140,5 +155,19 @@ public sealed class AccountController : Controller
         {
             ModelState.AddModelError(string.Empty, error.Description);
         }
+    }
+
+    /// <summary>Roles que un usuario puede elegir al registrarse. Nunca incluir Admin.</summary>
+    private static string[] RolesPermitidos => new[]
+    {
+        RoleNames.User,
+        //RoleNames.Mecanico
+    };
+
+    private static void CargarRoles(RegisterViewModel model)
+    {
+        model.RolesDisponibles = RolesPermitidos
+            .Select(r => new SelectListItem(r, r))
+            .ToList();
     }
 }

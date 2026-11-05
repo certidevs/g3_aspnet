@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace G3AspNet.Controllers;
 
 [Authorize]
-/// <summary>Gestiona la consulta de reparaciones y las piezas empleadas en cada intervención.</summary>
+/// <summary>Gestiona la consulta, creación, edición y eliminación de reparaciones y las piezas empleadas en cada intervención.</summary>
 public class RepairController : Controller
 {
     private readonly ApplicationDbContext context;
@@ -69,6 +69,7 @@ public class RepairController : Controller
         return View(repair);
     }
 
+    /// <summary>Muestra el formulario para dar de alta una nueva reparación.</summary>
     [HttpGet]
     public async Task<IActionResult> Create()
     {
@@ -80,10 +81,12 @@ public class RepairController : Controller
         });
     }
 
+    /// <summary>Registra una nueva reparación en la base de datos.</summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Repair repair)
     {
+        // Ignoramos propiedades de navegación en la validación del modelo recibido por formulario.
         ModelState.Remove(nameof(Repair.Vehicle));
         ModelState.Remove(nameof(Repair.Mechanic));
 
@@ -110,6 +113,7 @@ public class RepairController : Controller
         return RedirectToAction(nameof(Details), new { id = repair.Id });
     }
 
+    /// <summary>Muestra el formulario para editar una reparación existente.</summary>
     [HttpGet]
     public async Task<IActionResult> Edit(int id)
     {
@@ -127,6 +131,7 @@ public class RepairController : Controller
         return View(repair);
     }
 
+    /// <summary>Actualiza los datos de una reparación existente.</summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, Repair model)
@@ -178,6 +183,7 @@ public class RepairController : Controller
         return RedirectToAction(nameof(Details), new { id = repair.Id });
     }
 
+    /// <summary>Muestra la confirmación para eliminar una reparación.</summary>
     [HttpGet]
     public async Task<IActionResult> Delete(int id)
     {
@@ -196,6 +202,7 @@ public class RepairController : Controller
         return View(repair);
     }
 
+    /// <summary>Elimina la reparación y devuelve al inventario el stock de las piezas asociadas.</summary>
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
@@ -210,6 +217,7 @@ public class RepairController : Controller
             return NotFound();
         }
 
+        // Devolver al stock las unidades de cada pieza empleada antes de borrar la reparación.
         foreach (var part in repair.RepairParts)
         {
             if (part.SparePart != null)

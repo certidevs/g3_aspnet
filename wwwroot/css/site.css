@@ -1,4 +1,4 @@
-/* Bootstrap lleva el estilo de la plantilla. Solo se añade el avatar, que no existe
+﻿/* Bootstrap lleva el estilo de la plantilla. Solo se añade el avatar, que no existe
    como componente nativo y será común a todos los proyectos de grupo. */
 .avatar {
   width: 2rem;
@@ -16,6 +16,75 @@
   font-size: .8rem;
   font-weight: 700;
 }
+.btn {
+  --bs-btn-padding-x: 1.5rem;
+  --bs-btn-padding-y: 0.5rem;
+  --bs-btn-font-size: 1rem;
+  min-width: 8rem;  
+  text-align: center;
+}
+.btn-primary {
+  --bs-btn-bg: #ea271c;
+  --bs-btn-border-color: #000000;
+  --bs-btn-color: #ffffff;
+  --bs-btn-hover-bg: #a51c15;
+  --bs-btn-hover-border-color: #a51c15;
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-active-bg: #7a1510;
+  --bs-btn-active-border-color: #7a1510;
+}
+.btn-secondary {
+  --bs-btn-bg: #ffffff;
+  --bs-btn-border-color: #000000;
+  --bs-btn-color: #ea271c;
+  --bs-btn-hover-bg: #eeeeee;
+  --bs-btn-hover-border-color: #000000;
+  --bs-btn-hover-color: #a51c15;
+  --bs-btn-active-bg: #dddddd;
+  --bs-btn-active-border-color: #000000;
+}
+
+.navbar {
+  --bs-navbar-color: #000000;          
+  --bs-navbar-hover-color: #ea271c;    
+  --bs-navbar-active-color: #000000;   
+  --bs-navbar-active-hover-color: #ea271c;
+}
+.navbar-nav .nav-link.active:hover,
+.navbar-nav .nav-link.active:focus {
+  color: var(--bs-navbar-hover-color);
+}
+.btn-toggle-password {
+  /* Estado normal: discreto, a juego con el borde del input */
+  --bs-btn-color: #6c757d;
+  --bs-btn-bg: #ffffff;
+  --bs-btn-border-color: #ffffff;
+
+  /* Hover: rojo del proyecto */
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-hover-bg: #ea271c;
+  --bs-btn-hover-border-color: #ea271c;
+
+  /* Pulsado (clic) */
+  --bs-btn-active-color: #ffffff;
+  --bs-btn-active-bg: #a51c15;
+  --bs-btn-active-border-color: #a51c15;
+  
+  /* Tamaño del botón */
+  min-width: 0;
+  width: 2.75rem;
+
+  /* Posición del ojo */
+  display: inline-flex;
+  align-items: center;       
+  justify-content: center;
+}
+
+/* Mientras la contraseña está visible (aria-pressed="true") */
+.btn-toggle-password[aria-pressed="true"] {
+  color: #ea271c;
+  border-color: #ea271c;
+}
 
 .no-spinners::-webkit-outer-spin-button,
 .no-spinners::-webkit-inner-spin-button {
@@ -27,4 +96,3 @@
   -moz-appearance: textfield;
   appearance: textfield;
 }
-

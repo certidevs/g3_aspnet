@@ -16,7 +16,7 @@ public class Repair
     public string Description { get; set; } = string.Empty;
 
     public DateTime OpenedAt { get; set; } = DateTime.UtcNow;
-    public DateTime CompletedAt { get; set; }
+    public DateTime? CompletedAt { get; set; }
 
     [Range(0, 2000000)]
     public int MileageAtEntry { get; set; }
@@ -27,7 +27,12 @@ public class Repair
     [Range(0, 1000)]
     public decimal HourlyRate { get; set; }
 
+
+
+
+    [ForeignKey(nameof(VehicleId))]
     public Vehicle Vehicle { get; set; } = null!;
+    [ForeignKey(nameof(MechanicId))]
     public ApplicationUser Mechanic { get; set; } = null!;
 
     // Piezas asociadas: deben estar cargadas para que el total las incluya.
