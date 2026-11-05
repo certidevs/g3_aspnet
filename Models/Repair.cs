@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using G3AspNet.Models.Enum;
 
@@ -10,11 +11,21 @@ public class Repair
     public string MechanicId { get; set; } = string.Empty;
     public RepairType RepairType { get; set; }
     public RepairStatus Status { get; set; }
-    public DateTime OpenedAt { get; set; }
+    [Required]
+    [StringLength(500)]
+    public string Description { get; set; } = string.Empty;
+
+    public DateTime OpenedAt { get; set; } = DateTime.UtcNow;
     public DateTime? CompletedAt { get; set; }
+
+    [Range(0, 2000000)]
     public int MileageAtEntry { get; set; }
+
+    [Range(0, 1000)]
     public decimal LaborHours { get; set; }
-    public decimal HourLyRate { get; set; }
+
+    [Range(0, 1000)]
+    public decimal HourlyRate { get; set; }
 
 
 
@@ -30,7 +41,7 @@ public class Repair
     // Mano de obra (horas × tarifa) más piezas (cantidad × precio).
     // Se calcula al consultar la propiedad y no se almacena en la base de datos.
     [NotMapped]
-    public decimal TotalCost => LaborHours * HourLyRate
+    public decimal TotalCost => LaborHours * HourlyRate
                                 + RepairParts.Sum(part => part.Quantity * part.UnitPrice);
 
     /// <summary>
@@ -67,4 +78,3 @@ public class Repair
         return repairPart;
     }
 }
-
