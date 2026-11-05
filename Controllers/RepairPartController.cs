@@ -1,6 +1,8 @@
 using G3AspNet.Data;
+using G3AspNet.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace G3AspNet.Controllers;
@@ -15,6 +17,22 @@ public class RepairPartController : Controller
     public RepairPartController(ApplicationDbContext context)
     {
         this.context = context;
+    }
+
+    /// <summary>Rellena los SelectList para las relaciones de Repair y SparePart.</summary>
+    private async Task PopulateDropDownsAsync(int? selectedRepairId = null, int? selectedSparePartId = null)
+    {
+        ViewBag.RepairId = new SelectList(
+            await context.Repairs.AsNoTracking().ToListAsync(),
+            "Id",
+            "Id",
+            selectedRepairId);
+
+        ViewBag.SparePartId = new SelectList(
+            await context.SpareParts.AsNoTracking().ToListAsync(),
+            "Id",
+            "Name",
+            selectedSparePartId);
     }
 
     /// <summary>Lista las piezas utilizadas, opcionalmente filtradas por reparación.</summary>
@@ -32,6 +50,38 @@ public class RepairPartController : Controller
         }
 
         return View(await query.ToListAsync());
+    }
+
+    /// <summary>Muestra el detalle completo de una línea de recambio y sus relaciones.</summary>
+    [HttpGet]
+    public async Task<IActionResult> Details(int id)
+    {
+        var repairPart = await context.RepairParts
+            .Include(rp => rp.Repair)
+            .Include(rp => rp.SparePart)
+            .FirstOrDefaultAsync(rp => rp.Id == id);
+
+        if (repairPart == null)
+        {
+            return NotFound();
+        }
+
+        return View(repairPart);
+    }
+
+    /// <summary>Muestra el formulario compartido (Form.cshtml) para dar de alta una pieza.</summary>
+    [HttpGet]
+    public async Task<IActionResult> Create(int? repairId = null)
+    {
+        await PopulateDropDownsAsync(selectedRepairId: repairId);
+
+        var model = new RepairPart
+        {
+            RepairId = repairId ?? 0,
+            Quantity = 1
+        };
+
+        return View("Form", model);
     }
 
     /// <summary>Añade un recambio a una reparación descontando el stock disponible.</summary>
@@ -68,6 +118,23 @@ public class RepairPartController : Controller
         return RedirectToAction("Details", "Repair", new { id = repairId });
     }
 
+    /// <summary>Muestra el formulario compartido (Form.cshtml) precargado para editar una línea existente.</summary>
+    [HttpGet]
+    public async Task<IActionResult> Edit(int id)
+    {
+        var repairPart = await context.RepairParts
+            .Include(rp => rp.SparePart)
+            .FirstOrDefaultAsync(rp => rp.Id == id);
+
+        if (repairPart == null)
+        {
+            return NotFound();
+        }
+
+        await PopulateDropDownsAsync(repairPart.RepairId, repairPart.SparePartId);
+        return View("Form", repairPart);
+    }
+
     /// <summary>Actualiza la cantidad de una pieza en la reparación ajustando el stock del recambio.</summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -99,6 +166,7 @@ public class RepairPartController : Controller
 
         repairPart.SparePart.Stock = availableStock - diff;
         repairPart.Quantity = quantity;
+
         if (unitPrice.HasValue)
         {
             repairPart.UnitPrice = unitPrice.Value;
@@ -136,4 +204,3 @@ public class RepairPartController : Controller
         return RedirectToAction("Details", "Repair", new { id = repairId });
     }
 }
-

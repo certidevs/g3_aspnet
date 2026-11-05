@@ -1,0 +1,96 @@
+@model G3AspNet.Models.Repair
+
+@{
+    bool isEdit = Model.Id > 0;
+    ViewData["Title"] = isEdit ? $"Editar Reparación #{Model.Id}" : "Nueva Reparación";
+}
+
+<div class="card shadow-sm mt-3">
+    <div class="card-header @(isEdit ? "bg-warning text-dark" : "bg-primary text-white")">
+        <h4 class="mb-0">@ViewData["Title"]</h4>
+    </div>
+    <div class="card-body">
+        <form asp-action="@(isEdit ? "Edit" : "Create")" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            @if (isEdit)
+            {
+                <input type="hidden" asp-for="Id" />
+            }
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="VehicleId" class="form-label fw-bold">Vehículo</label>
+                    <select asp-for="VehicleId" class="form-select" asp-items="ViewBag.Vehicles">
+                        <option value="">-- Seleccionar Vehículo --</option>
+                    </select>
+                    <span asp-validation-for="VehicleId" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="MechanicId" class="form-label fw-bold">Mecánico Asignado</label>
+                    <select asp-for="MechanicId" class="form-select" asp-items="ViewBag.Mechanics">
+                        <option value="">-- Seleccionar Mecánico --</option>
+                    </select>
+                    <span asp-validation-for="MechanicId" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="RepairType" class="form-label fw-bold">Tipo de Reparación</label>
+                    <select asp-for="RepairType" class="form-select" asp-items="Html.GetEnumSelectList(Model.RepairType.GetType())">
+                    </select>
+                    <span asp-validation-for="RepairType" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="Status" class="form-label fw-bold">Estado</label>
+                    <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList(Model.Status.GetType())">
+                    </select>
+                    <span asp-validation-for="Status" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="OpenedAt" class="form-label fw-bold">Fecha / Hora Entrada</label>
+                    <input asp-for="OpenedAt" class="form-control" type="datetime-local" />
+                    <span asp-validation-for="OpenedAt" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="CompletedAt" class="form-label fw-bold">Fecha / Hora Finalización</label>
+                    <input asp-for="CompletedAt" class="form-control" type="datetime-local" />
+                    <span asp-validation-for="CompletedAt" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="MileageAtEntry" class="form-label fw-bold">Kilometraje de Entrada</label>
+                    <input asp-for="MileageAtEntry" class="form-control" type="number" min="0" />
+                    <span asp-validation-for="MileageAtEntry" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="LaborHours" class="form-label fw-bold">Horas de Mano de Obra</label>
+                    <input asp-for="LaborHours" class="form-control" type="number" step="0.25" min="0" />
+                    <span asp-validation-for="LaborHours" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="HourLyRate" class="form-label fw-bold">Precio por Hora (€)</label>
+                    <input asp-for="HourLyRate" class="form-control" type="number" step="0.01" min="0" />
+                    <span asp-validation-for="HourLyRate" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-end gap-2">
+                <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn @(isEdit ? "btn-warning" : "btn-primary")">
+                    @(isEdit ? "Guardar Cambios" : "Crear Reparación")
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

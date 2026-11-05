@@ -47,7 +47,22 @@
                 <div class="collapse navbar-collapse" id="mainNav">
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item"><a class='@NavClass("Home")' asp-controller="Home" asp-action="Index">Inicio</a></li>
-                        <li class="nav-item"><a class='@NavClass("Repair")' asp-controller="Repair" asp-action="Index">Reparaciones</a></li>
+
+                        @if (User.Identity?.IsAuthenticated == true && (User.IsInRole(RoleNames.Admin) || User.IsInRole(RoleNames.Mechanic)))
+                        {
+                            <li class="nav-item">
+                                <a class='@NavClass("Repair")' asp-controller="Repair" asp-action="Index">Reparaciones</a>
+                            </li>
+                        }
+
+                        @* Enlace a Recambios visible solo para roles autorizados *@
+                        @if (User.Identity?.IsAuthenticated == true && (User.IsInRole(RoleNames.Admin) || User.IsInRole("Mecanico")))
+                        {
+                            <li class="nav-item">
+                                <a class='@NavClass("RepairPart")' asp-controller="RepairPart" asp-action="Index">Piezas y Recambios</a>
+                            </li>
+                        }
+
                         @if (User.IsInRole(RoleNames.Admin))
                         {
                             <li class="nav-item"><a class='@NavClass("Users")' asp-controller="Users" asp-action="Index">Administración de usuarios</a></li>

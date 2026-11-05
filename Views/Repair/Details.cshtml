@@ -1,32 +1,159 @@
-﻿@model Repair
+@model G3AspNet.Models.Repair
 
 @{
-    ViewData["Title"] = $"Reparación #{Model.Id}";
+    ViewData["Title"] = $"Detalle Reparación #{Model.Id}";
+    decimal laborTotal = Model.LaborHours * Model.HourLyRate;
+    decimal partsTotal = Model.RepairParts?.Sum(p => p.Quantity * p.UnitPrice) ?? 0m;
+    decimal totalCost = laborTotal + partsTotal;
 }
+
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h2 mb-0"> Detalle de reparación #@Model.Id</h1>
+    <h2>Reparación #@Model.Id</h2>
     <div class="d-flex gap-2">
-        <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.Id">Eliminar</a>
-        <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Id">Editar</a>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Editar</a>
+        <a asp-action="Index" class="btn btn-secondary">Volver al listado</a>
     </div>
 </div>
-<div class="card mb-4">
-    <div class="card-body p-4">
-        <dl class="row mb-0">
-            <dt class="col-sm-3">Vehículo</dt>
-            <dd class="col-sm-9">@Model.Vehicle?.LicensePlate (@Model.Vehicle?.Brand @Model.Vehicle?.Model)</dd>
 
-            <dt class="col-sm-3">Mecánico</dt>
-            <dd class="col-sm-9">@(Model.Mechanic?.DisplayName ?? Model.Mechanic?.UserName)</dd>
+<div class="row g-3">
+    <!-- Información Principal -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Datos de la Intervención</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Vehículo</dt>
+                    <dd class="col-sm-8">@Model.Vehicle?.LicensePlate - @Model.Vehicle?.Brand @Model.Vehicle?.Model</dd>
 
-            <dt class="col-sm-3">Estado</dt>
-            <dd class="col-sm-9">@Model.Status</dd>
+                    <dt class="col-sm-4">Mecánico</dt>
+                    <dd class="col-sm-8">@(Model.Mechanic?.DisplayName ?? Model.Mechanic?.UserName ?? "No asignado")</dd>
 
-            <dt class="col-sm-3">Coste total</dt>
-            <dd class="col-sm-9">@Model.TotalCost.ToString("C")</dd>
-        </dl>
+                    <dt class="col-sm-4">Tipo</dt>
+                    <dd class="col-sm-8"><span class="badge bg-secondary">@Html.DisplayFor(_ => Model.RepairType)</span></dd>
+
+                    <dt class="col-sm-4">Estado</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge @(Model.Status.ToString() == "Completed" ? "bg-success" : "bg-info text-dark")">
+                            @Html.DisplayFor(_ => Model.Status)
+                        </span>
+                    </dd>
+
+                    <dt class="col-sm-4">Fecha Entrada</dt>
+                    <dd class="col-sm-8">@Model.OpenedAt.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                    <dt class="col-sm-4">Fecha Salida</dt>
+                    <dd class="col-sm-8">@(Model.CompletedAt?.ToString("dd/MM/yyyy HH:mm") ?? "En curso")</dd>
+
+                    <dt class="col-sm-4">Kilometraje Entrada</dt>
+                    <dd class="col-sm-8">@Model.MileageAtEntry.ToString("N0") km</dd>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Tabla de Piezas Usadas -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Piezas y Recambios Utilizados</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Pieza</th>
+                                <th class="text-end">Cantidad</th>
+                                <th class="text-end">Precio Unit.</th>
+                                <th class="text-end">Subtotal</th>
+                                <th class="text-center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.RepairParts == null || !Model.RepairParts.Any())
+                            {
+                                <tr>
+                                    <td colspan="5" class="text-center py-3 text-muted">No se han asignado piezas todavía.</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var part in Model.RepairParts)
+                                {
+                                    <tr>
+                                        <td>@part.SparePart?.Name</td>
+                                        <td class="text-end">@part.Quantity</td>
+                                        <td class="text-end">@part.UnitPrice.ToString("C")</td>
+                                        <td class="text-end">@((part.Quantity * part.UnitPrice).ToString("C"))</td>
+                                        <td class="text-center">
+                                            <form asp-controller="RepairPart" asp-action="Delete" asp-route-id="@part.Id" method="post" onsubmit="return confirm('¿Devolver esta pieza al stock?');" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2">Quitar</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulario para Añadir Pieza a la Reparación -->
+        <div class="card shadow-sm mt-3 border-primary">
+            <div class="card-header bg-primary-subtle text-primary-emphasis">
+                <h6 class="mb-0">Añadir Pieza a la Reparación</h6>
+            </div>
+            <div class="card-body">
+                <form asp-action="AddPart" method="post" class="row g-2 align-items-end">
+                    <input type="hidden" name="id" value="@Model.Id" />
+
+                    <div class="col-md-7">
+                        <label class="form-label small fw-bold">Recambio disponible</label>
+                        <select name="sparePartId" class="form-select" asp-items="ViewBag.AvailableSpareParts" required>
+                            <option value="">-- Seleccionar pieza --</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">Cantidad</label>
+                        <input type="number" name="quantity" class="form-control" min="1" value="1" required />
+                    </div>
+
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Añadir</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <div class="card-footer bg-transparent">
-        <a class="btn btn-outline-secondary" asp-action="Index">Volver al listado</a>
+
+    <!-- Resumen de Costes -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-success">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Resumen Económico</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <span>Mano de Obra</span>
+                            <small class="d-block text-muted">@Model.LaborHours h &times; @Model.HourLyRate.ToString("C")/h</small>
+                        </div>
+                        <span class="fw-semibold">@laborTotal.ToString("C")</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Recambios y Materiales</span>
+                        <span class="fw-semibold">@partsTotal.ToString("C")</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center bg-light fs-5">
+                        <span class="fw-bold">Coste Total</span>
+                        <span class="fw-bold text-success">@totalCost.ToString("C")</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </div>
 </div>

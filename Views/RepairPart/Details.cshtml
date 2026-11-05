@@ -1,0 +1,41 @@
+@model G3AspNet.Models.RepairPart
+
+@{
+    ViewData["Title"] = "Detalle de Pieza en Reparación";
+}
+
+<div class="card shadow-sm mt-3">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">Detalle de Línea de Recambio #@Model.Id</h4>
+        <span class="badge bg-light text-dark">Reparación #@Model.RepairId</span>
+    </div>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Reparación Asociada</dt>
+            <dd class="col-sm-9">
+                <a asp-controller="Repair" asp-action="Details" asp-route-id="@Model.RepairId">
+                    Reparación #@Model.RepairId
+                </a>
+            </dd>
+
+            <dt class="col-sm-3">Pieza / Recambio</dt>
+            <dd class="col-sm-9">@Model.SparePart?.Name (Código: @Model.SparePartId)</dd>
+
+            <dt class="col-sm-3">Stock Actual de la Pieza</dt>
+            <dd class="col-sm-9">@Model.SparePart?.Stock unidades</dd>
+
+            <dt class="col-sm-3">Cantidad Asignada</dt>
+            <dd class="col-sm-9">@Model.Quantity</dd>
+
+            <dt class="col-sm-3">Precio Unitario</dt>
+            <dd class="col-sm-9">@Model.UnitPrice.ToString("C")</dd>
+
+            <dt class="col-sm-3">Importe Total</dt>
+            <dd class="col-sm-9 fw-bold">@((Model.Quantity * Model.UnitPrice).ToString("C"))</dd>
+        </dl>
+    </div>
+    <div class="card-footer d-flex justify-content-end gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Editar</a>
+        <a asp-action="Index" class="btn btn-secondary">Volver al listado</a>
+    </div>
+</div>
