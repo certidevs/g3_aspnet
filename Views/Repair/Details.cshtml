@@ -1,0 +1,98 @@
+@model Repair
+@{
+    ViewData["Title"] = $"Reparación #{Model.Id}";
+    var laborCost = Model.LaborHours * Model.HourlyRate;
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="h2 mb-0">Reparación #@Model.Id</h1>
+    <div class="d-flex gap-2">
+        @* DESCOMENTA: <a class="btn btn-outline-secondary" asp-action="Edit" asp-route-id="@Model.Id">Editar</a> *@
+        @* DESCOMENTA: <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.Id">Eliminar</a> *@
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body p-4">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Vehículo</dt>
+            <dd class="col-sm-9">
+                <a asp-controller="Vehicle" asp-action="Details" asp-route-id="@Model.VehicleId">@Model.Vehicle.LicensePlate</a>
+                (@Model.Vehicle.Brand @Model.Vehicle.Model)
+            </dd>
+
+            <dt class="col-sm-3">Mecánico</dt>
+            <dd class="col-sm-9">@(Model.Mechanic.DisplayName ?? Model.Mechanic.UserName)</dd>
+
+            <dt class="col-sm-3">Tipo</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(m => m.RepairType)</dd>
+
+            <dt class="col-sm-3">Estado</dt>
+            <dd class="col-sm-9"><span class="badge text-bg-secondary">@Html.DisplayFor(m => m.Status)</span></dd>
+
+            <dt class="col-sm-3">Descripción</dt>
+            <dd class="col-sm-9">@Model.Description</dd>
+
+            <dt class="col-sm-3">Fecha de apertura</dt>
+            <dd class="col-sm-9">@Model.OpenedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
+
+            <dt class="col-sm-3">Fecha de cierre</dt>
+            <dd class="col-sm-9">@(Model.CompletedAt is null ? "Todavía abierta" : Model.CompletedAt.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm"))</dd>
+
+            <dt class="col-sm-3">Kilometraje a la entrada</dt>
+            <dd class="col-sm-9">@Model.MileageAtEntry.ToString("N0") km</dd>
+
+            <dt class="col-sm-3">Mano de obra</dt>
+            <dd class="col-sm-9">@Model.LaborHours.ToString("N2") h × @Model.HourlyRate.ToString("N2")&nbsp;€/h = @laborCost.ToString("N2")&nbsp;€</dd>
+
+            <dt class="col-sm-3">Coste total</dt>
+            <dd class="col-sm-9 fw-semibold">@Model.TotalCost.ToString("N2")&nbsp;€</dd>
+        </dl>
+    </div>
+    <div class="card-footer bg-transparent">
+        <a class="btn btn-outline-secondary" asp-action="Index">Volver a reparaciones</a>
+    </div>
+</div>
+
+<h2 class="h4 mb-3">Piezas usadas</h2>
+
+@if (Model.RepairParts.Count == 0)
+{
+    <div class="alert alert-info" role="status">Todavía no se ha usado ninguna pieza en esta reparación.</div>
+}
+else
+{
+    <div class="table-responsive border rounded">
+        <table class="table table-hover align-middle mb-0">
+            <caption class="visually-hidden">Piezas usadas en la reparación</caption>
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">Recambio</th>
+                    <th scope="col">Cantidad</th>
+                    <th scope="col">Precio unitario</th>
+                    <th scope="col">Subtotal</th>
+                    <th scope="col" class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var part in Model.RepairParts)
+                {
+                    <tr>
+                        <td>
+                            <a asp-controller="SpareParts" asp-action="Details" asp-route-id="@part.SparePartId">@part.SparePart.Name</a>
+                            <span class="text-secondary small">(@part.SparePart.Brand)</span>
+                        </td>
+                        <td>@part.Quantity</td>
+                        <td>@part.UnitPrice.ToString("N2")&nbsp;€</td>
+                        <td>@((part.Quantity * part.UnitPrice).ToString("N2"))&nbsp;€</td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-sm btn-outline-primary" asp-controller="RepairParts" asp-action="Details" asp-route-id="@part.Id">Ver</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@* TODO (issue #18): formulario "Añadir pieza" (acción AddPart de RepairController) dentro de este detalle. *@

@@ -69,6 +69,9 @@ public class RepairController : Controller
         return View(repair);
     }
 
+    // TODO (issue #16): Create y Edit usan hoy dos vistas casi iguales (Create.cshtml y Edit.cshtml).
+    // Mejora pendiente: unirlas en un único Views/Repair/Form.cshtml y devolver View("Form", ...).
+
     /// <summary>Muestra el formulario para dar de alta una nueva reparación.</summary>
     [HttpGet]
     public async Task<IActionResult> Create()
@@ -222,7 +225,7 @@ public class RepairController : Controller
         {
             if (part.SparePart != null)
             {
-                part.SparePart.Stock = (part.SparePart.Stock ?? 0) + part.Quantity;
+                part.SparePart.Stock += part.Quantity;
             }
         }
 

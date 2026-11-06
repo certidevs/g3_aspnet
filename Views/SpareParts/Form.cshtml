@@ -1,0 +1,63 @@
+@model SparePart
+@{
+    // Un único formulario sirve para crear (Id == 0) y para editar (Id > 0).
+    var isNew = Model.Id == 0;
+    ViewData["Title"] = isNew ? "Nuevo recambio" : $"Editar recambio {Model.Name}";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h2 mb-0">@ViewData["Title"]</h1>
+    <a class="btn btn-outline-secondary" asp-action="Index">Cancelar</a>
+</div>
+
+@* asp-action="Save": el formulario envía los datos por POST a SparePartsController.Save.
+   El tag helper añade solo el token antifalsificación que exige el POST. *@
+<form asp-action="Save" method="post" class="card">
+    @* El Id va oculto: vale 0 al crear y el del recambio al editar. Save lo usa para decidir qué hacer. *@
+    <input type="hidden" asp-for="Id" />
+    <div class="card-body p-4">
+        @* Muestra los errores que no pertenecen a un campo concreto. *@
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label asp-for="Reference" class="form-label">Referencia</label>
+                <input asp-for="Reference" class="form-control" maxlength="50" />
+                @* asp-validation-for pinta aquí el error de este campo (viene de ModelState). *@
+                <span asp-validation-for="Reference" class="text-danger"></span>
+            </div>
+            <div class="col-md-8">
+                <label asp-for="Name" class="form-label">Nombre</label>
+                <input asp-for="Name" class="form-control" maxlength="100" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Brand" class="form-label">Marca</label>
+                <input asp-for="Brand" class="form-control" maxlength="50" />
+                <span asp-validation-for="Brand" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="UnitPrice" class="form-label">Precio unitario (€)</label>
+                <input asp-for="UnitPrice" type="number" step="0.01" min="0" class="form-control" />
+                <span asp-validation-for="UnitPrice" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Stock" class="form-label">Stock (unidades)</label>
+                <input asp-for="Stock" type="number" min="0" class="form-control" />
+                <span asp-validation-for="Stock" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="MinStock" class="form-label">Stock mínimo</label>
+                <input asp-for="MinStock" type="number" min="0" class="form-control" />
+                <span asp-validation-for="MinStock" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+    <div class="card-footer bg-transparent text-end">
+        <button class="btn btn-primary" type="submit">@(isNew ? "Crear recambio" : "Guardar cambios")</button>
+    </div>
+</form>
+
+@* Scripts de validación en el navegador (jQuery Validation), antes de enviar el formulario. *@
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

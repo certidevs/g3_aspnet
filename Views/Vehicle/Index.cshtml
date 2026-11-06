@@ -1,0 +1,55 @@
+@model IEnumerable<Vehicle>
+@{
+    ViewData["Title"] = "Vehículos";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h1 class="h2 mb-1">Vehículos</h1>
+        <p class="text-secondary mb-0">Vehículos de los clientes del taller.</p>
+    </div>
+    @* DESCOMENTA: <a class="btn btn-primary" asp-action="Create">Nuevo vehículo</a> *@
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info" role="status">No hay vehículos registrados.</div>
+}
+else
+{
+    <div class="table-responsive border rounded">
+        <table class="table table-hover align-middle mb-0">
+            <caption class="visually-hidden">Listado de vehículos</caption>
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">Matrícula</th>
+                    <th scope="col">Vehículo</th>
+                    <th scope="col">Año</th>
+                    <th scope="col">Combustible</th>
+                    <th scope="col">Kilometraje</th>
+                    <th scope="col">Propietario</th>
+                    <th scope="col" class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="fw-semibold">@item.LicensePlate</td>
+                        <td>@item.Brand @item.Model</td>
+                        <td>@item.Year</td>
+                        <td>@Html.DisplayFor(modelItem => item.FuelType)</td>
+                        <td>@item.Mileage.ToString("N0") km</td>
+                        <td>@(item.Owner.DisplayName ?? item.Owner.UserName)</td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@item.Id"
+                               aria-label="Ver vehículo @item.LicensePlate">Ver</a>
+                            @* DESCOMENTA: <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.Id" aria-label="Editar vehículo @item.LicensePlate">Editar</a> *@
+                            @* DESCOMENTA: <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('¿Eliminar este vehículo?');"><button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Eliminar vehículo @item.LicensePlate">Eliminar</button></form> *@
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
