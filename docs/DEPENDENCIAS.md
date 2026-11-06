@@ -26,6 +26,12 @@ Registro de las dependencias del proyecto, su versión, su propósito y su estad
 
 **Referencia de proyecto:** `G3AspNet.Tests` → `G3AspNet.csproj`
 
+## 2.1. Librerías de front (`wwwroot/lib`)
+
+| Librería | Versión | Propósito | Notas |
+|---|---|---|---|
+| Font Awesome Free | 6.7.2 | Iconos | Solo `css/all.min.css` y `webfonts/`; antes se cargaba por CDN |
+
 ---
 
 ## 3. Historial de cambios
