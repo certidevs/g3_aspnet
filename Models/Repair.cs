@@ -27,9 +27,6 @@ public class Repair
     [Range(0, 1000)]
     public decimal HourlyRate { get; set; }
 
-
-
-
     [ForeignKey(nameof(VehicleId))]
     public Vehicle Vehicle { get; set; } = null!;
     [ForeignKey(nameof(MechanicId))]
@@ -56,13 +53,12 @@ public class Repair
             throw new ArgumentOutOfRangeException(nameof(quantity), "La cantidad debe ser mayor que cero.");
         }
 
-        var availableStock = sparePart.Stock ?? 0;
-        if (availableStock < quantity)
+        if (sparePart.Stock < quantity)
         {
             throw new InvalidOperationException("No hay stock suficiente para el recambio seleccionado.");
         }
 
-        sparePart.Stock = availableStock - quantity;
+        sparePart.Stock -= quantity;
 
         var repairPart = new RepairPart
         {
@@ -71,7 +67,7 @@ public class Repair
             SparePart = sparePart,
             SparePartId = sparePart.Id,
             Quantity = quantity,
-            UnitPrice = unitPrice ?? sparePart.UnitPrice ?? 0m
+            UnitPrice = unitPrice ?? sparePart.UnitPrice
         };
 
         RepairParts.Add(repairPart);
