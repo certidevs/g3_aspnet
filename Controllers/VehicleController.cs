@@ -1,5 +1,6 @@
-using G3AspNet.Data;
+﻿using G3AspNet.Data;
 using G3AspNet.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -7,25 +8,48 @@ using Microsoft.EntityFrameworkCore;
 
 namespace G3AspNet.Controllers;
 
-/// <summary>Consulta de los vehículos del taller y su historial de reparaciones.</summary>
+/// <summary>Gestión de los vehículos del taller y consulta de su historial de reparaciones.</summary>
+[Authorize]
 public class VehicleController : Controller
 {
+    // Roles del personal del taller: los únicos que pueden crear, editar y borrar vehículos.
+    // Si en tu proyecto los permisos son otros, cambia solo esta línea.
+    private const string StaffRoles = RoleNames.Admin + "," + RoleNames.Mechanic;
+
     private readonly ApplicationDbContext context;
     private readonly UserManager<ApplicationUser> userManager;
 
     // ASP.NET Core proporciona el contexto y el UserManager al crear el controlador.
-    // userManager lo usa el código comentado de más abajo (lista de clientes para elegir propietario).
+    // userManager se usa para saber quién es el usuario actual y para listar los clientes.
     public VehicleController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
     {
         this.context = context;
         this.userManager = userManager;
     }
 
-    /// <summary>Lista todos los vehículos incluyendo su propietario.</summary>
+    /// <summary>
+    /// Vehículos que puede ver el usuario actual: un Customer solo ve los suyos;
+    /// el resto de roles (Admin, Mechanic...) ven todos.
+    /// Devuelve la consulta SIN ejecutar, para poder seguir añadiendo Include y OrderBy.
+    /// </summary>
+    private IQueryable<Vehicle> VisibleVehicles()
+    {
+        var vehicles = context.Vehicles.AsQueryable();
+
+        if (User.IsInRole(RoleNames.Customer))
+        {
+            var currentUserId = userManager.GetUserId(User);
+            vehicles = vehicles.Where(vehicle => vehicle.OwnerId == currentUserId);
+        }
+
+        return vehicles;
+    }
+
+    /// <summary>Lista los vehículos visibles para el usuario, incluyendo su propietario.</summary>
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var vehicles = await context.Vehicles
+        var vehicles = await VisibleVehicles()
             .Include(vehicle => vehicle.Owner)
             .OrderBy(vehicle => vehicle.LicensePlate)
             .ToListAsync();
@@ -37,7 +61,9 @@ public class VehicleController : Controller
     [HttpGet]
     public async Task<IActionResult> Details(int id)
     {
-        var vehicle = await context.Vehicles
+        // Se filtra también aquí: si no, un Customer podría escribir el Id de un vehículo
+        // ajeno en la URL y verlo. Si no es suyo, la consulta no lo encuentra y devuelve 404.
+        var vehicle = await VisibleVehicles()
             .Include(vehicle => vehicle.Owner)
             .Include(vehicle => vehicle.Repairs)
             .ThenInclude(repair => repair.Mechanic)
@@ -50,14 +76,6 @@ public class VehicleController : Controller
 
         return View(vehicle);
     }
-
-    // TODO (issue #13): el Customer solo debe ver SUS vehículos (filtrar por OwnerId en Index y Details).
-    // Create, Edit, Save y Delete están escritos más abajo, comentados. El modelo que ya funciona
-    // de principio a fin es SparePartsController (recambios).
-
-    // TODO (issue #13): Create, Edit, Save y Delete
-    // Pasos: 1) borra la línea «/* DESCOMENTA DESDE AQUÍ» y la línea «FIN DESCOMENTA */», 2) ajusta los campos de tu entidad, 3) descomenta el formulario de Views/Vehicle/Form.cshtml, 4) descomenta los botones de Index y Details.
-    /* DESCOMENTA DESDE AQUÍ
 
     /// <summary>Prepara la lista de clientes (rol Customer) para el desplegable de propietario.</summary>
     private async Task PopulateOwnersAsync(string? selectedOwnerId = null)
@@ -72,6 +90,7 @@ public class VehicleController : Controller
 
     /// <summary>Muestra el formulario vacío para dar de alta un vehículo.</summary>
     [HttpGet]
+    [Authorize(Roles = StaffRoles)]
     public async Task<IActionResult> Create()
     {
         await PopulateOwnersAsync();
@@ -82,6 +101,7 @@ public class VehicleController : Controller
 
     /// <summary>Muestra el formulario relleno con los datos de un vehículo existente.</summary>
     [HttpGet]
+    [Authorize(Roles = StaffRoles)]
     public async Task<IActionResult> Edit(int id)
     {
         var vehicle = await context.Vehicles.FindAsync(id);
@@ -97,6 +117,7 @@ public class VehicleController : Controller
     /// <summary>Guarda el formulario: crea el vehículo si Id es 0 y lo actualiza si no.</summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = StaffRoles)]
     public async Task<IActionResult> Save(Vehicle vehicle)
     {
         // El formulario solo envía OwnerId, no el objeto Owner completo: lo quitamos de la validación.
@@ -156,6 +177,7 @@ public class VehicleController : Controller
     /// <summary>Elimina un vehículo, salvo que tenga reparaciones en su historial.</summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = StaffRoles)]
     public async Task<IActionResult> Delete(int id)
     {
         var vehicle = await context.Vehicles.FindAsync(id);
@@ -179,6 +201,4 @@ public class VehicleController : Controller
         TempData["Message"] = "Vehículo eliminado correctamente.";
         return RedirectToAction(nameof(Index));
     }
-
-    FIN DESCOMENTA */
 }

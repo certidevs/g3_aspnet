@@ -1,4 +1,4 @@
-@model Vehicle
+﻿@model Vehicle
 @{
     // Un único formulario sirve para crear (Id == 0) y para editar (Id > 0).
     ViewData["Title"] = Model.Id == 0 ? "Nuevo vehículo" : $"Editar vehículo {Model.LicensePlate}";
@@ -11,11 +11,6 @@
 
 <div class="alert alert-warning">TODO (issue #14): descomenta el formulario y ajústalo</div>
 
-@* Modelo completo y funcionando: Views/SpareParts/Form.cshtml. En el formulario de abajo:
-   el Id va oculto (0 al crear, el del vehículo al editar; VehicleController.Save lo usa para decidir),
-   FuelType es un enum (GetEnumSelectList crea sus opciones) y OwnerId es una relación
-   (el controlador rellena ViewBag.Owners con los clientes en PopulateOwnersAsync). *@
-@* DESCOMENTA DESDE AQUÍ
 <form asp-action="Save" method="post" class="card">
     <input type="hidden" asp-for="Id" />
     <div class="card-body p-4">
@@ -73,4 +68,4 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
-FIN DESCOMENTA *@
+
