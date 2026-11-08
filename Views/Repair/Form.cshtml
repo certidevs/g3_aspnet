@@ -1,17 +1,28 @@
+@using G3AspNet.Models.Enum
 @model Repair
 @{
-    ViewData["Title"] = "Nueva reparación";
+    var isNew = Model.Id == 0;
+    ViewData["Title"] = isNew ? "Nueva reparación" : $"Editar reparación #{Model.Id}";
+    var cancelAction = isNew ? "Index" : "Details";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h2 mb-0">Nueva reparación</h1>
-    <a class="btn btn-outline-secondary" asp-action="Index">Cancelar</a>
+    <h1 class="h2 mb-0">@ViewData["Title"]</h1>
+    @if (isNew)
+    {
+        <a class="btn btn-outline-secondary" asp-action="Index">Cancelar</a>
+    }
+    else
+    {
+        <a class="btn btn-outline-secondary" asp-action="Details" asp-route-id="@Model.Id">Cancelar</a>
+    }
 </div>
 
-<div class="alert alert-warning">TODO (issue #16): descomenta el formulario y ajústalo</div>
-
-@* DESCOMENTA DESDE AQUÍ
-<form asp-action="Create" method="post" class="card">
+<form asp-action="@(isNew ? "Create" : "Edit")" asp-route-id="@(isNew ? null : Model.Id)" method="post" class="card shadow-sm">
+    @if (!isNew)
+    {
+        <input type="hidden" asp-for="Id" />
+    }
     <div class="card-body p-4">
         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
         <div class="row g-3">
@@ -31,12 +42,12 @@
             </div>
             <div class="col-md-6">
                 <label asp-for="RepairType" class="form-label">Tipo de reparación</label>
-                <select asp-for="RepairType" asp-items="Html.GetEnumSelectList<G3AspNet.Models.Enum.RepairType>()" class="form-select"></select>
+                <select asp-for="RepairType" asp-items="Html.GetEnumSelectList<RepairType>()" class="form-select"></select>
                 <span asp-validation-for="RepairType" class="text-danger"></span>
             </div>
             <div class="col-md-6">
                 <label asp-for="Status" class="form-label">Estado</label>
-                <select asp-for="Status" asp-items="Html.GetEnumSelectList<G3AspNet.Models.Enum.RepairStatus>()" class="form-select"></select>
+                <select asp-for="Status" asp-items="Html.GetEnumSelectList<RepairStatus>()" class="form-select"></select>
                 <span asp-validation-for="Status" class="text-danger"></span>
             </div>
             <div class="col-12">
@@ -56,27 +67,26 @@
             </div>
             <div class="col-md-4">
                 <label asp-for="MileageAtEntry" class="form-label">Kilometraje de entrada</label>
-                <input asp-for="MileageAtEntry" type="number" class="form-control" />
+                <input asp-for="MileageAtEntry" type="number" min="0" max="2000000" class="form-control" />
                 <span asp-validation-for="MileageAtEntry" class="text-danger"></span>
             </div>
             <div class="col-md-4">
                 <label asp-for="LaborHours" class="form-label">Horas de mano de obra</label>
-                <input asp-for="LaborHours" type="number" step="0.01" class="form-control" />
+                <input asp-for="LaborHours" type="number" step="any" min="0" max="1000" class="form-control" />
                 <span asp-validation-for="LaborHours" class="text-danger"></span>
             </div>
             <div class="col-md-4">
-                <label asp-for="HourlyRate" class="form-label">Tarifa por hora</label>
-                <input asp-for="HourlyRate" type="number" step="0.01" class="form-control" />
+                <label asp-for="HourlyRate" class="form-label">Tarifa por hora (€)</label>
+                <input asp-for="HourlyRate" type="number" step="any" min="0" max="1000" class="form-control" />
                 <span asp-validation-for="HourlyRate" class="text-danger"></span>
             </div>
         </div>
     </div>
     <div class="card-footer bg-transparent text-end">
-        <button class="btn btn-primary" type="submit">Crear reparación</button>
+        <button class="btn btn-primary" type="submit">@(isNew ? "Crear reparación" : "Guardar cambios")</button>
     </div>
 </form>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
-FIN DESCOMENTA *@

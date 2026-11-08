@@ -8,7 +8,7 @@
         <h1 class="h2 mb-1">Reparaciones</h1>
         <p class="text-secondary mb-0">Intervenciones del taller sobre los vehículos de los clientes.</p>
     </div>
-    @* DESCOMENTA: <a class="btn btn-primary" asp-action="Create">Nueva reparación</a> *@
+    <a class="btn btn-primary" asp-action="Create">Nueva reparación</a>
 </div>
 
 @if (!Model.Any())
@@ -46,8 +46,8 @@ else
                         <td class="text-end text-nowrap">
                             <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@item.Id"
                                aria-label="Ver reparación @item.Id">Ver</a>
-                            @* DESCOMENTA: <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.Id" aria-label="Editar reparación @item.Id">Editar</a> *@
-                            @* DESCOMENTA: <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@item.Id" aria-label="Eliminar reparación @item.Id">Eliminar</a> *@
+                             <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.Id" aria-label="Editar reparación @item.Id">Editar</a> 
+                             <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@item.Id" aria-label="Eliminar reparación @item.Id">Eliminar</a> 
                         </td>
                     </tr>
                 }
