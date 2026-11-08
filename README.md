@@ -1,189 +1,185 @@
-# G3 · ASP.NET Core: Gestión de talleres mecánicos administración de clientes, vehículos, reparaciones, mecánicos y órdenes de trabajo.
+# G3 ASP.NET Core · Gestión de taller mecánico
 
-Repositorio del **Grupo 3** del curso de .NET: aplicación web con **C#, ASP.NET Core MVC, Razor y Entity Framework Core**, desarrollada en equipo con Git y GitHub.
+[![CI](https://github.com/certidevs/g3_aspnet/actions/workflows/build-and-test.yml/badge.svg?branch=main)](https://github.com/certidevs/g3_aspnet/actions/workflows/build-and-test.yml)
+[![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-10.0-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/apps/aspnet)
+[![Entity Framework Core](https://img.shields.io/badge/Entity%20Framework%20Core-10.0.11-512BD4?logo=dotnet&logoColor=white)](G3AspNet.csproj)
+[![SQLite](https://img.shields.io/badge/Database-SQLite-003B57?logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![Tests](https://img.shields.io/badge/Tests-xUnit-5C2D91)](tests/G3AspNet.Tests/G3AspNet.Tests.csproj)
 
-## Qué incluye el esqueleto
+Aplicación web ASP.NET Core MVC para gestionar usuarios, vehículos, reparaciones y recambios de un taller. Proyecto académico del Grupo 3, construido con Razor, Entity Framework Core, SQLite y ASP.NET Core Identity.
 
-Punto de partida común de todos los grupos: **solo la entidad `ApplicationUser` (usuario)** y la infraestructura para que todo arranque a la primera. Las entidades del dominio, sus relaciones, servicios, controladores y vistas las construye el equipo.
+> **Estado del proyecto:** aplicación en desarrollo. Al iniciar, se elimina y recrea la base de datos; con la siembra activada (valor predeterminado) también se cargan datos de demostración. No debe desplegarse con datos que se necesite conservar.
 
-| Área | Contenido |
-| --- | --- |
-| Usuarios | `ApplicationUser` (ASP.NET Core Identity) con nombre visible, avatar, fecha de alta y estado activo; roles `Admin`, `User`, `Customer` y `Mechanic`. |
-| Cuenta | Registro, login por usuario o email, logout y página de acceso denegado. |
-| Perfil | Consulta y edición del perfil, avatar y cambio de contraseña. |
-| Administración | Panel `/Users` (solo `Admin`): alta, edición, activación y borrado de usuarios. |
-| Datos | Entity Framework Core + SQLite (`App_Data/g3.db`), base recreada y datos demo al arrancar. |
-| Imágenes | `ImageStorage` para guardar imágenes subidas; hoy solo avatares (añadid vuestras carpetas en `ImageFolder`). |
-| Interfaz | Razor + Bootstrap 5 en local, con tema claro/oscuro. |
-| Calidad y despliegue | Proyecto de tests xUnit, GitHub Actions (compilar y testear) y `Dockerfile`. |
+## Contenido
+
+- [Características](#características)
+- [Tecnologías y arquitectura](#tecnologías-y-arquitectura)
+- [Estructura](#estructura)
+- [Requisitos](#requisitos)
+- [Instalación y ejecución](#instalación-y-ejecución)
+- [Configuración](#configuración)
+- [Datos de demostración](#datos-de-demostración)
+- [Pruebas](#pruebas)
+- [CI y contenedor](#ci-y-contenedor)
+- [Contributors](#contributors)
+- [Limitaciones conocidas](#limitaciones-conocidas)
+
+## Características
+
+- **Cuentas y perfiles:** registro (solo rol `User`), inicio y cierre de sesión con Identity; edición del perfil, cambio de contraseña y avatar. Los roles del taller se asignan desde administración o los datos demo.
+- **Administración de usuarios:** búsqueda, creación, edición, activación y eliminación de cuentas desde el área administrativa.
+- **Vehículos:** ficha con matrícula, VIN, marca, modelo, año, combustible, kilometraje y propietario. Los clientes solo consultan sus propios vehículos; el personal del taller puede gestionarlos.
+- **Reparaciones:** asociación de vehículo y mecánico, tipo y estado de reparación, fechas, kilometraje, horas y tarifa de mano de obra; el total suma mano de obra y piezas.
+- **Recambios:** catálogo con referencia, precio y niveles de stock.
+- **Piezas por reparación:** registro de cantidad y precio unitario histórico; añadir piezas descuenta stock y eliminarlas o borrar la reparación lo repone.
+- **Interfaz:** vistas Razor, Bootstrap y recursos locales de Font Awesome.
+
+Los controladores aplican distintas restricciones de acceso según el módulo. La aplicación protege globalmente las peticiones POST con antifalsificación.
+
+## Tecnologías y arquitectura
+
+- **.NET 10 / C#** con ASP.NET Core MVC y Razor.
+- **ASP.NET Core Identity** para cuentas, contraseñas, roles y cookies.
+- **Entity Framework Core 10** con proveedor **SQLite**.
+- **Bootstrap**, JavaScript y CSS para la interfaz; Font Awesome se sirve desde `wwwroot`.
+- **xUnit** para pruebas automatizadas.
+- **Docker** y **GitHub Actions** para empaquetado y CI.
+
+La aplicación registra controladores MVC, autenticación/autorización y servicios. Los controladores usan `ApplicationDbContext` para el dominio y `UserService` para operaciones reutilizables de cuentas; las vistas Razor presentan los modelos y view models. `DbInitializer` crea el esquema y los datos de ejemplo al arrancar.
+
+```mermaid
+flowchart LR
+    Browser[ navegador ] --> MVC[ASP.NET Core MVC]
+    MVC --> Controllers[Controladores]
+    Controllers --> Views[Vistas Razor]
+    Controllers --> UserService[UserService]
+    UserService --> Identity[ASP.NET Core Identity]
+    Controllers --> Context[ApplicationDbContext]
+    Context --> Identity
+    Context --> Domain[Vehículos · Reparaciones · Recambios]
+    Context --> SQLite[(SQLite)]
+    MVC --> Static[CSS · JavaScript · imágenes]
+```
+
+### Modelo de dominio
+
+- `ApplicationUser` puede tener vehículos como cliente y reparaciones asignadas como mecánico.
+- `Vehicle` conserva su historial de `Repair`.
+- `RepairPart` enlaza `Repair` y `SparePart`, y guarda cantidad y precio unitario.
+- Las relaciones de historial usan borrado restringido; las líneas `RepairPart` se eliminan junto con su reparación.
+
+## Estructura
+
+```text
+Controllers/              Acciones MVC para cuentas, usuarios y dominio
+Data/                     ApplicationDbContext y DbInitializer
+Models/                    Identity y entidades de taller
+Services/                  UserService y almacenamiento de avatares
+Utilities/                 Extensiones para claims del usuario
+ViewModels/                Modelos específicos de formularios y páginas
+Views/                     Plantillas Razor agrupadas por controlador
+wwwroot/                   CSS, JavaScript, imágenes y librerías locales
+tests/G3AspNet.Tests/      Proyecto de pruebas xUnit
+docs/                      Guías de IDE y dependencias
+.github/workflows/         Flujo de CI de GitHub Actions
+Dockerfile                 Imagen multi-stage para contenedor
+```
 
 ## Requisitos
 
-- SDK de .NET 10. `global.json` acepta cualquier SDK de la versión 10.0.
-- Visual Studio Code y C# Dev Kit. Es el IDE estándar del curso en Windows, macOS y
-  Linux.
-- Git. Docker es opcional y solo se usa al explicar despliegue.
+- SDK de **.NET 10**. `global.json` fija `10.0.100` y permite versiones posteriores de la misma línea mediante `rollForward: latestFeature`.
+- Git para clonar el repositorio.
+- Visual Studio Code y C# Dev Kit, opcionales para desarrollar con el entorno recomendado: [instalación en Windows, macOS y Linux](docs/IDE-SETUP.md).
+- Docker, opcional, para ejecutar la imagen.
 
-No instales ASP.NET, C#, SQLite ni Entity Framework por separado: los aporta el SDK o
-se restauran como dependencias del proyecto.
+## Instalación y ejecución
 
-## Instalación inicial
-
-Instala .NET 10 SDK, Visual Studio Code y C# Dev Kit una sola vez en el ordenador.
-
-### Windows (PowerShell)
-
-```powershell
-winget install --id Microsoft.DotNet.SDK.10 --exact
-winget install --id Microsoft.VisualStudioCode --exact
-winget install --id Git.Git --exact
-```
-
-Cierra y abre una terminal nueva; después instala la extensión:
-
-```powershell
-code --install-extension ms-dotnettools.csdevkit
-```
-
-### macOS (Terminal, con Homebrew)
-
-```bash
-brew install dotnet
-brew install --cask visual-studio-code
-brew install git
-code --install-extension ms-dotnettools.csdevkit
-```
-
-Si no utilizas Homebrew, instala el SDK de .NET 10 con el instalador oficial de
-[macOS](https://dotnet.microsoft.com/download/dotnet/10.0) y añade C# Dev Kit desde
-el panel Extensions de VS Code.
-
-### Ubuntu 26.04 (Terminal)
-
-```bash
-sudo apt-get update
-sudo apt-get install -y dotnet-sdk-10.0 git
-sudo snap install code --classic
-code --install-extension ms-dotnettools.csdevkit
-```
-
-Para otra distribución Linux, sigue el instalador oficial de
-[.NET para Linux](https://learn.microsoft.com/dotnet/core/install/linux) y, una vez
-instalado VS Code, ejecuta el último comando.
-
-Comprueba la instalación desde esta carpeta:
-
-```bash
-dotnet --version
-```
-
-Debe mostrar una versión que empiece por `10.0`.
-Si el comando `code` no se reconoce, abre VS Code e instala C# Dev Kit desde
-**Extensions**.
-
-## Primer arranque
-
-Clona el repositorio y abre **su carpeta** (no una carpeta superior) en VS Code. C# Dev Kit carga automáticamente `G3AspNet.sln`.
+Desde una terminal:
 
 ```bash
 git clone https://github.com/certidevs/g3_aspnet.git
 cd g3_aspnet
-code .
+dotnet --version
 dotnet restore G3AspNet.sln
-dotnet tool restore
 dotnet run --project G3AspNet.csproj --launch-profile http
 ```
 
-Abre `http://localhost:5107`. El primer arranque crea `App_Data/g3.db`, crea las tablas y añade los usuarios demo:
+Abre <http://localhost:5107>. El perfil `http` establece el entorno `Development`; también existe un perfil `https` en `Properties/launchSettings.json`.
 
-| Usuario | Contraseña | Rol |
-| --- | --- | --- |
-| `admin` | `Admin123!` | Admin |
-| `user` | `User123!` | User |
-| `customer`, `customer2`, `customer3` | `Customer123!` | Customer (dueños de los vehículos) |
-| `mechanic`, `mechanic2`, `mechanic3` | `Mechanic123!` | Mechanic (asignados a las reparaciones) |
-
-También carga vehículos, recambios, reparaciones y piezas usadas (con todos los estados y tipos de reparación) para poder probar todas las pantallas.
-
-## Trabajo en equipo en GitHub
-
-Todo el grupo tiene permiso de escritura en este repositorio y **se trabaja directamente en `main`**. Para no pisaros el trabajo:
-
-1. **Antes de empezar a trabajar y antes de cada `git push`, haced `git pull`.** Siempre.
-2. **Commits pequeños y con mensaje claro**, un commit por cambio (`feat: ...`, `fix: ...`, `docs: ...`), y subidlos pronto con `git push`.
-3. **No toquéis la entidad, el controlador ni las vistas de otra persona sin avisarle** (mirad la tabla de abajo).
-4. **No hagáis `git push --force`.**
-5. Si al hacer `git pull` hay un conflicto, no lo resolváis a ciegas: avisad al equipo y resolvedlo juntos en VS Code.
-6. Quien ya sepa usar ramas y Pull Requests puede usarlas, pero no es obligatorio.
-7. Repartid el trabajo con **Issues** (una persona por issue) y, si queréis, un tablero de **Projects**.
-
-### Entidades y quién las hace
-
-Cada entidad tiene su carpeta de vistas, su controlador y su issue. Hoy todas las pantallas tienen **listado (`Index`) y detalle (`Details`)**; lo que falta (`Create`, `Edit`, `Save`, `Delete` y el formulario `Form`) es el trabajo de cada responsable y está marcado con `TODO (issue #N)` en el controlador y en la vista.
-
-| Entidad | Controlador | Vistas |
-| --- | --- | --- |
-| `Vehicle`: vehículo de un cliente. [#4](https://github.com/certidevs/g3_aspnet/issues/4), Rafa-Gamero | `VehicleController`. [#13](https://github.com/certidevs/g3_aspnet/issues/13), rubogar | `Views/Vehicle/`. [#14](https://github.com/certidevs/g3_aspnet/issues/14), rubogar |
-| `Repair`: reparación de un vehículo con su mecánico. [#5](https://github.com/certidevs/g3_aspnet/issues/5), irilopa | `RepairController`. [#15](https://github.com/certidevs/g3_aspnet/issues/15), irilopa | `Views/Repair/`. [#16](https://github.com/certidevs/g3_aspnet/issues/16), Rafa-Gamero |
-| `RepairPart`: pieza usada en una reparación (tabla intermedia entre `Repair` y `SparePart`). [#7](https://github.com/certidevs/g3_aspnet/issues/7), irilopa | `RepairPartsController`. [#17](https://github.com/certidevs/g3_aspnet/issues/17), irilopa | `Views/RepairParts/`. [#18](https://github.com/certidevs/g3_aspnet/issues/18), Rafa-Gamero |
-| `SparePart`: recambio del almacén. [#6](https://github.com/certidevs/g3_aspnet/issues/6), ricardohsm1996 | `SparePartsController`. [#19](https://github.com/certidevs/g3_aspnet/issues/19), ricardohsm1996 | `Views/SpareParts/`. [#20](https://github.com/certidevs/g3_aspnet/issues/20), ricardohsm1996 |
-
-Las pantallas están en el menú **Taller** de la barra superior.
-
-**Ejemplo completo para copiar: `SparePart`** (`SparePartsController` y `Views/SpareParts/`, con `Create`, `Edit`, `Save`, `Delete` y `Form` funcionando). En el resto el código de crear, editar y borrar ya está escrito pero **comentado**: buscad el marcador `DESCOMENTA` en controladores y vistas, quitad el comentario y ajustadlo a vuestra entidad (en `Repair` y `RepairParts` las acciones del controlador ya están vivas y solo falta descomentar los formularios de `Create`, `Edit` y `Delete`).
-
-Relaciones y borrado (configuradas en `Data/ApplicationDbContext.cs`):
-
-- Un cliente (`ApplicationUser`) tiene varios `Vehicle`; un vehículo tiene varias `Repair`; un mecánico (`ApplicationUser`) tiene varias `Repair` asignadas.
-- Una `Repair` tiene varias líneas `RepairPart`, y cada línea apunta a un `SparePart` con su cantidad y su precio unitario en ese momento.
-- Al borrar, todo es `Restrict` (la base de datos lo impide si hay datos relacionados, así que el controlador debe comprobarlo y avisar) salvo `RepairPart` -> `Repair`, que es `Cascade`: al borrar una reparación se borran sus líneas de piezas.
-
-### Base de datos en desarrollo
-
-Este proyecto **no usa migraciones**. Al arrancar, la aplicación borra `App_Data/g3.db`, la vuelve a crear a partir de las entidades y carga los datos demo de `Data/DbInitializer.cs` (es el equivalente a `create-drop` con H2 en Spring Boot). Por eso:
-
-- Si cambias una entidad o una relación, **solo tienes que volver a ejecutar la aplicación**.
-- Si haces `git pull` con cambios de otras personas, **solo tienes que volver a ejecutarla**.
-- No hay que ejecutar `dotnet ef` ni borrar la base a mano.
-- Los datos que crees a mano al probar se pierden al reiniciar. Lo que deba existir siempre se añade a `DbInitializer`.
-
-## Comandos de trabajo diario
-
-Todos se ejecutan desde la raíz de este repositorio.
+Para compilar y ejecutar las pruebas:
 
 ```bash
-# Restaurar dependencias NuGet y herramientas locales tras clonar o actualizar
-dotnet restore G3AspNet.sln
-dotnet tool restore
-
-# Ejecutar la aplicación
-dotnet run --project G3AspNet.csproj --launch-profile http
-
-# Ejecutar con recarga al guardar archivos
-dotnet watch --project G3AspNet.csproj run --launch-profile http
-
-# Compilar y ejecutar los tests
 dotnet build G3AspNet.sln
 dotnet test G3AspNet.sln
 ```
 
-### Entity Framework y SQLite
+## Configuración
 
-La base de datos se recrea al arrancar (ver *Base de datos en desarrollo*): no hay migraciones que crear ni aplicar.
+Los valores predeterminados están en `appsettings.json`. ASP.NET Core permite sustituirlos mediante variables de entorno usando `__` como separador jerárquico.
 
-### CI y Docker
+| Clave | Valor predeterminado | Uso |
+|---|---|---|
+| `ConnectionStrings:DefaultConnection` | `Data Source=App_Data/g3.db` | Archivo SQLite relativo a la raíz del proyecto. |
+| `SeedData:Enabled` | `true` | Carga roles, usuarios y datos de ejemplo después de crear el esquema. |
+| `FileUploads:Images:MaxFileSizeBytes` | `5242880` | Tamaño máximo de imagen: 5 MiB. |
+| `FileUploads:Images:AllowedExtensions` | `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp` | Extensiones aceptadas para avatares; también se comprueba la firma del archivo. |
 
-[GitHub Actions](.github/workflows/build-and-test.yml) ejecuta restauración, compilación Release y tests en cada `push` a `main` (y en las Pull Requests, si alguien las usa). Si el *check* sale en rojo tras vuestro `push`, corregidlo pronto.
+Por ejemplo, `SeedData__Enabled=false` evita crear los datos demo, pero **no** evita que se elimine y recree la base de datos.
 
-Docker es opcional:
+## Datos de demostración
+
+Con `SeedData:Enabled` activado, el arranque crea cuentas de prueba. Sus contraseñas locales se definen en `Data/DbInitializer.cs`; no se reproducen aquí ni deben usarse en un entorno accesible públicamente.
+
+| Usuario(s) | Rol |
+|---|---|
+| `admin` | Admin |
+| `user` | User |
+| `customer`, `customer2`, `customer3` | Customer |
+| `mechanic`, `mechanic2`, `mechanic3` | Mechanic |
+
+También se insertan vehículos, recambios, reparaciones y piezas para probar las relaciones y el inventario. No uses estas cuentas en un entorno accesible públicamente.
+
+## Pruebas
+
+El proyecto `tests/G3AspNet.Tests` usa xUnit. Ejecuta toda la solución con `dotnet test G3AspNet.sln`; para más información sobre una prueba concreta, consulta los archivos `*Tests.cs` del proyecto.
+
+## CI y contenedor
+
+El workflow [Build and test .NET](.github/workflows/build-and-test.yml) se ejecuta en `push` a `main`, pull requests hacia `main` y ejecución manual. Restaura, compila en Release y ejecuta las pruebas.
+
+La imagen Docker es opcional:
 
 ```bash
-docker build -t g3_aspnet:local .
-docker run --rm -p 10000:10000 g3_aspnet:local
+docker build -t g3-aspnet .
+docker run --rm -p 10000:10000 g3-aspnet
 ```
 
-El contenedor queda disponible en `http://localhost:10000`.
+La aplicación escucha en el puerto indicado por `PORT` o, si no está definido, en `10000`. El contenedor no configura persistencia para SQLite y el inicializador vuelve a borrar la base de datos en cada inicio. No hay un procedimiento de despliegue de producción documentado.
 
-## IDEs
+## Contributors
 
-En VS Code, selecciona el perfil `http` y pulsa F5 para depurar. Las tareas `G3: compilar` y `G3: ejecutar tests` están disponibles en **Terminal → Run Task**. En Windows, Visual Studio 2026 también abre `G3AspNet.sln`; consulta [la guía de IDEs](docs/IDE-SETUP.md).
+Roles inferidos únicamente de los cambios visibles en el historial; **no representan cargos oficiales**. Los recuentos corresponden a `git shortlog main` al 8 de noviembre de 2026: se agrupan aliases con evidencia de perfil/email, incluyen commits de merge y excluyen la cuenta automatizada de Copilot.
+
+| Colaborador | Rol técnico inferido | Contribuciones principales | Commits |
+|---|---|---|---:|
+| [Iván López · `irilopa`](https://github.com/irilopa) | Full-stack, énfasis en dominio y backend · **Confianza alta** | Modelos y gestión MVC de reparaciones y piezas; relaciones y stock. | 22 |
+| [Rafa-Gamero](https://github.com/Rafa-Gamero) | Full-stack, vehículos y vistas · **Confianza alta** | Entidad y reglas de vehículos, roles/datos iniciales y vistas de reparación. | 15 |
+| [ricardohsm1996](https://github.com/ricardohsm1996) | Backend, catálogo y persistencia · **Confianza alta** | Entidad y controlador de recambios, contexto y configuración de datos. | 12 |
+| [rubogar](https://github.com/rubogar) | Interfaz/UI con contribuciones MVC · **Confianza alta** | Estilos y elementos visuales de acceso; controlador y vista de vehículos. | 9 |
+| [Alan Sastre · `alansastre`](https://github.com/alansastre) | Base del proyecto y configuración backend · **Confianza media** | Esqueleto inicial, estrategia de inicialización de base de datos y estructura MVC. | 4 |
+| [M. del Olmo](https://github.com/mariadelolmo-cdevs) | Rol no determinado; aportes puntuales a EF Core · **Confianza baja** | Correcciones de persistencia y modelos en cambios de Entity Framework Core. | 2 |
+
+- **Iván López:** desarrolló modelos, relaciones y flujos MVC de reparaciones y piezas, incluidos el descuento y la reposición de stock. Evidencias: `Models/Repair.cs`, `Models/RepairPart.cs`, `Controllers/RepairController.cs`, `Controllers/RepairPartsController.cs` y vistas de ambos módulos; también integró recursos visuales y documentación.
+- **Rafa-Gamero:** trabajó en la entidad y relaciones de vehículos, datos de ejemplo y vistas de reparación. Evidencias: `Models/Vehicle.cs`, `Data/DbInitializer.cs`, `Data/ApplicationDbContext.cs` y PRs #8, #9, #21 y #27.
+- **ricardohsm1996:** implementó el modelo/controlador de recambios y cambios asociados al contexto de datos. Evidencias: `Models/SparePart.cs`, `Controllers/SparePartsController.cs`, `Data/ApplicationDbContext.cs` y PR #22.
+- **rubogar:** concentró trabajo en interfaz y estilos, con contribuciones al módulo de vehículos. Evidencias: `wwwroot/css/site.css`, `Views/Shared/_Layout.cshtml`, vistas de cuenta y `Controllers/VehicleController.cs`.
+- **Alan Sastre:** contribuyó al esqueleto inicial y al arranque/configuración de datos y estructura MVC. Evidencias: commits iniciales del proyecto y cambios en `Data/DbInitializer.cs` y controladores/vistas.
+- **M. del Olmo:** realizó cambios puntuales en persistencia y modelos. La muestra es demasiado pequeña para asignar un rol técnico; los archivos incluyen `Data/ApplicationDbContext.cs`, modelos y migraciones del historial.
+
+## Limitaciones conocidas
+
+- La base de datos se destruye y se vuelve a crear **en cada arranque**, incluso si `SeedData:Enabled` está desactivado. El mecanismo actual es `EnsureDeleted`/`EnsureCreated`, no migraciones.
+- `docs/DEPENDENCIAS.md` conserva instrucciones históricas para crear migraciones; no corresponden al mecanismo actual y deben armonizarse.
+- No se ha configurado una licencia en los metadatos del repositorio; no se declara una licencia aquí.
+- No se detectaron integraciones de API externas en la aplicación.
+- Referencias: [repositorio en GitHub](https://github.com/certidevs/g3_aspnet), [guía de IDE](docs/IDE-SETUP.md) y [registro de dependencias](docs/DEPENDENCIAS.md).
