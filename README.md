@@ -158,16 +158,16 @@ La aplicación escucha en el puerto indicado por `PORT` o, si no está definido,
 
 ## Contributors
 
-Roles inferidos únicamente de los cambios visibles en el historial; **no representan cargos oficiales**. Los recuentos corresponden a `git shortlog main` al 8 de noviembre de 2026: se agrupan aliases con evidencia de perfil/email, incluyen commits de merge y excluyen la cuenta automatizada de Copilot.
+Roles inferidos únicamente de los cambios visibles en el historial; **no representan cargos oficiales**. Los recuentos corresponden a `git shortlog main` al 8 de noviembre de 2026: se agrupan aliases con evidencia de perfil/email, incluyen commits de merge.
 
 | Colaborador | Rol técnico inferido | Contribuciones principales | Commits |
 |---|---|---|---:|
-| [Iván López · `irilopa`](https://github.com/irilopa) | Full-stack, énfasis en dominio y backend · **Confianza alta** | Modelos y gestión MVC de reparaciones y piezas; relaciones y stock. | 22 |
-| [Rafa-Gamero](https://github.com/Rafa-Gamero) | Full-stack, vehículos y vistas · **Confianza alta** | Entidad y reglas de vehículos, roles/datos iniciales y vistas de reparación. | 15 |
-| [ricardohsm1996](https://github.com/ricardohsm1996) | Backend, catálogo y persistencia · **Confianza alta** | Entidad y controlador de recambios, contexto y configuración de datos. | 12 |
-| [rubogar](https://github.com/rubogar) | Interfaz/UI con contribuciones MVC · **Confianza alta** | Estilos y elementos visuales de acceso; controlador y vista de vehículos. | 9 |
-| [Alan Sastre · `alansastre`](https://github.com/alansastre) | Base del proyecto y configuración backend · **Confianza media** | Esqueleto inicial, estrategia de inicialización de base de datos y estructura MVC. | 4 |
-| [M. del Olmo](https://github.com/mariadelolmo-cdevs) | Rol no determinado; aportes puntuales a EF Core · **Confianza baja** | Correcciones de persistencia y modelos en cambios de Entity Framework Core. | 2 |
+| [Iván López · `irilopa`](https://github.com/irilopa) | Full-stack, énfasis en dominio y backend  | Modelos y gestión MVC de reparaciones y piezas; relaciones y stock. | 22 |
+| [Rafa-Gamero](https://github.com/Rafa-Gamero) | Full-stack, vehículos y vistas | Entidad y reglas de vehículos, roles/datos iniciales y vistas de reparación. | 15 |
+| [ricardohsm1996](https://github.com/ricardohsm1996) | Backend, catálogo y persistencia | Entidad y controlador de recambios, contexto y configuración de datos. | 12 |
+| [rubogar](https://github.com/rubogar) | Interfaz/UI con contribuciones MVC | Estilos y elementos visuales de acceso; controlador y vista de vehículos. | 9 |
+| [Alan Sastre · `alansastre`](https://github.com/alansastre) | Base del proyecto y configuración backend  | Esqueleto inicial, estrategia de inicialización de base de datos y estructura MVC. | 4 |
+| [M. del Olmo](https://github.com/mariadelolmo-cdevs) | Rol no determinado; aportes puntuales a EF Core| Correcciones de persistencia y modelos en cambios de Entity Framework Core. | 2 |
 
 - **Iván López:** desarrolló modelos, relaciones y flujos MVC de reparaciones y piezas, incluidos el descuento y la reposición de stock. Evidencias: `Models/Repair.cs`, `Models/RepairPart.cs`, `Controllers/RepairController.cs`, `Controllers/RepairPartsController.cs` y vistas de ambos módulos; también integró recursos visuales y documentación.
 - **Rafa-Gamero:** trabajó en la entidad y relaciones de vehículos, datos de ejemplo y vistas de reparación. Evidencias: `Models/Vehicle.cs`, `Data/DbInitializer.cs`, `Data/ApplicationDbContext.cs` y PRs #8, #9, #21 y #27.
