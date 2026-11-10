@@ -1,7 +1,4 @@
-@model Repair
-@{
-    ViewData["Title"] = "Eliminar reparación";
-}
+﻿@model Repair
 
 <a class="btn btn-outline-secondary mb-3" asp-action="Details" asp-route-id="@Model.Id">Volver a la reparación</a>
 
@@ -22,4 +19,7 @@
             </div>
         </div>
     </div>
-</div>
+</div>@{
+    ViewData["Title"] = "Eliminar reparación";
+}
+

@@ -1,0 +1,25 @@
+﻿@model Vehicle
+@{
+    ViewData["Title"] = "Eliminar vehículo";
+}
+
+<a class="btn btn-outline-secondary mb-3" asp-action="Index">Volver al listado</a>
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card border-danger shadow-sm">
+            <div class="card-body p-4">
+                <h1 class="h3 text-danger">Eliminar vehículo #@Model.Id</h1>
+                <p>
+                    Vas a eliminar el vehículo
+                    <strong>@Model.LicensePlate - @Model.Brand @Model.Model</strong>.
+                    Esta acción no se puede deshacer.
+                </p>
+                <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="d-flex gap-2">
+                    <button class="btn btn-danger" type="submit">Eliminar definitivamente</button>
+                    <a class="btn btn-outline-secondary" asp-action="Details" asp-route-id="@Model.Id">Cancelar</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
