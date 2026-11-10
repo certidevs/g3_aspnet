@@ -6,6 +6,14 @@ Registro de las dependencias del proyecto, su versión, su propósito y su estad
 **Runtime:** .NET 10.0 (`net10.0`)
 **SDK:** 10.0.100 (`global.json`, `rollForward: latestFeature`, sin preliminares)
 
+## Esquema de base de datos
+
+Este proyecto **no utiliza migraciones de EF Core**. Al iniciar la aplicación, `DbInitializer`
+elimina la base de datos y la vuelve a crear desde las entidades (`EnsureDeleted` y
+`EnsureCreated`); por tanto, los datos existentes se pierden en cada arranque. Los cambios de
+esquema se realizan en las entidades y en la configuración de `ApplicationDbContext`, no mediante
+`dotnet ef migrations add` ni `dotnet ef database update`.
+
 ---
 
 ## 1. Dependencias de la aplicación (`G3AspNet.csproj`)
@@ -13,7 +21,7 @@ Registro de las dependencias del proyecto, su versión, su propósito y su estad
 | Paquete NuGet | Versión | Tipo | Propósito | Estado | Notas |
 |---|---|---|---|---|---|
 | `Microsoft.EntityFrameworkCore.Sqlite` | 10.0.11 | Runtime | ORM EF Core con base de datos SQLite | Activa | Debe coincidir con la versión de `Design` e `Identity.EntityFrameworkCore` |
-| `Microsoft.EntityFrameworkCore.Design` | 10.0.11 | Desarrollo | Herramientas de migraciones (`dotnet ef`) | Activa | `PrivateAssets=all`, no se distribuye |
+| `Microsoft.EntityFrameworkCore.Design` | 10.0.11 | Desarrollo | Herramientas de diseño de EF Core | Activa | `PrivateAssets=all`, no se distribuye. El proyecto no usa migraciones |
 | `Microsoft.AspNetCore.Identity.EntityFrameworkCore` | 10.0.11 | Runtime | Login, cookies, contraseñas y roles | Activa | Persistencia de Identity con EF Core |
 
 ## 2. Dependencias de pruebas (`tests/G3AspNet.Tests/G3AspNet.Tests.csproj`)
@@ -68,7 +76,7 @@ dotnet test
 - [ ] Mantener alineadas las versiones de `Microsoft.EntityFrameworkCore.*` y `Microsoft.AspNetCore.Identity.*` (misma versión mayor y menor).
 - [ ] Actualizar la versión en el `.csproj` correspondiente.
 - [ ] Ejecutar `dotnet build` y `dotnet test` sin errores.
-- [ ] Si cambia el esquema de EF Core, revisar migraciones (`dotnet ef migrations add ...`).
+- [ ] Si cambia el esquema, actualizar las entidades y `ApplicationDbContext`; no crear ni aplicar migraciones. Tener en cuenta que `DbInitializer` recrea la base de datos y borra sus datos en cada arranque.
 - [ ] Anotar el cambio en la sección 3 de este documento.
 
 ### Frecuencia recomendada
