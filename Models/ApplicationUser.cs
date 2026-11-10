@@ -18,4 +18,10 @@ public sealed class ApplicationUser : IdentityUser
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     /// <summary>Permite desactivar una cuenta sin borrar la información futura que posea.</summary>
     public bool IsActive { get; set; } = true;
+
+    /// <summary>Vehículos de los que es propietaria la cuenta (rol Customer).</summary>
+    public ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
+
+    /// <summary>Reparaciones asignadas a la cuenta como mecánico (rol Mechanic).</summary>
+    public ICollection<Repair> AssignedRepairs { get; set; } = new List<Repair>();
 }

@@ -1,0 +1,63 @@
+@model IEnumerable<SparePart>
+@{
+    ViewData["Title"] = "Recambios";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h1 class="h2 mb-1">Recambios</h1>
+        <p class="text-secondary mb-0">Almacén de recambios del taller.</p>
+    </div>
+    <a class="btn btn-primary" asp-action="Create">Nuevo recambio</a>
+</div>
+
+@* TODO (issue #20): aviso visual de stock bajo (Stock <= MinStock) en la tabla. *@
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info" role="status">No hay recambios registrados.</div>
+}
+else
+{
+    <div class="table-responsive border rounded">
+        <table class="table table-hover align-middle mb-0">
+            <caption class="visually-hidden">Listado de recambios</caption>
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">Referencia</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Marca</th>
+                    <th scope="col">Precio unitario</th>
+                    <th scope="col">Stock</th>
+                    <th scope="col">Stock mínimo</th>
+                    <th scope="col" class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Reference</td>
+                        <td class="fw-semibold">@item.Name</td>
+                        <td>@item.Brand</td>
+                        <td>@item.UnitPrice.ToString("N2")&nbsp;€</td>
+                        <td>@item.Stock</td>
+                        <td>@item.MinStock</td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@item.Id"
+                               aria-label="Ver recambio @item.Name">Ver</a>
+                            <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.Id"
+                               aria-label="Editar recambio @item.Name">Editar</a>
+                            @* Eliminar es un POST (cambia datos): por eso va en un formulario, con confirmación. *@
+                            <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline"
+                                  onsubmit="return confirm('¿Eliminar este recambio?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                        aria-label="Eliminar recambio @item.Name">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

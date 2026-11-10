@@ -35,50 +35,56 @@ public sealed class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(user => user.CreatedAt).IsRequired();
         });
 
+        // ---- Relaciones del dominio (regla: Cascade solo si el hijo no tiene sentido sin el padre) ----
+
         modelBuilder.Entity<Vehicle>(entity =>
         {
             // Matrícula única
             entity.HasIndex(v => v.LicensePlate)
                   .IsUnique();
 
-            // Relación N Vehicle -> 1 ApplicationUser (Owner)
+            // Vehicle -> Owner (ApplicationUser): Restrict, no se borra una cuenta que tiene vehículos.
             entity.HasOne(v => v.Owner)
-                  .WithMany()
+                  .WithMany(user => user.Vehicles)
                   .HasForeignKey(v => v.OwnerId)
                   .OnDelete(DeleteBehavior.Restrict);
-
-            // Relación 1 Vehicle -> N Repair
-            entity.HasMany(v => v.Repairs)
-                  .WithOne(r => r.Vehicle)
-                  .HasForeignKey(r => r.VehicleId)
-                  .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // Cada reparación pertenece a un vehículo (con su colección Repairs) y tiene un mecánico asignado.
         modelBuilder.Entity<Repair>(entity =>
         {
+            // Repair -> Vehicle: Restrict, las reparaciones son historial y no se pierden al borrar el vehículo.
             entity.HasOne(repair => repair.Vehicle)
                   .WithMany(v => v.Repairs)
                   .HasForeignKey(repair => repair.VehicleId)
-                  .OnDelete(DeleteBehavior.Cascade);
+                  .OnDelete(DeleteBehavior.Restrict);
 
+            // Repair -> Mechanic (ApplicationUser): Restrict, no se borra una cuenta con reparaciones asignadas.
             entity.HasOne(repair => repair.Mechanic)
-                  .WithMany()
+                  .WithMany(user => user.AssignedRepairs)
                   .HasForeignKey(repair => repair.MechanicId)
                   .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // Cada pieza usada pertenece a una reparación, que puede tener varias piezas.
-        modelBuilder.Entity<RepairPart>()
-            .HasOne(part => part.Repair)
-            .WithMany(repair => repair.RepairParts)
-            .HasForeignKey(part => part.RepairId);
+        // RepairPart es la tabla intermedia entre Repair y SparePart (N:M con datos propios:
+        // cantidad y precio unitario en el momento del uso).
+        modelBuilder.Entity<RepairPart>(entity =>
+        {
+            // RepairPart -> Repair: Cascade, una línea de pieza no tiene sentido sin su reparación.
+            entity.HasOne(part => part.Repair)
+                  .WithMany(repair => repair.RepairParts)
+                  .HasForeignKey(part => part.RepairId)
+                  .OnDelete(DeleteBehavior.Cascade);
 
-        // Un recambio puede utilizarse en varias líneas de reparación
-        modelBuilder.Entity<RepairPart>()
-            .HasOne(part => part.SparePart)
-            .WithMany(sparePart => sparePart.RepairParts)
-            .HasForeignKey(part => part.SparePartId)
-            .OnDelete(DeleteBehavior.Restrict);
+            // RepairPart -> SparePart: Restrict, un recambio ya usado en reparaciones es historial y no se borra.
+            entity.HasOne(part => part.SparePart)
+                  .WithMany(sparePart => sparePart.RepairParts)
+                  .HasForeignKey(part => part.SparePartId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // La referencia del fabricante identifica el recambio: no se repite.
+        modelBuilder.Entity<SparePart>()
+            .HasIndex(sparePart => sparePart.Reference)
+            .IsUnique();
     }
 }

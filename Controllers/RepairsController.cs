@@ -92,9 +92,9 @@ public class RepairsController : Controller
     {
         await PopulateDropdownsAsync();
 
-        return View(new Repair
+        return View("Form", new Repair
         {
-            CompletedAt = DateTime.UtcNow
+            CompletedAt = null
         });
     }
 
@@ -103,7 +103,6 @@ public class RepairsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Repair repair)
     {
-        // Ignoramos propiedades de navegación en la validación del modelo recibido por formulario.
         ModelState.Remove(nameof(Repair.Vehicle));
         ModelState.Remove(nameof(Repair.Mechanic));
 
@@ -120,7 +119,7 @@ public class RepairsController : Controller
         if (!ModelState.IsValid)
         {
             await PopulateDropdownsAsync(repair);
-            return View(repair);
+            return View("Form", repair);
         }
 
         context.Repairs.Add(repair);
@@ -145,7 +144,7 @@ public class RepairsController : Controller
         }
 
         await PopulateDropdownsAsync(repair);
-        return View(repair);
+        return View("Form", repair);
     }
 
     /// <summary>Actualiza los datos de una reparación existente.</summary>
@@ -174,7 +173,7 @@ public class RepairsController : Controller
         if (!ModelState.IsValid)
         {
             await PopulateDropdownsAsync(model);
-            return View(model);
+            return View("Form", model);
         }
 
         var repair = await context.Repairs.FindAsync(id);
@@ -234,12 +233,11 @@ public class RepairsController : Controller
             return NotFound();
         }
 
-        // Devolver al stock las unidades de cada pieza empleada antes de borrar la reparación.
         foreach (var part in repair.RepairParts)
         {
             if (part.SparePart != null)
             {
-                part.SparePart.Stock = (part.SparePart.Stock ?? 0) + part.Quantity;
+                part.SparePart.Stock += part.Quantity;
             }
         }
 
@@ -254,7 +252,6 @@ public class RepairsController : Controller
     [HttpPost]
     public async Task<IActionResult> AddPart(int id, int sparePartId, int quantity)
     {
-        // Cargamos la reparación con sus piezas actuales.
         var repair = await context.Repairs
             .Include(r => r.RepairParts)
             .FirstOrDefaultAsync(r => r.Id == id);
@@ -264,7 +261,6 @@ public class RepairsController : Controller
             return NotFound();
         }
 
-        // Buscamos el recambio que se quiere añadir para comprobar y actualizar su stock.
         var sparePart = await context.SpareParts.FindAsync(sparePartId);
         if (sparePart == null)
         {
@@ -273,14 +269,12 @@ public class RepairsController : Controller
 
         try
         {
-            // La entidad valida la cantidad y el stock, descuenta las unidades y crea el RepairPart.
             repair.AddPart(sparePart, quantity);
             await context.SaveChangesAsync();
             TempData["Message"] = "Pieza añadida correctamente.";
         }
         catch (Exception ex) when (ex is ArgumentOutOfRangeException or InvalidOperationException)
         {
-            // Si la cantidad no es válida o no hay stock suficiente, informamos del motivo en la vista.
             TempData["Error"] = ex.Message;
         }
 

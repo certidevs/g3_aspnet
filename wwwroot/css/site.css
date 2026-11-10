@@ -16,6 +16,12 @@
   font-size: .8rem;
   font-weight: 700;
 }
+/* Defino el estilo de los enlaces */
+a{
+    color:#a51c15;
+    
+}
+/* Defino el estilo de los botones */
 .btn {
   --bs-btn-padding-x: 1.5rem;
   --bs-btn-padding-y: 0.5rem;
@@ -85,7 +91,11 @@
   color: #ea271c;
   border-color: #ea271c;
 }
-
+.alert-info{
+    background-color: #ea261c;
+    border-color: #ffffff;
+    color: #ffffff;
+}
 .no-spinners::-webkit-outer-spin-button,
 .no-spinners::-webkit-inner-spin-button {
   -webkit-appearance: none;

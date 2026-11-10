@@ -20,10 +20,12 @@ public class Vehicle
     public string VIN { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "La marca es obligatoria.")]
+    [StringLength(50, ErrorMessage = "La marca no puede superar los 50 caracteres.")]
     [Display(Name = "Marca")]
     public string Brand { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "El modelo es obligatorio.")]
+    [StringLength(50, ErrorMessage = "El modelo no puede superar los 50 caracteres.")]
     [Display(Name = "Modelo")]
     public string Model { get; set; } = string.Empty;
 
@@ -45,5 +47,6 @@ public class Vehicle
     [ForeignKey(nameof(OwnerId))]
     public ApplicationUser Owner { get; set; } = null!;
 
+    // Historial de reparaciones del vehículo (colección inversa de Repair.Vehicle).
     public List<Repair> Repairs { get; set; } = new();
 }

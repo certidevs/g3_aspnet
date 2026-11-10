@@ -73,6 +73,9 @@ public class RepairPartsController : Controller
         return repairPart is null ? NotFound() : View(repairPart);
     }
 
+    // TODO (issue #18): Create y Edit usan hoy dos vistas casi iguales (Create.cshtml y Edit.cshtml).
+    // Mejora pendiente: unirlas en un único Views/RepairParts/Form.cshtml y devolver View("Form", ...).
+
     /// <summary>Muestra el formulario para añadir una pieza a una reparación.</summary>
     [HttpGet]
     public async Task<IActionResult> Create()
@@ -187,7 +190,7 @@ public class RepairPartsController : Controller
         var oldQuantity = repairPart.Quantity;
         var newQuantity = model.Quantity;
         var sameSparePart = oldSparePart.Id == newSparePart.Id;
-        var availableStock = newSparePart.Stock ?? 0;
+        var availableStock = newSparePart.Stock;
         var stockAfterRestoringOldPart = sameSparePart ? availableStock + oldQuantity : availableStock;
 
         if (stockAfterRestoringOldPart < newQuantity)
@@ -200,7 +203,7 @@ public class RepairPartsController : Controller
 
         if (!sameSparePart)
         {
-            oldSparePart.Stock = (oldSparePart.Stock ?? 0) + oldQuantity;
+            oldSparePart.Stock += oldQuantity;
         }
 
         newSparePart.Stock = stockAfterRestoringOldPart - newQuantity;
@@ -244,7 +247,7 @@ public class RepairPartsController : Controller
             return NotFound();
         }
 
-        repairPart.SparePart.Stock = (repairPart.SparePart.Stock ?? 0) + repairPart.Quantity;
+        repairPart.SparePart.Stock += repairPart.Quantity;
         context.RepairParts.Remove(repairPart);
         await context.SaveChangesAsync();
 

@@ -8,6 +8,9 @@
     var initial = string.IsNullOrWhiteSpace(currentName) ? "U" : currentName[..1].ToUpperInvariant();
     var activeController = ViewContext.RouteData.Values["controller"]?.ToString();
 
+    // El menú "Taller" agrupa las pantallas del dominio y se marca activo en cualquiera de ellas.
+    var tallerActivo = activeController is "Vehicle" or "Repair" or "Repairs" or "RepairParts" or "SpareParts";
+
     string NavClass(string controller) => string.Equals(activeController, controller, StringComparison.OrdinalIgnoreCase)
         ? "nav-link active"
         : "nav-link";
@@ -28,7 +31,7 @@
         })();
     </script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"/>
+    <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css"/>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
 </head>
 <body class="d-flex flex-column min-vh-100">
@@ -47,7 +50,15 @@
                 <div class="collapse navbar-collapse" id="mainNav">
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item"><a class='@NavClass("Home")' asp-controller="Home" asp-action="Index">Inicio</a></li>
-                        <li class="nav-item"><a class='@NavClass("Repair")' asp-controller="Repairs" asp-action="Index">Reparaciones</a></li>
+                        <li class="nav-item dropdown">
+                            <a class='@(tallerActivo ? "nav-link dropdown-toggle active" : "nav-link dropdown-toggle")' href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Taller</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-controller="Vehicle" asp-action="Index">Vehículos</a></li>
+                                <li><a class="dropdown-item" asp-controller="Repairs" asp-action="Index">Reparaciones</a></li>
+                                <li><a class="dropdown-item" asp-controller="RepairParts" asp-action="Index">Piezas usadas</a></li>
+                                <li><a class="dropdown-item" asp-controller="SpareParts" asp-action="Index">Recambios</a></li>
+                            </ul>
+                        </li>
                         @if (User.IsInRole(RoleNames.Admin))
                         {
                             <li class="nav-item"><a class='@NavClass("Users")' asp-controller="Users" asp-action="Index">Administración de usuarios</a></li>
