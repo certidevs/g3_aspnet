@@ -1,4 +1,4 @@
-@model IEnumerable<Vehicle>
+﻿@model IEnumerable<Vehicle>
 @{
     ViewData["Title"] = "Vehículos";
 }
@@ -44,8 +44,8 @@ else
                         <td class="text-end text-nowrap">
                             <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@item.Id"
                                aria-label="Ver vehículo @item.LicensePlate">Ver</a>
-                            @* DESCOMENTA: <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.Id" aria-label="Editar vehículo @item.LicensePlate">Editar</a> *@
-                            @* DESCOMENTA: <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('¿Eliminar este vehículo?');"><button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Eliminar vehículo @item.LicensePlate">Eliminar</button></form> *@
+                            <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.Id" aria-label="Editar vehículo @item.LicensePlate">Editar</a> 
+                            <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('¿Eliminar este vehículo?');"><button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Eliminar vehículo @item.LicensePlate">Eliminar</button></form> 
                         </td>
                     </tr>
                 }
