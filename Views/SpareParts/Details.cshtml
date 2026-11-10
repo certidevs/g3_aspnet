@@ -64,7 +64,7 @@ else
                 @foreach (var part in Model.RepairParts)
                 {
                     <tr>
-                        <td><a asp-controller="Repair" asp-action="Details" asp-route-id="@part.RepairId">#@part.RepairId</a></td>
+                        <td><a asp-controller="Repairs" asp-action="Details" asp-route-id="@part.RepairId">#@part.RepairId</a></td>
                         <td>@part.Repair.Vehicle.LicensePlate</td>
                         <td>@part.Quantity</td>
                         <td>@part.UnitPrice.ToString("N2")&nbsp;€</td>

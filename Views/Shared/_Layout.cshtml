@@ -9,7 +9,7 @@
     var activeController = ViewContext.RouteData.Values["controller"]?.ToString();
 
     // El menú "Taller" agrupa las pantallas del dominio y se marca activo en cualquiera de ellas.
-    var tallerActivo = activeController is "Vehicle" or "Repair" or "RepairParts" or "SpareParts";
+    var tallerActivo = activeController is "Vehicle" or "Repair" or "Repairs" or "RepairParts" or "SpareParts";
 
     string NavClass(string controller) => string.Equals(activeController, controller, StringComparison.OrdinalIgnoreCase)
         ? "nav-link active"
@@ -54,7 +54,7 @@
                             <a class='@(tallerActivo ? "nav-link dropdown-toggle active" : "nav-link dropdown-toggle")' href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Taller</a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" asp-controller="Vehicle" asp-action="Index">Vehículos</a></li>
-                                <li><a class="dropdown-item" asp-controller="Repair" asp-action="Index">Reparaciones</a></li>
+                                <li><a class="dropdown-item" asp-controller="Repairs" asp-action="Index">Reparaciones</a></li>
                                 <li><a class="dropdown-item" asp-controller="RepairParts" asp-action="Index">Piezas usadas</a></li>
                                 <li><a class="dropdown-item" asp-controller="SpareParts" asp-action="Index">Recambios</a></li>
                             </ul>
