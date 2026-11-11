@@ -1,69 +1,84 @@
 ﻿@model Vehicle
+@using G3AspNet.Models.Enum
 @{
-    // Un único formulario sirve para crear (Id == 0) y para editar (Id > 0).
-    ViewData["Title"] = Model.Id == 0 ? "Nuevo vehículo" : $"Editar vehículo {Model.LicensePlate}";
+    // Id == 0 significa "vehículo nuevo"; cualquier otro Id es una edición.
+    var isNew = Model.Id == 0;
+    ViewData["Title"] = isNew ? "Nuevo vehículo" : $"Editar vehículo {Model.LicensePlate}";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h2 mb-0">@ViewData["Title"]</h1>
-    <a class="btn btn-outline-secondary" asp-action="Index">Cancelar</a>
-</div>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <h1 class="h2 mb-4">@(isNew ? "Nuevo vehículo" : "Editar vehículo")</h1>
 
-<form asp-action="Save" method="post" class="card">
-    <input type="hidden" asp-for="Id" />
-    <div class="card-body p-4">
-        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-        <div class="row g-3">
-            <div class="col-md-4">
-                <label asp-for="LicensePlate" class="form-label">Matrícula</label>
-                <input asp-for="LicensePlate" class="form-control" maxlength="10" />
-                <span asp-validation-for="LicensePlate" class="text-danger"></span>
+        <form asp-action="Save" method="post">
+            @* Sin este campo oculto, al editar se enviaría Id = 0 y se crearía un vehículo duplicado. *@
+            <input type="hidden" asp-for="Id" />
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="card">
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label asp-for="LicensePlate" class="form-label"></label>
+                            <input asp-for="LicensePlate" class="form-control" autocomplete="off" />
+                            <span asp-validation-for="LicensePlate" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-8">
+                            <label asp-for="VIN" class="form-label"></label>
+                            <input asp-for="VIN" class="form-control" autocomplete="off" />
+                            <span asp-validation-for="VIN" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Brand" class="form-label"></label>
+                            <input asp-for="Brand" class="form-control" />
+                            <span asp-validation-for="Brand" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Model" class="form-label"></label>
+                            <input asp-for="Model" class="form-control" />
+                            <span asp-validation-for="Model" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="Year" class="form-label"></label>
+                            <input asp-for="Year" class="form-control" />
+                            <span asp-validation-for="Year" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="FuelType" class="form-label"></label>
+                            <select asp-for="FuelType" asp-items="Html.GetEnumSelectList<FuelType>()" class="form-select"></select>
+                            <span asp-validation-for="FuelType" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="Mileage" class="form-label"></label>
+                            <input asp-for="Mileage" class="form-control" />
+                            <span asp-validation-for="Mileage" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="OwnerId" class="form-label"></label>
+                            <select asp-for="OwnerId" asp-items="ViewBag.Owners" class="form-select">
+                                <option value="">-- Selecciona propietario --</option>
+                            </select>
+                            <span asp-validation-for="OwnerId" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">@(isNew ? "Crear vehículo" : "Guardar cambios")</button>
+                    <a class="btn btn-outline-secondary" asp-action="Index">Cancelar</a>
+                </div>
             </div>
-            <div class="col-md-8">
-                <label asp-for="VIN" class="form-label">VIN</label>
-                <input asp-for="VIN" class="form-control" maxlength="17" />
-                <span asp-validation-for="VIN" class="text-danger"></span>
-            </div>
-            <div class="col-md-6">
-                <label asp-for="Brand" class="form-label">Marca</label>
-                <input asp-for="Brand" class="form-control" maxlength="50" />
-                <span asp-validation-for="Brand" class="text-danger"></span>
-            </div>
-            <div class="col-md-6">
-                <label asp-for="Model" class="form-label">Modelo</label>
-                <input asp-for="Model" class="form-control" maxlength="50" />
-                <span asp-validation-for="Model" class="text-danger"></span>
-            </div>
-            <div class="col-md-4">
-                <label asp-for="Year" class="form-label">Año</label>
-                <input asp-for="Year" type="number" min="1950" max="2100" class="form-control" />
-                <span asp-validation-for="Year" class="text-danger"></span>
-            </div>
-            <div class="col-md-4">
-                <label asp-for="FuelType" class="form-label">Combustible</label>
-                <select asp-for="FuelType" asp-items="Html.GetEnumSelectList<G3AspNet.Models.Enum.FuelType>()" class="form-select"></select>
-                <span asp-validation-for="FuelType" class="text-danger"></span>
-            </div>
-            <div class="col-md-4">
-                <label asp-for="Mileage" class="form-label">Kilometraje</label>
-                <input asp-for="Mileage" type="number" min="0" max="2000000" class="form-control" />
-                <span asp-validation-for="Mileage" class="text-danger"></span>
-            </div>
-            <div class="col-12">
-                <label asp-for="OwnerId" class="form-label">Propietario</label>
-                <select asp-for="OwnerId" asp-items="ViewBag.Owners" class="form-select">
-                    <option value="">-- Seleccionar propietario --</option>
-                </select>
-                <span asp-validation-for="OwnerId" class="text-danger"></span>
-            </div>
-        </div>
+        </form>
     </div>
-    <div class="card-footer bg-transparent text-end">
-        <button class="btn btn-primary" type="submit">Guardar</button>
-    </div>
-</form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
-
