@@ -7,7 +7,7 @@
     <h1 class="h2 mb-0">Vehículo @Model.LicensePlate</h1>
     <div class="d-flex gap-2">
         <a class="btn btn-outline-secondary" asp-action="Edit" asp-route-id="@Model.Id">Editar</a> 
-        <form asp-action="Delete" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('¿Eliminar este vehículo?');"><button type="submit" class="btn btn-outline-danger">Eliminar</button></form> 
+        <a class="btn btn-outline-danger" asp-action="ConfirmDelete" asp-route-id="@Model.Id">Eliminar</a>
     </div>
 </div>
 

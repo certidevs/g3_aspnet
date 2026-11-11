@@ -201,4 +201,17 @@ public class VehicleController : Controller
         TempData["Message"] = "Vehículo eliminado correctamente.";
         return RedirectToAction(nameof(Index));
     }
+    /// <summary>Muestra la página de confirmación antes de eliminar un vehículo.</summary>
+    [HttpGet]
+    [Authorize(Roles = StaffRoles)]
+    public async Task<IActionResult> ConfirmDelete(int id)
+    {
+        var vehicle = await context.Vehicles.FindAsync(id);
+        if (vehicle == null)
+        {
+            return NotFound();
+        }
+
+        return View("Delete", vehicle);
+    }
 }

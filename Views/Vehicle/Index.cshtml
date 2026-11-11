@@ -42,10 +42,12 @@ else
                         <td>@item.Mileage.ToString("N0") km</td>
                         <td>@(item.Owner.DisplayName ?? item.Owner.UserName)</td>
                         <td class="text-end text-nowrap">
-                            <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@item.Id"
-                               aria-label="Ver vehículo @item.LicensePlate">Ver</a>
-                            <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.Id" aria-label="Editar vehículo @item.LicensePlate">Editar</a> 
-                            <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('¿Eliminar este vehículo?');"><button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Eliminar vehículo @item.LicensePlate">Eliminar</button></form> 
+                            <div class="btn-group" role="group" aria-label="Acciones">
+                                <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@item.Id"
+                                   aria-label="Ver vehículo @item.LicensePlate">Ver</a>
+                                  <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.Id" aria-label="Editar vehículo @item.LicensePlate">Editar</a> 
+                                 <a class="btn btn-sm btn-outline-danger" asp-action="ConfirmDelete" asp-route-id="@item.Id"   aria-label="Eliminar vehículo @item.LicensePlate">Eliminar</a>
+                            </div>
                         </td>
                     </tr>
                 }
