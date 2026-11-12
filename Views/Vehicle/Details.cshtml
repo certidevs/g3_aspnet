@@ -5,10 +5,7 @@
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <h1 class="h2 mb-0">Vehículo @Model.LicensePlate</h1>
-    <div class="d-flex gap-2">
-        <a class="btn btn-outline-secondary" asp-action="Edit" asp-route-id="@Model.Id">Editar</a> 
-        <a class="btn btn-outline-danger" asp-action="ConfirmDelete" asp-route-id="@Model.Id">Eliminar</a>
-    </div>
+        <a class="btn btn-outline-secondary" asp-action="Index">Volver</a>
 </div>
 
 <div class="card mb-4">
@@ -36,8 +33,10 @@
             <dd class="col-sm-9">@(Model.Owner.DisplayName ?? Model.Owner.UserName)</dd>
         </dl>
     </div>
-    <div class="card-footer bg-transparent">
-        <a class="btn btn-outline-secondary" asp-action="Index">Volver a vehículos</a>
+    <div class="card-footer d-flex gap-2">
+        <a class="btn btn-secondary" asp-action="Edit" asp-route-id="@Model.Id">Editar</a>
+        <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.Id">Eliminar</a>
+
     </div>
 </div>
 
