@@ -1,4 +1,4 @@
-@model IEnumerable<RepairPart>
+﻿@model IEnumerable<RepairPart>
 @{
     ViewData["Title"] = "Piezas usadas";
 }
@@ -36,7 +36,7 @@ else
                     <td>@item.SparePart.Name</td>
                     <td>@item.Quantity</td>
                     <td>@item.UnitPrice.ToString("C")</td>
-                    <td class="text-end text-nowrap">
+                    <td class="btn-group">
                         <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@item.Id">Ver</a>
                         <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.Id">Editar</a>
                         <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@item.Id">Eliminar</a>

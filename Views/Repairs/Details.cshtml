@@ -1,4 +1,4 @@
-@model Repair
+﻿@model Repair
 @{
     ViewData["Title"] = $"Reparación #{Model.Id}";
     var laborCost = Model.LaborHours * Model.HourlyRate;
@@ -6,10 +6,8 @@
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <h1 class="h2 mb-0">Reparación #@Model.Id</h1>
-    <div class="d-flex gap-2">
-         <a class="btn btn-outline-secondary" asp-action="Edit" asp-route-id="@Model.Id">Editar</a> 
-         <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.Id">Eliminar</a> 
-    </div>
+     <a class="btn btn-outline-secondary" asp-action="Index">Volver</a>
+
 </div>
 
 <div class="card mb-4">
@@ -48,11 +46,14 @@
             <dt class="col-sm-3">Coste total</dt>
             <dd class="col-sm-9 fw-semibold">@Model.TotalCost.ToString("N2")&nbsp;€</dd>
         </dl>
-    </div>
-    <div class="card-footer bg-transparent">
-        <a class="btn btn-outline-secondary" asp-action="Index">Volver a reparaciones</a>
-    </div>
-</div>
+
+        <div class="card-footer d-flex gap-2">
+            <div class="btn-group">
+                <a class="btn btn-outline-secondary" asp-action="Edit" asp-route-id="@Model.Id">Editar</a> 
+                <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.Id">Eliminar</a> 
+             </div>
+        </div>
+
 
 <h2 class="h4 mb-3">Piezas usadas</h2>
 

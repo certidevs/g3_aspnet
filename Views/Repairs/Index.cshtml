@@ -1,4 +1,4 @@
-@model IEnumerable<Repair>
+﻿@model IEnumerable<Repair>
 @{
     ViewData["Title"] = "Reparaciones";
 }
@@ -43,7 +43,7 @@ else
                         <td>@Html.DisplayFor(modelItem => item.RepairType)</td>
                         <td><span class="badge text-bg-secondary">@Html.DisplayFor(modelItem => item.Status)</span></td>
                         <td>@item.OpenedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
-                        <td class="text-end text-nowrap">
+                        <td class="btn-group">
                             <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@item.Id"
                                aria-label="Ver reparación @item.Id">Ver</a>
                              <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.Id" aria-label="Editar reparación @item.Id">Editar</a> 

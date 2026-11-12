@@ -1,4 +1,4 @@
-@model RepairPart
+﻿@model RepairPart
 @{
     ViewData["Title"] = $"Pieza usada #{Model.Id}";
 }
@@ -25,8 +25,10 @@
             <dd class="col-sm-9 fw-semibold">@((Model.Quantity * Model.UnitPrice).ToString("N2"))&nbsp;€</dd>
         </dl>
     </div>
-    <div class="card-footer d-flex gap-2">
-        <a class="btn btn-secondary" asp-action="Edit" asp-route-id="@Model.Id">Editar</a>
-        <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.Id">Eliminar</a>
-    </div>
+        <div class="card-footer d-flex gap-2">
+            <div class="btn-group">
+                <a class="btn btn-outline-secondary" asp-action="Edit" asp-route-id="@Model.Id">Editar</a> 
+                <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.Id">Eliminar</a> 
+             </div>
+        </div>
 </div>

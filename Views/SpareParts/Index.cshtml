@@ -1,4 +1,4 @@
-@model IEnumerable<SparePart>
+﻿@model IEnumerable<SparePart>
 @{
     ViewData["Title"] = "Recambios";
 }
@@ -43,13 +43,13 @@ else
                         <td>@item.UnitPrice.ToString("N2")&nbsp;€</td>
                         <td>@item.Stock</td>
                         <td>@item.MinStock</td>
-                        <td class="text-end text-nowrap">
+                        <td class="btn-group">
                             <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@item.Id"
                                aria-label="Ver recambio @item.Name">Ver</a>
                             <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.Id"
                                aria-label="Editar recambio @item.Name">Editar</a>
                             @* Eliminar es un POST (cambia datos): por eso va en un formulario, con confirmación. *@
-                            <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline"
+                            <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="btn-group"
                                   onsubmit="return confirm('¿Eliminar este recambio?');">
                                 <button type="submit" class="btn btn-sm btn-outline-danger"
                                         aria-label="Eliminar recambio @item.Name">Eliminar</button>
