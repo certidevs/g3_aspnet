@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema; 
 
 namespace G3AspNet.Models;
 
@@ -33,4 +34,7 @@ public class SparePart
 
     // Líneas de reparación en las que se ha usado este recambio (colección inversa).
     public ICollection<RepairPart> RepairParts { get; set; } = new List<RepairPart>();
+
+    [NotMapped]
+    public bool IsLowStock => Stock <= MinStock; 
 }
