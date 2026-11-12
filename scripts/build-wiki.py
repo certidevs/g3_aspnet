@@ -64,11 +64,6 @@ def main() -> None:
     for src, name in PAGES.items():
         with open(os.path.join(root, src), encoding="utf-8") as f:
             body = convert(f.read(), src, root)
-        body += (
-            "\n---\n\n"
-            f"Esta página se genera desde [`{src}`]({REPO_URL}/blob/{BRANCH}/{src}). "
-            "Los cambios hechos aquí se sobrescriben: edita el archivo del repositorio.\n"
-        )
         with open(os.path.join(dest, wiki_slug(name) + ".md"), "w", encoding="utf-8") as f:
             f.write(body)
 
@@ -79,6 +74,15 @@ def main() -> None:
     sidebar += ["", f"[Repositorio]({REPO_URL})"]
     with open(os.path.join(dest, "_Sidebar.md"), "w", encoding="utf-8") as f:
         f.write("\n".join(sidebar) + "\n")
+
+    footer = [
+        "---",
+        f"[🏠 Inicio](Home) · [📦 Repositorio]({REPO_URL}) · [🐛 Informar de error / Issue]({REPO_URL}/issues) · [📖 Guía de contribución](Guía-de-contribución)",
+        "",
+        f"> *Documentación sincronizada automáticamente desde el repositorio `{REPO_URL.replace('https://github.com/', '')}` (rama `{BRANCH}`). Los cambios deben editarse en los archivos fuente del repositorio.*"
+    ]
+    with open(os.path.join(dest, "_Footer.md"), "w", encoding="utf-8") as f:
+        f.write("\n".join(footer) + "\n")
 
 
 if __name__ == "__main__":
