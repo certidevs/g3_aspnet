@@ -26,7 +26,12 @@
             <dd class="col-sm-9">@Model.UnitPrice.ToString("N2")&nbsp;€</dd>
 
             <dt class="col-sm-3">Stock</dt>
-            <dd class="col-sm-9">@Model.Stock unidades</dd>
+            <dd class="col-sm-9">@Model.Stock unidades
+                @if (Model.Stock <= Model.MinStock)
+                {
+                    <span class="badge text-bg-danger ms-2">Stock bajo</span>
+                }
+            </dd>
 
             <dt class="col-sm-3">Stock mínimo</dt>
             <dd class="col-sm-9">@Model.MinStock unidades</dd>

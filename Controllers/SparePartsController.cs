@@ -20,11 +20,21 @@ public class SparePartsController : Controller
 
     /// <summary>Lista todos los recambios ordenados por nombre.</summary>
     [HttpGet]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(bool lowStock = false)
     {
+
+        var query = context.SpareParts.AsQueryable();
+
+        if (lowStock)
+        {
+            query = query.Where(sparePart => sparePart.Stock <= sparePart.MinStock);
+        }
+
         var spareParts = await context.SpareParts
             .OrderBy(sparePart => sparePart.Name)
             .ToListAsync();
+
+        ViewBag.LowStockFilter = lowStock; 
 
         return View(spareParts);
     }

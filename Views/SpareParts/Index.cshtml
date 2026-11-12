@@ -36,12 +36,18 @@ else
             <tbody>
                 @foreach (var item in Model)
                 {
-                    <tr>
+                    var isLowStock = item.Stock <= item.MinStock; 
+                    <tr class="@(isLowStock ? "table-danger" : "")"> 
                         <td>@item.Reference</td>
                         <td class="fw-semibold">@item.Name</td>
                         <td>@item.Brand</td>
                         <td>@item.UnitPrice.ToString("N2")&nbsp;€</td>
-                        <td>@item.Stock</td>
+                        <td>@item.Stock
+                            @if (isLowStock)
+                            {
+                                <span class="badge text-bg-danger ms-1">Stock bajo</span>
+                            }
+                        </td>
                         <td>@item.MinStock</td>
                         <td class="btn-group">
                             <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@item.Id"
