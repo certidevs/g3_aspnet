@@ -6,7 +6,7 @@
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <h1 class="h2 mb-0">Reparación #@Model.Id</h1>
-     <a class="btn btn-outline-secondary" asp-action="Index">Volver</a>
+    <a class="btn btn-outline-secondary" asp-action="Index">Volver</a>
 
 </div>
 
@@ -15,7 +15,8 @@
         <dl class="row mb-0">
             <dt class="col-sm-3">Vehículo</dt>
             <dd class="col-sm-9">
-                <a asp-controller="Vehicle" asp-action="Details" asp-route-id="@Model.VehicleId">@Model.Vehicle.LicensePlate</a>
+                <a asp-controller="Vehicle" asp-action="Details"
+                   asp-route-id="@Model.VehicleId">@Model.Vehicle.LicensePlate</a>
                 (@Model.Vehicle.Brand @Model.Vehicle.Model)
             </dd>
 
@@ -41,7 +42,9 @@
             <dd class="col-sm-9">@Model.MileageAtEntry.ToString("N0") km</dd>
 
             <dt class="col-sm-3">Mano de obra</dt>
-            <dd class="col-sm-9">@Model.LaborHours.ToString("N2") h × @Model.HourlyRate.ToString("N2")&nbsp;€/h = @laborCost.ToString("N2")&nbsp;€</dd>
+            <dd class="col-sm-9">@Model.LaborHours.ToString("N2") h × @Model.HourlyRate.ToString("N2")&nbsp;€/h
+                = @laborCost.ToString("N2")&nbsp;€
+            </dd>
 
             <dt class="col-sm-3">Coste total</dt>
             <dd class="col-sm-9 fw-semibold">@Model.TotalCost.ToString("N2")&nbsp;€</dd>
@@ -49,51 +52,55 @@
 
         <div class="card-footer d-flex gap-2">
             <div class="btn-group">
-                <a class="btn btn-outline-secondary" asp-action="Edit" asp-route-id="@Model.Id">Editar</a> 
-                <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.Id">Eliminar</a> 
-             </div>
+                <a class="btn btn-outline-secondary" asp-action="Edit" asp-route-id="@Model.Id">Editar</a>
+                <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.Id">Eliminar</a>
+            </div>
         </div>
 
 
-<h2 class="h4 mb-3">Piezas usadas</h2>
+        <h2 class="h4 mb-3">Piezas usadas</h2>
 
-@if (Model.RepairParts.Count == 0)
-{
-    <div class="alert alert-info" role="status">Todavía no se ha usado ninguna pieza en esta reparación.</div>
-}
-else
-{
-    <div class="table-responsive border rounded">
-        <table class="table table-hover align-middle mb-0">
-            <caption class="visually-hidden">Piezas usadas en la reparación</caption>
-            <thead class="table-light">
-                <tr>
-                    <th scope="col">Recambio</th>
-                    <th scope="col">Cantidad</th>
-                    <th scope="col">Precio unitario</th>
-                    <th scope="col">Subtotal</th>
-                    <th scope="col" class="text-end">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var part in Model.RepairParts)
-                {
+        @if (Model.RepairParts.Count == 0)
+        {
+            <div class="alert alert-info" role="status">Todavía no se ha usado ninguna pieza en esta reparación.</div>
+        }
+        else
+        {
+            <div class="table-responsive border rounded">
+                <table class="table table-hover align-middle mb-0">
+                    <caption class="visually-hidden">Piezas usadas en la reparación</caption>
+                    <thead class="table-light">
                     <tr>
-                        <td>
-                            <a asp-controller="SpareParts" asp-action="Details" asp-route-id="@part.SparePartId">@part.SparePart.Name</a>
-                            <span class="text-secondary small">(@part.SparePart.Brand)</span>
-                        </td>
-                        <td>@part.Quantity</td>
-                        <td>@part.UnitPrice.ToString("N2")&nbsp;€</td>
-                        <td>@((part.Quantity * part.UnitPrice).ToString("N2"))&nbsp;€</td>
-                        <td class="text-end text-nowrap">
-                            <a class="btn btn-sm btn-outline-primary" asp-controller="RepairParts" asp-action="Details" asp-route-id="@part.Id">Ver</a>
-                        </td>
+                        <th scope="col">Recambio</th>
+                        <th scope="col">Cantidad</th>
+                        <th scope="col">Precio unitario</th>
+                        <th scope="col">Subtotal</th>
+                        <th scope="col" class="text-end">Acciones</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                    </thead>
+                    <tbody>
+                    @foreach (var part in Model.RepairParts)
+                    {
+                        <tr>
+                            <td>
+                                <a asp-controller="SpareParts" asp-action="Details"
+                                   asp-route-id="@part.SparePartId">@part.SparePart.Name</a>
+                                <span class="text-secondary small">(@part.SparePart.Brand)</span>
+                            </td>
+                            <td>@part.Quantity</td>
+                            <td>@part.UnitPrice.ToString("N2")&nbsp;€</td>
+                            <td>@((part.Quantity * part.UnitPrice).ToString("N2"))&nbsp;€</td>
+                            <td class="text-end text-nowrap">
+                                <a class="btn btn-sm btn-outline-primary" asp-controller="RepairParts"
+                                   asp-action="Details" asp-route-id="@part.Id">Ver</a>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
     </div>
-}
+</div>
 
 @* TODO (issue #18): formulario "Añadir pieza" (acción AddPart de RepairController) dentro de este detalle. *@
