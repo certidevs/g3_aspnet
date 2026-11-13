@@ -1,4 +1,4 @@
-@model ProfileViewModel
+﻿@model ProfileViewModel
 @inject ImageStorage ImageStorage
 @{
     ViewData["Title"] = "Mi perfil";
@@ -12,8 +12,8 @@
         <p class="text-secondary mb-0">Datos de la cuenta común a cualquier proyecto del curso.</p>
     </div>
     <div class="d-flex gap-2">
-        <a class="btn btn-outline-primary" asp-action="ChangePassword">Cambiar contraseña</a>
-        <a class="btn btn-primary" asp-action="Edit">Editar perfil</a>
+        <a class="btn btn-primary" asp-action="ChangePassword">Cambiar contraseña</a>
+        <a class="btn btn-secondary" asp-action="Edit">Editar perfil</a>
     </div>
 </div>
 
