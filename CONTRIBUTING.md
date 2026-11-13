@@ -114,6 +114,7 @@ Si cambias el comportamiento visible, actualiza el documento que corresponda:
 
 | Cambio | Documento |
 |---|---|
+| Mensaje para empresas, guion o diapositivas | [Presentación externa](docs/presentacion-adecco.md), [guion](docs/guion-presentacion-adecco.md), [outline](docs/diapositivas-presentacion-adecco.md), [Marp](docs/diapositivas-presentacion-adecco.marp.md) |
 | Permisos o reglas de negocio | [Guía funcional](docs/guia-funcional.md) |
 | Entidades, campos o enums | [Modelo de datos](docs/diagrama-er.md) |
 | Cuentas o datos de ejemplo | [Demostración](docs/demo.md) |

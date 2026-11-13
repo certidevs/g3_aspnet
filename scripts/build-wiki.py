@@ -23,6 +23,10 @@ PAGES = {
     "CONTRIBUTING.md": "Guía de contribución",
     "docs/IDE-SETUP.md": "Guía de IDE",
     "docs/DEPENDENCIAS.md": "Dependencias",
+    "docs/presentacion-adecco.md": "Presentación externa",
+    "docs/guion-presentacion-adecco.md": "Guion presentación Adecco",
+    "docs/diapositivas-presentacion-adecco.md": "Diapositivas presentación",
+    "docs/diapositivas-presentacion-adecco.marp.md": "Diapositivas (Marp)",
 }
 
 LINK = re.compile(r"(\]\()([^)\s]+)(\))")

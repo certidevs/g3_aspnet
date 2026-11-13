@@ -134,8 +134,11 @@ Dockerfile              Imagen del contenedor
 
 ## Documentación
 
+Material para **presentaciones con empresas y consultores** (p. ej. Fundación Adecco): [dossier del proyecto](docs/presentacion-adecco.md) (guion de 45 minutos, outline de diapositivas y deck Marp enlazados desde allí).
+
 | Documento | Contenido |
 |---|---|
+| [Presentación externa](docs/presentacion-adecco.md) | Dossier ejecutivo, empleabilidad, roadmap y FAQ. |
 | [Guía funcional](docs/guia-funcional.md) | Perfiles, permisos y reglas de negocio. |
 | [Modelo de datos](docs/diagrama-er.md) | Diagrama ER, relaciones, entidades y enums. |
 | [Demostración](docs/demo.md) | Cuentas de ejemplo y guion. |
