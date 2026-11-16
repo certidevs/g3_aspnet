@@ -2,7 +2,7 @@
 
 Describe qué resuelve TALLER .NET, qué puede hacer cada perfil y qué reglas aplica la aplicación. Todo lo indicado se ha contrastado con el código del repositorio.
 
-Documentos relacionados: [README](../README.md) · [Modelo de datos](diagrama-er.md) · [Cuentas y guion de demostración](demo.md).
+Documentos relacionados: [README](../README.md) · [Modelo de datos](diagrama-er.md) · [Autenticación y roles](autenticacion-y-roles.md) · [Cuentas y guion de demostración](demo.md).
 
 ## Qué resuelve la aplicación
 
@@ -68,7 +68,7 @@ La tabla refleja lo que el código aplica hoy.
 
 Notas:
 
-1. <!-- TODO: confirmar el comportamiento previsto. Hoy `RepairsController` y `RepairPartsController` solo exigen sesión iniciada; no comprueban el rol al crear, editar o eliminar. Además, `Edit` y `Delete` de reparaciones no filtran por propietario. -->
+1. <!-- TODO: confirmar el comportamiento previsto. `RepairsController` y `RepairPartsController` solo exigen sesión iniciada. El filtro por propietario de `RepairsController` solo se aplica al listado y detalle, no a Create/Edit/Delete/AddPart; `RepairPartsController` tampoco filtra por propietario. -->
    Estas acciones no están restringidas por rol.
 2. <!-- TODO: confirmar el comportamiento previsto. `SparePartsController` no tiene `[Authorize]`. -->
    El catálogo de recambios no exige iniciar sesión, tampoco para crear, editar o eliminar.

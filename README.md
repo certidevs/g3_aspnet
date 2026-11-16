@@ -89,20 +89,14 @@ El contenedor escucha en el puerto de la variable `PORT` o, si no existe, en el 
 
 Los valores por defecto están en [`appsettings.json`](appsettings.json). Se pueden sustituir con variables de entorno, usando `__` como separador.
 
-| Clave | Valor por defecto | Uso |
-|---|---|---|
-| `ConnectionStrings:DefaultConnection` | `Data Source=App_Data/g3.db` | Archivo SQLite, relativo a la raíz del proyecto. |
-| `SeedData:Enabled` | `true` | Carga roles, cuentas y datos de ejemplo. |
-| `FileUploads:Images:MaxFileSizeBytes` | `5242880` | Tamaño máximo de avatar (5 MiB). |
-| `FileUploads:Images:AllowedExtensions` | `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp` | Extensiones admitidas. |
+| Clave | Uso |
+|---|---|
+| `ConnectionStrings:DefaultConnection` | Configura la conexión SQLite; consulta la [guía de configuración](docs/configuracion.md). |
+| `SeedData:Enabled` | Activa o desactiva la carga de roles, cuentas y datos demo. |
+| `FileUploads:Images:MaxFileSizeBytes` | Límite del tamaño de las imágenes subidas. |
+| `FileUploads:Images:AllowedExtensions` | Extensiones admitidas para las imágenes. |
 
-Ejemplo:
-
-```bash
-export ConnectionStrings__DefaultConnection="Data Source=App_Data/otra.db"
-```
-
-El repositorio no contiene secretos. Los archivos `*.db`, `appsettings.Local.json` y `secrets.json` están en `.gitignore`.
+La configuración puede sobrescribirse mediante variables de entorno con `__` como separador. No incluyas valores sensibles en el repositorio ni en la documentación.
 
 <!-- TODO: la aplicación no usa `dotnet user-secrets` ni otro gestor de secretos. Documentarlo si se incorpora. -->
 
@@ -141,6 +135,14 @@ Material para **presentaciones con empresas y consultores** (p. ej. Fundación A
 | [Presentación externa](docs/presentacion-adecco.md) | Dossier ejecutivo, empleabilidad, roadmap y FAQ. |
 | [Guía funcional](docs/guia-funcional.md) | Perfiles, permisos y reglas de negocio. |
 | [Modelo de datos](docs/diagrama-er.md) | Diagrama ER, relaciones, entidades y enums. |
+| [Primeros pasos](docs/primeros-pasos.md) | Requisitos, restauración, ejecución y pruebas locales. |
+| [Arquitectura](docs/arquitectura.md) | Estructura MVC, inyección de dependencias y pipeline HTTP. |
+| [Base de datos y migraciones](docs/base-de-datos-y-migraciones.md) | SQLite, relaciones y ciclo de vida de la base de datos. |
+| [Autenticación y roles](docs/autenticacion-y-roles.md) | ASP.NET Core Identity, cookies y autorización actual. |
+| [Controladores y vistas](docs/controladores-y-vistas.md) | Acciones MVC, vistas Razor y recursos frontend. |
+| [Configuración](docs/configuracion.md) | Claves de configuración y variables de entorno, sin valores sensibles. |
+| [Testing y CI](docs/testing-y-ci.md) | Suite xUnit y workflow de integración continua. |
+| [Despliegue](docs/despliegue.md) | Ejecución con Docker y límites conocidos del despliegue. |
 | [Demostración](docs/demo.md) | Cuentas de ejemplo y guion. |
 | [Problemas frecuentes](docs/problemas-frecuentes.md) | Errores habituales y soluciones. |
 | [Guía de contribución](CONTRIBUTING.md) | Ramas, pull requests y reglas de código. |

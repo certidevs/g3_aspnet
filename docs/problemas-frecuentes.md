@@ -2,6 +2,8 @@
 
 Errores habituales al ejecutar o usar la aplicación, con su causa y su solución.
 
+Documentos relacionados: [Primeros pasos](primeros-pasos.md) · [Configuración](configuracion.md) · [Autenticación y roles](autenticacion-y-roles.md).
+
 ## Ejecución
 
 ### El puerto 5107 está ocupado

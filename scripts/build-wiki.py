@@ -16,6 +16,14 @@ BRANCH = "main"
 # fuente en el repositorio -> nombre de página del wiki
 PAGES = {
     "README.md": "Home",
+    "docs/primeros-pasos.md": "Primeros pasos",
+    "docs/arquitectura.md": "Arquitectura",
+    "docs/base-de-datos-y-migraciones.md": "Base de datos y migraciones",
+    "docs/autenticacion-y-roles.md": "Autenticación y roles",
+    "docs/controladores-y-vistas.md": "Controladores y vistas",
+    "docs/configuracion.md": "Configuración",
+    "docs/testing-y-ci.md": "Testing y CI",
+    "docs/despliegue.md": "Despliegue",
     "docs/guia-funcional.md": "Guía funcional",
     "docs/diagrama-er.md": "Modelo de datos",
     "docs/demo.md": "Demostración",

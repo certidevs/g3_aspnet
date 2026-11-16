@@ -7,9 +7,7 @@ Documentos relacionados: [README](../README.md) · [Guía funcional](guia-funcio
 > [!WARNING]
 > Estas cuentas son de ejemplo y solo para desarrollo.
 > No las uses en producción.
-> El seed debería cargarse únicamente en el entorno `Development`.
-> <!-- TODO: hoy el seed se controla con `SeedData:Enabled` (por defecto `true` en `appsettings.json`) y no depende del entorno. Valorar condicionarlo a `IsDevelopment()`. -->
-> Fuera de desarrollo, desactívalo con `SeedData__Enabled=false`.
+> `SeedData:Enabled` no está condicionado automáticamente por el entorno; desactívalo en entornos compartidos con `SeedData__Enabled=false`.
 
 ## Antes de empezar
 
@@ -17,20 +15,18 @@ Documentos relacionados: [README](../README.md) · [Guía funcional](guia-funcio
 2. Cada arranque borra y recrea la base de datos y vuelve a cargar los datos de ejemplo.
 3. Abre <http://localhost:5107>.
 
-## Cuentas de ejemplo
+## Usuarios de ejemplo
 
-Las define [`Data/DbInitializer.cs`](../Data/DbInitializer.cs).
+El inicializador crea cuentas de demostración asociadas a los roles `Admin`, `Mechanic`, `Customer` y `User`. Sus nombres de usuario están en [`Data/DbInitializer.cs`](../Data/DbInitializer.cs).
 
-| Perfil | Usuario | Contraseña | Nombre visible |
-|---|---|---|---|
-| `Admin` | `admin` | `Admin123!` | Administrador |
-| `Mechanic` | `mechanic` | `Mechanic123!` | Mecánico Demo |
-| `Mechanic` | `mechanic2` | `Mechanic123!` | Raúl Ortega |
-| `Mechanic` | `mechanic3` | `Mechanic123!` | Elena Navarro |
-| `Customer` | `customer` | `Customer123!` | Cliente Demo |
-| `Customer` | `customer2` | `Customer123!` | Lucía Fernández |
-| `Customer` | `customer3` | `Customer123!` | Marcos Ruiz |
-| `User` | `user` | `User123!` | Usuario de demo |
+| Perfil | Usuarios |
+|---|---|
+| `Admin` | `admin` |
+| `Mechanic` | `mechanic`, `mechanic2`, `mechanic3` |
+| `Customer` | `customer`, `customer2`, `customer3` |
+| `User` | `user` |
+
+Esta documentación no publica contraseñas. Usa estas cuentas únicamente en un entorno local de demostración; no habilites el seed en un entorno compartido o de producción.
 
 ## Datos de ejemplo
 
@@ -48,14 +44,14 @@ Las define [`Data/DbInitializer.cs`](../Data/DbInitializer.cs).
 
 ### 1. Administración de cuentas
 
-1. Inicia sesión con `admin`.
+1. Inicia sesión con la cuenta de demostración `admin`.
 2. Abre **Administración de usuarios** y busca una cuenta.
 3. Edita la cuenta `user` y cambia su rol.
 4. Intenta eliminar tu propia cuenta. La aplicación lo rechaza con un mensaje.
 
 ### 2. Vista del cliente
 
-1. Cierra sesión e inicia con `customer`.
+1. Cierra sesión e inicia con la cuenta de demostración `customer`.
 2. Abre **Taller → Vehículos**. Solo aparecen `1234ABC`, `5678DEF` y `9012GHI`.
 3. Abre **Taller → Reparaciones** y entra en el detalle de una. Se ven mecánico, estado, piezas y coste total.
 4. Abre **Taller → Recambios** para consultar el catálogo.
@@ -63,7 +59,7 @@ Las define [`Data/DbInitializer.cs`](../Data/DbInitializer.cs).
 
 ### 3. Trabajo del mecánico
 
-1. Inicia con `mechanic`.
+1. Inicia con la cuenta de demostración `mechanic`.
 2. Crea un vehículo en **Taller → Vehículos** y asígnalo a un cliente.
 3. Crea una reparación para ese vehículo. Elige tipo y estado, e indica horas y tarifa.
 4. Anota el stock de un recambio en **Taller → Recambios**.
