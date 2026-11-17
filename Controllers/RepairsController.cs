@@ -83,6 +83,20 @@ public class RepairsController : Controller
             return NotFound();
         }
 
+        ViewBag.AvailableSpareParts = new SelectList(
+            await context.SpareParts
+                .AsNoTracking()
+                .Where(sp => sp.Stock > 0)
+                .OrderBy(sp => sp.Name)
+                .Select(sp => new
+                {
+                    sp.Id,
+                    Description = $"{sp.Name} - {sp.Brand} (Stock: {sp.Stock} · {sp.UnitPrice:N2} €)"
+                })
+                .ToListAsync(),
+            "Id",
+            "Description");
+
         return View(repair);
     }
 
@@ -250,6 +264,7 @@ public class RepairsController : Controller
 
     /// <summary>Añade un recambio a la reparación y descuenta la cantidad del stock disponible.</summary>
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddPart(int id, int sparePartId, int quantity)
     {
         var repair = await context.Repairs
@@ -259,6 +274,12 @@ public class RepairsController : Controller
         if (repair == null)
         {
             return NotFound();
+        }
+
+        if (sparePartId <= 0)
+        {
+            TempData["Error"] = "Debes seleccionar un recambio válido.";
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         var sparePart = await context.SpareParts.FindAsync(sparePartId);
@@ -278,6 +299,28 @@ public class RepairsController : Controller
             TempData["Error"] = ex.Message;
         }
 
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    /// <summary>Quita una pieza asignada a la reparación y devuelve las unidades al stock.</summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RemovePart(int id, int repairPartId)
+    {
+        var repairPart = await context.RepairParts
+            .Include(rp => rp.SparePart)
+            .FirstOrDefaultAsync(rp => rp.Id == repairPartId && rp.RepairId == id);
+
+        if (repairPart == null)
+        {
+            return NotFound();
+        }
+
+        repairPart.SparePart.Stock += repairPart.Quantity;
+        context.RepairParts.Remove(repairPart);
+        await context.SaveChangesAsync();
+
+        TempData["Message"] = "Pieza retirada de la reparación y stock restablecido.";
         return RedirectToAction(nameof(Details), new { id });
     }
 }

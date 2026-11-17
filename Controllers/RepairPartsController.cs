@@ -1,4 +1,4 @@
-﻿using G3AspNet.Data;
+using G3AspNet.Data;
 using G3AspNet.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -73,15 +73,18 @@ public class RepairPartsController : Controller
         return repairPart is null ? NotFound() : View(repairPart);
     }
 
-    // TODO (issue #18): Create y Edit usan hoy dos vistas casi iguales (Create.cshtml y Edit.cshtml).
-    // Mejora pendiente: unirlas en un único Views/RepairParts/Form.cshtml y devolver View("Form", ...).
-
-    /// <summary>Muestra el formulario para añadir una pieza a una reparación.</summary>
+    /// <summary>Muestra el formulario unificado para añadir una pieza a una reparación.</summary>
     [HttpGet]
-    public async Task<IActionResult> Create()
+    public async Task<IActionResult> Create(int? repairId = null)
     {
-        await PopulateDropdownsAsync();
-        return View();
+        var model = new RepairPart
+        {
+            RepairId = repairId ?? 0,
+            Quantity = 1
+        };
+
+        await PopulateDropdownsAsync(model);
+        return View("Form", model);
     }
 
     /// <summary>Añade una pieza, valida los datos y descuenta las unidades del stock.</summary>
@@ -97,7 +100,7 @@ public class RepairPartsController : Controller
         if (!ModelState.IsValid)
         {
             await PopulateDropdownsAsync(repairPart);
-            return View(repairPart);
+            return View("Form", repairPart);
         }
 
         var repair = await context.Repairs
@@ -123,7 +126,7 @@ public class RepairPartsController : Controller
         {
             ModelState.AddModelError(nameof(RepairPart.Quantity), ex.Message);
             await PopulateDropdownsAsync(repairPart);
-            return View(repairPart);
+            return View("Form", repairPart);
         }
 
         await context.SaveChangesAsync();
@@ -131,7 +134,7 @@ public class RepairPartsController : Controller
         return RedirectToAction(nameof(Details), new { id = addedRepairPart.Id });
     }
 
-    /// <summary>Muestra el formulario para editar una pieza ya asignada.</summary>
+    /// <summary>Muestra el formulario unificado para editar una pieza ya asignada.</summary>
     /// <param name="id">Identificador de la pieza de reparación.</param>
     [HttpGet]
     public async Task<IActionResult> Edit(int id)
@@ -146,7 +149,7 @@ public class RepairPartsController : Controller
         }
 
         await PopulateDropdownsAsync(repairPart);
-        return View(repairPart);
+        return View("Form", repairPart);
     }
 
     /// <summary>Actualiza una pieza y ajusta el stock según los cambios realizados.</summary>
@@ -168,7 +171,7 @@ public class RepairPartsController : Controller
         if (!ModelState.IsValid)
         {
             await PopulateDropdownsAsync(model);
-            return View(model);
+            return View("Form", model);
         }
 
         var repairPart = await context.RepairParts
@@ -198,7 +201,7 @@ public class RepairPartsController : Controller
             ModelState.AddModelError(nameof(RepairPart.Quantity),
                 "No hay stock suficiente para la cantidad seleccionada.");
             await PopulateDropdownsAsync(model);
-            return View(model);
+            return View("Form", model);
         }
 
         if (!sameSparePart)

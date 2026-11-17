@@ -1,4 +1,4 @@
-﻿@model Repair
+@model Repair
 @{
     ViewData["Title"] = $"Reparación #{Model.Id}";
     var laborCost = Model.LaborHours * Model.HourlyRate;
@@ -91,8 +91,15 @@
                             <td>@part.UnitPrice.ToString("N2")&nbsp;€</td>
                             <td>@((part.Quantity * part.UnitPrice).ToString("N2"))&nbsp;€</td>
                             <td class="text-end text-nowrap">
-                                <a class="btn btn-sm btn-outline-primary" asp-controller="RepairParts"
-                                   asp-action="Details" asp-route-id="@part.Id">Ver</a>
+                                <div class="d-inline-flex gap-1">
+                                    <a class="btn btn-sm btn-outline-primary" asp-controller="RepairParts"
+                                       asp-action="Details" asp-route-id="@part.Id">Ver</a>
+                                    <form asp-action="RemovePart" asp-route-id="@Model.Id" method="post" class="d-inline"
+                                          onsubmit="return confirm('¿Quitar esta pieza de la reparación y devolver las unidades al stock?');">
+                                        <input type="hidden" name="repairPartId" value="@part.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Quitar</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     }
@@ -100,7 +107,36 @@
                 </table>
             </div>
         }
+
+        <hr class="my-4" />
+
+        <h3 class="h5 mb-3">Añadir pieza a la reparación</h3>
+        @{
+            var availableParts = ViewBag.AvailableSpareParts as SelectList;
+        }
+        @if (availableParts is not null && availableParts.Any())
+        {
+            <form asp-action="AddPart" asp-route-id="@Model.Id" method="post" class="row g-3 align-items-end">
+                <div class="col-md-7">
+                    <label for="sparePartId" class="form-label">Recambio disponible</label>
+                    <select id="sparePartId" name="sparePartId" asp-items="availableParts" class="form-select" required>
+                        <option value="">-- Seleccionar recambio --</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="quantity" class="form-label">Cantidad</label>
+                    <input id="quantity" name="quantity" type="number" min="1" max="1000" value="1" class="form-control" required />
+                </div>
+                <div class="col-md-2 d-grid">
+                    <button type="submit" class="btn btn-primary">Añadir pieza</button>
+                </div>
+            </form>
+        }
+        else
+        {
+            <div class="alert alert-warning mb-0" role="status">
+                No hay recambios con stock disponible para añadir en este momento.
+            </div>
+        }
     </div>
 </div>
-
-@* TODO (issue #18): formulario "Añadir pieza" (acción AddPart de RepairController) dentro de este detalle. *@

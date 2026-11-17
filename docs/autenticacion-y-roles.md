@@ -2,11 +2,11 @@
 
 La aplicación usa ASP.NET Core Identity con cookies y persistencia en `ApplicationDbContext`.
 
-Documentos relacionados: [Guía funcional](guia-funcional.md) · [Configuración](configuracion.md) · [Problemas frecuentes](problemas-frecuentes.md).
+Informe detallado de implementación: [Identity y roles](informe-identity-y-roles.md). Documentos relacionados: [Guía funcional](guia-funcional.md) · [Configuración](configuracion.md) · [Problemas frecuentes](problemas-frecuentes.md).
 
 ## Registro e inicio de sesión
 
-- El registro público asigna el rol `User`; no permite escoger otro rol.
+- El registro público muestra un desplegable de rol, pero el servidor solo acepta `User` (`RolesPermitidos`). No se puede autoasignar `Admin`.
 - Identity requiere correo único.
 - La contraseña debe tener al menos 8 caracteres, un dígito y un carácter no alfanumérico. No se exige mayúscula ni minúscula.
 - Tras 5 intentos fallidos, la cuenta se bloquea durante 10 minutos.
