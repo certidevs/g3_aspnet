@@ -1,6 +1,7 @@
 ﻿@model Vehicle
 @{
     ViewData["Title"] = $"Vehículo {Model.LicensePlate}";
+    var canManage = User.IsInRole(RoleNames.Admin) || User.IsInRole(RoleNames.Mechanic);
 }
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
