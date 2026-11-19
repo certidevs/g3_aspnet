@@ -1,10 +1,12 @@
 using G3AspNet.Models;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace G3AspNet.Controllers;
 
-/// <summary>Página de inicio del proyecto, sin entidades del dominio todavía.</summary>
+/// <summary>Página de inicio pública y vista de error.</summary>
+[AllowAnonymous]
 public sealed class HomeController : Controller
 {
     public IActionResult Index()

@@ -1,5 +1,8 @@
-﻿using G3AspNet.Data;
+using G3AspNet.Authorization;
+using G3AspNet.Data;
 using G3AspNet.Models;
+using G3AspNet.Utilities;
+using G3AspNet.ViewModels.Vehicles;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,37 +15,35 @@ namespace G3AspNet.Controllers;
 [Authorize]
 public class VehicleController : Controller
 {
-    // Roles del personal del taller: los únicos que pueden crear, editar y borrar vehículos.
-    // Si en tu proyecto los permisos son otros, cambia solo esta línea.
-    private const string StaffRoles = RoleNames.Admin + "," + RoleNames.Mechanic;
-
     private readonly ApplicationDbContext context;
     private readonly UserManager<ApplicationUser> userManager;
+    private readonly IAuthorizationService authorizationService;
 
-    // ASP.NET Core proporciona el contexto y el UserManager al crear el controlador.
-    // userManager se usa para saber quién es el usuario actual y para listar los clientes.
-    public VehicleController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+    public VehicleController(
+        ApplicationDbContext context,
+        UserManager<ApplicationUser> userManager,
+        IAuthorizationService authorizationService)
     {
         this.context = context;
         this.userManager = userManager;
+        this.authorizationService = authorizationService;
     }
 
     /// <summary>
-    /// Vehículos que puede ver el usuario actual: un Customer solo ve los suyos;
-    /// el resto de roles (Admin, Mechanic...) ven todos.
-    /// Devuelve la consulta SIN ejecutar, para poder seguir añadiendo Include y OrderBy.
+    /// Vehículos visibles en el listado: Admin y Mechanic ven todos;
+    /// Customer y User solo ven los vehículos de su propiedad.
     /// </summary>
     private IQueryable<Vehicle> VisibleVehicles()
     {
         var vehicles = context.Vehicles.AsQueryable();
 
-        if (User.IsInRole(RoleNames.Customer))
+        if (User.IsInRole(RoleNames.Admin) || User.IsInRole(RoleNames.Mechanic))
         {
-            var currentUserId = userManager.GetUserId(User);
-            vehicles = vehicles.Where(vehicle => vehicle.OwnerId == currentUserId);
+            return vehicles;
         }
 
-        return vehicles;
+        var currentUserId = User.GetRequiredUserId();
+        return vehicles.Where(vehicle => vehicle.OwnerId == currentUserId);
     }
 
     /// <summary>Lista los vehículos visibles para el usuario, incluyendo su propietario.</summary>
@@ -57,13 +58,11 @@ public class VehicleController : Controller
         return View(vehicles);
     }
 
-    /// <summary>Muestra un vehículo con su propietario y su historial de reparaciones.</summary>
+    /// <summary>Muestra un vehículo con su propietario y su historial de reparaciones tras autorizar el recurso.</summary>
     [HttpGet]
     public async Task<IActionResult> Details(int id)
     {
-        // Se filtra también aquí: si no, un Customer podría escribir el Id de un vehículo
-        // ajeno en la URL y verlo. Si no es suyo, la consulta no lo encuentra y devuelve 404.
-        var vehicle = await VisibleVehicles()
+        var vehicle = await context.Vehicles
             .Include(vehicle => vehicle.Owner)
             .Include(vehicle => vehicle.Repairs)
             .ThenInclude(repair => repair.Mechanic)
@@ -72,6 +71,12 @@ public class VehicleController : Controller
         if (vehicle == null)
         {
             return NotFound();
+        }
+
+        var authResult = await authorizationService.AuthorizeAsync(User, vehicle, WorkshopOperations.Read);
+        if (!authResult.Succeeded)
+        {
+            return Forbid();
         }
 
         return View(vehicle);
@@ -90,18 +95,16 @@ public class VehicleController : Controller
 
     /// <summary>Muestra el formulario vacío para dar de alta un vehículo.</summary>
     [HttpGet]
-    [Authorize(Roles = StaffRoles)]
+    [Authorize(Policy = PolicyNames.GestionTaller)]
     public async Task<IActionResult> Create()
     {
         await PopulateOwnersAsync();
-
-        // Un vehículo nuevo tiene Id = 0: así sabe Save que tiene que INSERTAR.
-        return View("Form", new Vehicle { Year = DateTime.Now.Year });
+        return View("Form", new VehicleFormViewModel { Year = DateTime.Now.Year });
     }
 
     /// <summary>Muestra el formulario relleno con los datos de un vehículo existente.</summary>
     [HttpGet]
-    [Authorize(Roles = StaffRoles)]
+    [Authorize(Policy = PolicyNames.GestionTaller)]
     public async Task<IActionResult> Edit(int id)
     {
         var vehicle = await context.Vehicles.FindAsync(id);
@@ -110,74 +113,105 @@ public class VehicleController : Controller
             return NotFound();
         }
 
+        var authResult = await authorizationService.AuthorizeAsync(User, vehicle, WorkshopOperations.Update);
+        if (!authResult.Succeeded)
+        {
+            return Forbid();
+        }
+
         await PopulateOwnersAsync(vehicle.OwnerId);
-        return View("Form", vehicle);
+        return View("Form", new VehicleFormViewModel
+        {
+            Id = vehicle.Id,
+            LicensePlate = vehicle.LicensePlate,
+            VIN = vehicle.VIN,
+            Brand = vehicle.Brand,
+            Model = vehicle.Model,
+            Year = vehicle.Year,
+            FuelType = vehicle.FuelType,
+            Mileage = vehicle.Mileage,
+            OwnerId = vehicle.OwnerId
+        });
     }
 
-    /// <summary>Guarda el formulario: crea el vehículo si Id es 0 y lo actualiza si no.</summary>
+    /// <summary>Guarda el formulario mediante DTO anti-overposting: crea o actualiza el vehículo.</summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = StaffRoles)]
-    public async Task<IActionResult> Save(Vehicle vehicle)
+    [Authorize(Policy = PolicyNames.GestionTaller)]
+    public async Task<IActionResult> Save(VehicleFormViewModel formModel)
     {
-        // El formulario solo envía OwnerId, no el objeto Owner completo: lo quitamos de la validación.
-        ModelState.Remove(nameof(Vehicle.Owner));
-
-        // La matrícula es única en la base de datos: se comprueba antes de guardar para no dar un error 500.
         var plateInUse = await context.Vehicles
-            .AnyAsync(other => other.LicensePlate == vehicle.LicensePlate && other.Id != vehicle.Id);
+            .AnyAsync(other => other.LicensePlate == formModel.LicensePlate && other.Id != formModel.Id);
         if (plateInUse)
         {
-            ModelState.AddModelError(nameof(Vehicle.LicensePlate), "Ya existe un vehículo con esa matrícula.");
+            ModelState.AddModelError(nameof(VehicleFormViewModel.LicensePlate), "Ya existe un vehículo con esa matrícula.");
         }
 
-        // El propietario tiene que ser una cuenta que exista (clave foránea). Si llega vacío, ya lo avisa [Required].
-        var ownerExists = await context.Users.AnyAsync(user => user.Id == vehicle.OwnerId);
-        if (!ownerExists && !string.IsNullOrEmpty(vehicle.OwnerId))
+        var ownerExists = await context.Users.AnyAsync(user => user.Id == formModel.OwnerId);
+        if (!ownerExists && !string.IsNullOrEmpty(formModel.OwnerId))
         {
-            ModelState.AddModelError(nameof(Vehicle.OwnerId), "El propietario seleccionado no existe.");
+            ModelState.AddModelError(nameof(VehicleFormViewModel.OwnerId), "El propietario seleccionado no existe.");
         }
 
-        // Si algo falla, se vuelve al formulario con los datos escritos y la lista de clientes.
         if (!ModelState.IsValid)
         {
-            await PopulateOwnersAsync(vehicle.OwnerId);
-            return View("Form", vehicle);
+            await PopulateOwnersAsync(formModel.OwnerId);
+            return View("Form", formModel);
         }
 
-        if (vehicle.Id == 0)
+        int savedId;
+        if (formModel.Id == 0)
         {
-            context.Vehicles.Add(vehicle);
+            var entity = new Vehicle
+            {
+                LicensePlate = formModel.LicensePlate.Trim(),
+                VIN = formModel.VIN.Trim(),
+                Brand = formModel.Brand.Trim(),
+                Model = formModel.Model.Trim(),
+                Year = formModel.Year,
+                FuelType = formModel.FuelType,
+                Mileage = formModel.Mileage,
+                OwnerId = formModel.OwnerId
+            };
+            context.Vehicles.Add(entity);
+            await context.SaveChangesAsync();
+            savedId = entity.Id;
         }
         else
         {
-            // Edición: buscamos el vehículo guardado y le copiamos los campos del formulario.
-            var existing = await context.Vehicles.FindAsync(vehicle.Id);
+            var existing = await context.Vehicles.FindAsync(formModel.Id);
             if (existing == null)
             {
                 return NotFound();
             }
 
-            existing.LicensePlate = vehicle.LicensePlate;
-            existing.VIN = vehicle.VIN;
-            existing.Brand = vehicle.Brand;
-            existing.Model = vehicle.Model;
-            existing.Year = vehicle.Year;
-            existing.FuelType = vehicle.FuelType;
-            existing.Mileage = vehicle.Mileage;
-            existing.OwnerId = vehicle.OwnerId;
+            var authResult = await authorizationService.AuthorizeAsync(User, existing, WorkshopOperations.Update);
+            if (!authResult.Succeeded)
+            {
+                return Forbid();
+            }
+
+            existing.LicensePlate = formModel.LicensePlate.Trim();
+            existing.VIN = formModel.VIN.Trim();
+            existing.Brand = formModel.Brand.Trim();
+            existing.Model = formModel.Model.Trim();
+            existing.Year = formModel.Year;
+            existing.FuelType = formModel.FuelType;
+            existing.Mileage = formModel.Mileage;
+            existing.OwnerId = formModel.OwnerId;
+
+            await context.SaveChangesAsync();
+            savedId = existing.Id;
         }
 
-        await context.SaveChangesAsync();
-
         TempData["Message"] = "Vehículo guardado correctamente.";
-        return RedirectToAction(nameof(Details), new { id = vehicle.Id });
+        return RedirectToAction(nameof(Details), new { id = savedId });
     }
 
     /// <summary>Elimina un vehículo, salvo que tenga reparaciones en su historial.</summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = StaffRoles)]
+    [Authorize(Policy = PolicyNames.GestionTaller)]
     public async Task<IActionResult> Delete(int id)
     {
         var vehicle = await context.Vehicles.FindAsync(id);
@@ -186,8 +220,12 @@ public class VehicleController : Controller
             return NotFound();
         }
 
-        // La relación Repair -> Vehicle es Restrict (las reparaciones son historial): la base de datos
-        // no deja borrar un vehículo con reparaciones. Lo comprobamos antes y avisamos con un mensaje.
+        var authResult = await authorizationService.AuthorizeAsync(User, vehicle, WorkshopOperations.Delete);
+        if (!authResult.Succeeded)
+        {
+            return Forbid();
+        }
+
         var hasRepairs = await context.Repairs.AnyAsync(repair => repair.VehicleId == id);
         if (hasRepairs)
         {
@@ -201,15 +239,22 @@ public class VehicleController : Controller
         TempData["Message"] = "Vehículo eliminado correctamente.";
         return RedirectToAction(nameof(Index));
     }
+
     /// <summary>Muestra la página de confirmación antes de eliminar un vehículo.</summary>
     [HttpGet]
-    [Authorize(Roles = StaffRoles)]
+    [Authorize(Policy = PolicyNames.GestionTaller)]
     public async Task<IActionResult> ConfirmDelete(int id)
     {
         var vehicle = await context.Vehicles.FindAsync(id);
         if (vehicle == null)
         {
             return NotFound();
+        }
+
+        var authResult = await authorizationService.AuthorizeAsync(User, vehicle, WorkshopOperations.Delete);
+        if (!authResult.Succeeded)
+        {
+            return Forbid();
         }
 
         return View("Delete", vehicle);
