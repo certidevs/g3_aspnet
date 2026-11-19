@@ -1,4 +1,4 @@
-@inject UserManager<ApplicationUser> UserManager
+﻿@inject UserManager<ApplicationUser> UserManager
 @inject ImageStorage ImageStorage
 @{
     var currentUser = User.Identity?.IsAuthenticated == true
@@ -50,7 +50,6 @@
                 <div class="collapse navbar-collapse" id="mainNav">
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item"><a class='@NavClass("Home")' asp-controller="Home" asp-action="Index">Inicio</a></li>
-<<<<<<< HEAD
                         <li class="nav-item dropdown">
                             <a class='@(tallerActivo ? "nav-link dropdown-toggle active" : "nav-link dropdown-toggle")' href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Taller</a>
                             <ul class="dropdown-menu">
@@ -63,7 +62,6 @@
                                 <li><a class="dropdown-item" asp-controller="SpareParts" asp-action="Index">Recambios</a></li>
                             </ul>
                         </li>
-=======
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item dropdown">
@@ -76,7 +74,6 @@
                                 </ul>
                             </li>
                         }
->>>>>>> 4a333319846b0c18fe70a834f28488532408321a
                         @if (User.IsInRole(RoleNames.Admin))
                         {
                             <li class="nav-item"><a class='@NavClass("Users")' asp-controller="Users" asp-action="Index">Administración de usuarios</a></li>
