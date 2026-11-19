@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using G3AspNet.Authorization;
 using G3AspNet.Models;
 using G3AspNet.Services;
 using G3AspNet.Utilities;
@@ -8,7 +9,7 @@ using G3AspNet.ViewModels.Users;
 
 namespace G3AspNet.Controllers;
 
-[Authorize(Roles = RoleNames.Admin)]
+[Authorize(Policy = PolicyNames.SoloAdmin)]
 /// <summary>Panel administrativo de cuentas, roles, estado y avatares.</summary>
 public sealed class UsersController : Controller
 {

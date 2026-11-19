@@ -1,9 +1,9 @@
 @using G3AspNet.Models.Enum
-@model Repair
+@model G3AspNet.ViewModels.Repairs.RepairFormViewModel
 @{
     var isNew = Model.Id == 0;
+    var isAdmin = User.IsInRole(RoleNames.Admin);
     ViewData["Title"] = isNew ? "Nueva reparación" : $"Editar reparación #{Model.Id}";
-    var cancelAction = isNew ? "Index" : "Details";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -35,9 +35,17 @@
             </div>
             <div class="col-md-6">
                 <label asp-for="MechanicId" class="form-label">Mecánico</label>
-                <select asp-for="MechanicId" asp-items="ViewBag.Mechanics" class="form-select">
-                    <option value="">-- Seleccionar mecánico --</option>
-                </select>
+                @if (isAdmin)
+                {
+                    <select asp-for="MechanicId" asp-items="ViewBag.Mechanics" class="form-select">
+                        <option value="">-- Seleccionar mecánico --</option>
+                    </select>
+                }
+                else
+                {
+                    <input type="hidden" asp-for="MechanicId" />
+                    <select asp-for="MechanicId" asp-items="ViewBag.Mechanics" class="form-select" disabled></select>
+                }
                 <span asp-validation-for="MechanicId" class="text-danger"></span>
             </div>
             <div class="col-md-6">
@@ -77,7 +85,15 @@
             </div>
             <div class="col-md-4">
                 <label asp-for="HourlyRate" class="form-label">Tarifa por hora (€)</label>
-                <input asp-for="HourlyRate" type="number" step="any" min="0" max="1000" class="form-control" />
+                @if (isAdmin)
+                {
+                    <input asp-for="HourlyRate" type="number" step="any" min="0" max="1000" class="form-control" />
+                }
+                else
+                {
+                    <input asp-for="HourlyRate" type="hidden" />
+                    <input value="@Model.HourlyRate.ToString("N2")" class="form-control" disabled />
+                }
                 <span asp-validation-for="HourlyRate" class="text-danger"></span>
             </div>
         </div>

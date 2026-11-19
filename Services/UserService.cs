@@ -17,17 +17,20 @@ public sealed class UserService
     private readonly UserManager<ApplicationUser> userManager;
     private readonly RoleManager<IdentityRole> roleManager;
     private readonly ImageStorage images;
+    private readonly ILogger<UserService> logger;
 
     public UserService(
         ApplicationDbContext context,
         UserManager<ApplicationUser> userManager,
         RoleManager<IdentityRole> roleManager,
-        ImageStorage images)
+        ImageStorage images,
+        ILogger<UserService> logger)
     {
         this.context = context;
         this.userManager = userManager;
         this.roleManager = roleManager;
         this.images = images;
+        this.logger = logger;
     }
 
     /// <summary>Busca usuarios y añade a cada fila su único rol.</summary>
@@ -165,7 +168,7 @@ public sealed class UserService
         };
     }
 
-    /// <summary>Actualiza una cuenta y protege las reglas del último administrador.</summary>
+    /// <summary>Actualiza una cuenta, revoca sesiones al cambiar seguridad y protege al último administrador.</summary>
     public async Task<IdentityResult> UpdateAsync(EditUserViewModel model, string currentAdminId)
     {
         if (!await roleManager.RoleExistsAsync(model.Role))
@@ -184,6 +187,19 @@ public sealed class UserService
             return Failure("El usuario no existe.");
         }
 
+        var currentRoles = await userManager.GetRolesAsync(user);
+        var wasAdmin = currentRoles.Contains(RoleNames.Admin);
+        var wasActive = user.IsActive;
+        if (wasAdmin && (model.Role != RoleNames.Admin || !model.IsActive))
+        {
+            var admins = await userManager.GetUsersInRoleAsync(RoleNames.Admin);
+            var activeOtherAdmins = admins.Count(a => a.Id != user.Id && a.IsActive);
+            if (activeOtherAdmins == 0)
+            {
+                return Failure("Debe quedar al menos un administrador activo en el sistema.");
+            }
+        }
+
         user.DisplayName = model.DisplayName.Trim();
         user.Email = model.Email.Trim();
         user.IsActive = model.IsActive;
@@ -194,6 +210,8 @@ public sealed class UserService
             return updateResult;
         }
 
+        var securityChanged = wasActive != model.IsActive;
+
         if (!string.IsNullOrWhiteSpace(model.NewPassword))
         {
             var resetToken = await userManager.GeneratePasswordResetTokenAsync(user);
@@ -202,9 +220,11 @@ public sealed class UserService
             {
                 return passwordResult;
             }
+
+            securityChanged = true;
+            logger.LogInformation("Contraseña restablecida para usuario {TargetUserId} por admin {AdminId}.", user.Id, currentAdminId);
         }
 
-        var currentRoles = await userManager.GetRolesAsync(user);
         if (currentRoles.Count != 1 || currentRoles[0] != model.Role)
         {
             var removeResult = await userManager.RemoveFromRolesAsync(user, currentRoles);
@@ -213,7 +233,27 @@ public sealed class UserService
                 return removeResult;
             }
 
-            return await userManager.AddToRoleAsync(user, model.Role);
+            var addResult = await userManager.AddToRoleAsync(user, model.Role);
+            if (!addResult.Succeeded)
+            {
+                return addResult;
+            }
+
+            securityChanged = true;
+            logger.LogInformation(
+                "Cambio de rol para usuario {TargetUserId}: [{OldRoles}] -> {NewRole} por admin {AdminId}.",
+                user.Id, string.Join(",", currentRoles), model.Role, currentAdminId);
+        }
+
+        if (securityChanged)
+        {
+            await userManager.UpdateSecurityStampAsync(user);
+            if (wasActive != model.IsActive)
+            {
+                logger.LogInformation(
+                    "Estado IsActive de usuario {TargetUserId} cambiado a {IsActive} por admin {AdminId}.",
+                    user.Id, model.IsActive, currentAdminId);
+            }
         }
 
         return IdentityResult.Success;
@@ -248,6 +288,8 @@ public sealed class UserService
             await userManager.DeleteAsync(user);
             return roleResult;
         }
+
+        logger.LogInformation("Usuario {UserId} ({UserName}) creado con rol {Role}.", user.Id, user.UserName, model.Role);
 
         if (model.Avatar is null)
         {
@@ -300,6 +342,7 @@ public sealed class UserService
         if (result.Succeeded)
         {
             images.Delete(avatarFileName);
+            logger.LogInformation("Usuario {TargetUserId} ({UserName}) eliminado por admin {AdminId}.", user.Id, user.UserName, currentAdminId);
         }
 
         return result;

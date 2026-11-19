@@ -1,3 +1,5 @@
+using System.Text;
+using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -9,21 +11,27 @@ using G3AspNet.ViewModels.Profile;
 namespace G3AspNet.Controllers;
 
 [Authorize]
-/// <summary>Consulta y edición del perfil del usuario autenticado.</summary>
+/// <summary>Consulta y edición del perfil del usuario autenticado y configuración 2FA.</summary>
 public sealed class ProfileController : Controller
 {
     private readonly UserService userService;
     private readonly UserManager<ApplicationUser> userManager;
     private readonly SignInManager<ApplicationUser> signInManager;
+    private readonly UrlEncoder urlEncoder;
+    private readonly ILogger<ProfileController> logger;
 
     public ProfileController(
         UserService userService,
         UserManager<ApplicationUser> userManager,
-        SignInManager<ApplicationUser> signInManager)
+        SignInManager<ApplicationUser> signInManager,
+        UrlEncoder urlEncoder,
+        ILogger<ProfileController> logger)
     {
         this.userService = userService;
         this.userManager = userManager;
         this.signInManager = signInManager;
+        this.urlEncoder = urlEncoder;
+        this.logger = logger;
     }
 
     [HttpGet]
@@ -95,6 +103,109 @@ public sealed class ProfileController : Controller
         await RefreshSignInAsync(userId);
         TempData["Message"] = "Contraseña cambiada correctamente.";
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> TwoFactor()
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        return View(await BuildTwoFactorModelAsync(user));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> EnableTwoFactor(TwoFactorViewModel model)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(nameof(TwoFactor), await BuildTwoFactorModelAsync(user));
+        }
+
+        var verificationCode = model.Code.Replace(" ", string.Empty).Replace("-", string.Empty);
+        var isTokenValid = await userManager.VerifyTwoFactorTokenAsync(
+            user,
+            userManager.Options.Tokens.AuthenticatorTokenProvider,
+            verificationCode);
+
+        if (!isTokenValid)
+        {
+            ModelState.AddModelError(nameof(model.Code), "El código de verificación no es válido.");
+            return View(nameof(TwoFactor), await BuildTwoFactorModelAsync(user));
+        }
+
+        await userManager.SetTwoFactorEnabledAsync(user, true);
+        logger.LogInformation("2FA TOTP activado para usuario {UserId}.", user.Id);
+        TempData["Message"] = "Autenticación en dos pasos (2FA) activada correctamente.";
+        return RedirectToAction(nameof(TwoFactor));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> DisableTwoFactor()
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        await userManager.SetTwoFactorEnabledAsync(user, false);
+        await userManager.ResetAuthenticatorKeyAsync(user);
+        logger.LogWarning("2FA TOTP desactivado para usuario {UserId}.", user.Id);
+        TempData["Message"] = "Autenticación en dos pasos desactivada.";
+        return RedirectToAction(nameof(TwoFactor));
+    }
+
+    private async Task<TwoFactorViewModel> BuildTwoFactorModelAsync(ApplicationUser user)
+    {
+        var key = await userManager.GetAuthenticatorKeyAsync(user);
+        if (string.IsNullOrEmpty(key))
+        {
+            await userManager.ResetAuthenticatorKeyAsync(user);
+            key = await userManager.GetAuthenticatorKeyAsync(user) ?? string.Empty;
+        }
+
+        var email = await userManager.GetEmailAsync(user) ?? user.UserName ?? "usuario";
+        var formattedKey = FormatKey(key);
+        var authenticatorUri = string.Format(
+            "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6",
+            urlEncoder.Encode("TallerNet"),
+            urlEncoder.Encode(email),
+            key);
+
+        return new TwoFactorViewModel
+        {
+            Is2faEnabled = await userManager.GetTwoFactorEnabledAsync(user),
+            SharedKey = formattedKey,
+            AuthenticatorUri = authenticatorUri
+        };
+    }
+
+    private static string FormatKey(string unformattedKey)
+    {
+        var result = new StringBuilder();
+        var currentPosition = 0;
+        while (currentPosition + 4 < unformattedKey.Length)
+        {
+            result.Append(unformattedKey.AsSpan(currentPosition, 4)).Append(' ');
+            currentPosition += 4;
+        }
+
+        if (currentPosition < unformattedKey.Length)
+        {
+            result.Append(unformattedKey.AsSpan(currentPosition));
+        }
+
+        return result.ToString().ToLowerInvariant();
     }
 
     private void RestoreCurrentAvatar(ProfileEditViewModel model, string userId)

@@ -1,7 +1,10 @@
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using G3AspNet.Authorization;
 using G3AspNet.Data;
 using G3AspNet.Models;
 using G3AspNet.Services;
@@ -15,11 +18,12 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(connectionString));
 
-// Identity gestiona usuarios, cookies de sesión, contraseñas y roles.
+// Identity gestiona usuarios, cookies de sesión, contraseñas, 2FA y roles.
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
         options.User.RequireUniqueEmail = true;
+        options.SignIn.RequireConfirmedEmail = true;
         options.Password.RequiredLength = 8;
         options.Password.RequireDigit = true;
         options.Password.RequireNonAlphanumeric = true;
@@ -27,7 +31,7 @@ builder.Services
         options.Password.RequireLowercase = false;
         options.Lockout.AllowedForNewUsers = true;
         options.Lockout.MaxFailedAccessAttempts = 5;
-        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
     })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
@@ -37,12 +41,19 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LoginPath = "/account/login";
     options.AccessDeniedPath = "/account/accessdenied";
     options.Cookie.Name = "G3AspNet.Auth";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+        ? CookieSecurePolicy.SameAsRequest
+        : CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.ExpireTimeSpan = TimeSpan.FromHours(8);
     options.SlidingExpiration = true;
     options.Events.OnValidatePrincipal = async context =>
     {
+        // Preserva la validación del SecurityStamp para que cambios de rol o baja invaliden cookies previas.
+        await SecurityStampValidator.ValidatePrincipalAsync(context);
         if (context.Principal is null)
         {
-            context.RejectPrincipal();
             return;
         }
 
@@ -56,10 +67,48 @@ builder.Services.ConfigureApplicationCookie(options =>
     };
 });
 
+builder.Services.Configure<SecurityStampValidatorOptions>(options =>
+{
+    options.ValidationInterval = TimeSpan.FromMinutes(2);
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+
+    options.AddPolicy(PolicyNames.GestionTaller, policy =>
+        policy.RequireAuthenticatedUser()
+              .RequireRole(RoleNames.Admin, RoleNames.Mechanic));
+
+    options.AddPolicy(PolicyNames.SoloAdmin, policy =>
+        policy.RequireAuthenticatedUser()
+              .RequireRole(RoleNames.Admin));
+});
+
+builder.Services.AddScoped<IAuthorizationHandler, VehicleAuthorizationHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, RepairAuthorizationHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, RepairPartAuthorizationHandler>();
+
 builder.Services.AddControllersWithViews(options =>
 {
     // Protege automáticamente los formularios POST contra peticiones falsificadas.
     options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+});
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("login", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
 });
 
 builder.Services.Configure<ImageStorageOptions>(
@@ -87,6 +136,7 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 
 app.MapControllerRoute(
     name: "default",
@@ -101,3 +151,5 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+
+public partial class Program;

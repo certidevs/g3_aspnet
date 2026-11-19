@@ -1,14 +1,16 @@
+using G3AspNet.Authorization;
 using G3AspNet.Data;
 using G3AspNet.Models;
+using G3AspNet.Utilities;
+using G3AspNet.ViewModels.SpareParts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace G3AspNet.Controllers;
 
-/// <summary>
-/// Almacén de recambios del taller. Es el EJEMPLO COMPLETO del proyecto: listado, detalle, alta,
-/// edición y borrado funcionando de principio a fin. Copiad su estructura en vuestras entidades.
-/// </summary>
+/// <summary>Almacén de recambios del taller con control de acceso por políticas.</summary>
+[Authorize]
 public class SparePartsController : Controller
 {
     private readonly ApplicationDbContext context;
@@ -18,11 +20,10 @@ public class SparePartsController : Controller
         this.context = context;
     }
 
-    /// <summary>Lista todos los recambios ordenados por nombre.</summary>
+    /// <summary>Lista todos los recambios ordenados por nombre (opcionalmente filtrando stock bajo).</summary>
     [HttpGet]
     public async Task<IActionResult> Index(bool lowStock = false)
     {
-
         var query = context.SpareParts.AsQueryable();
 
         if (lowStock)
@@ -30,51 +31,53 @@ public class SparePartsController : Controller
             query = query.Where(sparePart => sparePart.Stock <= sparePart.MinStock);
         }
 
-        var spareParts = await context.SpareParts
+        var spareParts = await query
             .OrderBy(sparePart => sparePart.Name)
             .ToListAsync();
 
-        ViewBag.LowStockFilter = lowStock; 
+        ViewBag.LowStockFilter = lowStock;
 
         return View(spareParts);
     }
 
-    /// <summary>Muestra un recambio y las reparaciones en las que se ha usado.</summary>
+    /// <summary>Muestra un recambio y las reparaciones accesibles en las que se ha usado.</summary>
     [HttpGet]
     public async Task<IActionResult> Details(int id)
     {
         var sparePart = await context.SpareParts
-            .Include(sparePart => sparePart.RepairParts)
+            .AsNoTracking()
+            .Include(sp => sp.RepairParts)
             .ThenInclude(repairPart => repairPart.Repair)
             .ThenInclude(repair => repair.Vehicle)
-            .FirstOrDefaultAsync(sparePart => sparePart.Id == id);
+            .FirstOrDefaultAsync(sp => sp.Id == id);
 
         if (sparePart == null)
         {
             return NotFound();
         }
 
+        if (!User.IsInRole(RoleNames.Admin))
+        {
+            var userId = User.GetRequiredUserId();
+            sparePart.RepairParts = User.IsInRole(RoleNames.Mechanic)
+                ? sparePart.RepairParts.Where(rp => rp.Repair.MechanicId == userId).ToList()
+                : sparePart.RepairParts.Where(rp => rp.Repair.Vehicle.OwnerId == userId).ToList();
+        }
+
         return View(sparePart);
     }
 
-    // TODO (issue #19): marcar el stock bajo (Stock <= MinStock) en el listado y en el detalle.
-
-    // ---------------------------------------------------------------------------------
-    // EJEMPLO COMPLETO (issues #19 y #20): Create, Edit, Save y Delete con una única
-    // vista Views/SpareParts/Form.cshtml. Es el modelo que hay que copiar en el resto.
-    // ---------------------------------------------------------------------------------
-
     /// <summary>Muestra el formulario vacío para dar de alta un recambio nuevo.</summary>
     [HttpGet]
+    [Authorize(Policy = PolicyNames.GestionTaller)]
     public IActionResult Create()
     {
-        // Se reutiliza la vista Form.cshtml, que sirve para crear y para editar.
-        // Un recambio nuevo tiene Id = 0: así sabe Save que tiene que INSERTAR.
-        return View("Form", new SparePart());
+        return View("Form", new SparePartFormViewModel());
     }
 
     /// <summary>Muestra el formulario relleno con los datos de un recambio existente.</summary>
     [HttpGet]
+    [Authorize(Policy = PolicyNames.GestionTaller)]
     public async Task<IActionResult> Edit(int id)
     {
         var sparePart = await context.SpareParts.FindAsync(id);
@@ -83,65 +86,81 @@ public class SparePartsController : Controller
             return NotFound();
         }
 
-        // Mismo formulario que Create, pero con los datos del recambio. Su Id es mayor que 0,
-        // así que Save lo ACTUALIZARÁ en lugar de crear otro.
-        return View("Form", sparePart);
+        var model = new SparePartFormViewModel
+        {
+            Id = sparePart.Id,
+            Reference = sparePart.Reference,
+            Name = sparePart.Name,
+            Brand = sparePart.Brand,
+            UnitPrice = sparePart.UnitPrice,
+            Stock = sparePart.Stock,
+            MinStock = sparePart.MinStock
+        };
+
+        return View("Form", model);
     }
 
-    /// <summary>Guarda el formulario: crea el recambio si Id es 0 y lo actualiza si no.</summary>
+    /// <summary>Guarda el formulario usando DTO anti-overposting: crea si Id es 0 y actualiza si no.</summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Save(SparePart sparePart)
+    [Authorize(Policy = PolicyNames.GestionTaller)]
+    public async Task<IActionResult> Save(SparePartFormViewModel model)
     {
-        // 1) Las validaciones de los atributos del modelo ([Required], [Range]...) ya se han aplicado
-        //    antes de entrar aquí: el resultado está en ModelState.
-        // 2) Regla propia: la referencia es única en la base de datos. La comprobamos nosotros
-        //    antes de guardar; si no, SQLite lanzaría una excepción y el usuario vería un error 500.
+        var normalizedReference = model.Reference.Trim();
         var referenceInUse = await context.SpareParts
-            .AnyAsync(other => other.Reference == sparePart.Reference && other.Id != sparePart.Id);
+            .AnyAsync(other => other.Reference == normalizedReference && other.Id != model.Id);
         if (referenceInUse)
         {
-            ModelState.AddModelError(nameof(SparePart.Reference), "Ya existe un recambio con esa referencia.");
+            ModelState.AddModelError(nameof(SparePartFormViewModel.Reference), "Ya existe un recambio con esa referencia.");
         }
 
-        // 3) Si algo falla, se vuelve al formulario con lo que escribió el usuario y los mensajes de error.
         if (!ModelState.IsValid)
         {
-            return View("Form", sparePart);
+            return View("Form", model);
         }
 
-        if (sparePart.Id == 0)
+        int savedId;
+        if (model.Id == 0)
         {
-            // Alta: EF Core genera el Id al guardar.
-            context.SpareParts.Add(sparePart);
+            var entity = new SparePart
+            {
+                Reference = normalizedReference,
+                Name = model.Name.Trim(),
+                Brand = model.Brand.Trim(),
+                UnitPrice = model.UnitPrice,
+                Stock = model.Stock,
+                MinStock = model.MinStock
+            };
+            context.SpareParts.Add(entity);
+            await context.SaveChangesAsync();
+            savedId = entity.Id;
         }
         else
         {
-            // Edición: buscamos el recambio guardado y le copiamos los campos del formulario.
-            var existing = await context.SpareParts.FindAsync(sparePart.Id);
+            var existing = await context.SpareParts.FindAsync(model.Id);
             if (existing == null)
             {
                 return NotFound();
             }
 
-            existing.Reference = sparePart.Reference;
-            existing.Name = sparePart.Name;
-            existing.Brand = sparePart.Brand;
-            existing.UnitPrice = sparePart.UnitPrice;
-            existing.Stock = sparePart.Stock;
-            existing.MinStock = sparePart.MinStock;
+            existing.Reference = normalizedReference;
+            existing.Name = model.Name.Trim();
+            existing.Brand = model.Brand.Trim();
+            existing.UnitPrice = model.UnitPrice;
+            existing.Stock = model.Stock;
+            existing.MinStock = model.MinStock;
+            await context.SaveChangesAsync();
+            savedId = existing.Id;
         }
 
-        await context.SaveChangesAsync();
-
-        // TempData["Message"] se muestra una sola vez en el _Layout, después de redirigir.
         TempData["Message"] = "Recambio guardado correctamente.";
-        return RedirectToAction(nameof(Details), new { id = sparePart.Id });
+        return RedirectToAction(nameof(Details), new { id = savedId });
     }
 
     /// <summary>Elimina un recambio, salvo que ya se haya usado en alguna reparación.</summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Policy = PolicyNames.GestionTaller)]
     public async Task<IActionResult> Delete(int id)
     {
         var sparePart = await context.SpareParts.FindAsync(id);
@@ -150,9 +169,6 @@ public class SparePartsController : Controller
             return NotFound();
         }
 
-        // La relación RepairPart -> SparePart es Restrict: la base de datos no deja borrar un recambio
-        // que ya está en alguna reparación. Lo comprobamos antes y avisamos con un mensaje,
-        // para que la excepción no llegue al usuario como un error 500.
         var isUsed = await context.RepairParts.AnyAsync(repairPart => repairPart.SparePartId == id);
         if (isUsed)
         {
