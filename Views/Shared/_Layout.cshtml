@@ -50,24 +50,15 @@
                 <div class="collapse navbar-collapse" id="mainNav">
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item"><a class='@NavClass("Home")' asp-controller="Home" asp-action="Index">Inicio</a></li>
-                        <li class="nav-item dropdown">
-                            <a class='@(tallerActivo ? "nav-link dropdown-toggle active" : "nav-link dropdown-toggle")' href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Taller</a>
-                            <ul class="dropdown-menu">
-                                @if (User.IsInRole(RoleNames.Admin) || User.IsInRole(RoleNames.Mechanic) || User.IsInRole(RoleNames.Customer))
-                                {
-                                    <li><a class="dropdown-item" asp-controller="Vehicle" asp-action="Index">Vehículos</a></li>
-                                }
-                                <li><a class="dropdown-item" asp-controller="Repairs" asp-action="Index">Reparaciones</a></li>
-                                <li><a class="dropdown-item" asp-controller="RepairParts" asp-action="Index">Piezas usadas</a></li>
-                                <li><a class="dropdown-item" asp-controller="SpareParts" asp-action="Index">Recambios</a></li>
-                            </ul>
-                        </li>
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item dropdown">
                                 <a class='@(tallerActivo ? "nav-link dropdown-toggle active" : "nav-link dropdown-toggle")' href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Taller</a>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" asp-controller="Vehicle" asp-action="Index">Vehículos</a></li>
+                                    @if (User.IsInRole(RoleNames.Admin) || User.IsInRole(RoleNames.Mechanic) || User.IsInRole(RoleNames.Customer))
+                                    {
+                                        <li><a class="dropdown-item" asp-controller="Vehicle" asp-action="Index">Vehículos</a></li>
+                                    }
                                     <li><a class="dropdown-item" asp-controller="Repairs" asp-action="Index">Reparaciones</a></li>
                                     <li><a class="dropdown-item" asp-controller="RepairParts" asp-action="Index">Piezas usadas</a></li>
                                     <li><a class="dropdown-item" asp-controller="SpareParts" asp-action="Index">Recambios</a></li>
