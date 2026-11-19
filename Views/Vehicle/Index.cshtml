@@ -1,4 +1,4 @@
-@model IEnumerable<Vehicle>
+﻿@model IEnumerable<Vehicle>
 @{
     ViewData["Title"] = "Vehículos";
     var canManage = User.IsInRole(RoleNames.Admin) || User.IsInRole(RoleNames.Mechanic);
@@ -11,11 +11,10 @@
     </div>
     @if (canManage)
     {
-<<<<<<< HEAD
+
         <a class="btn btn-primary" asp-action="Create">Nuevo vehículo</a> 
-=======
+
         <a class="btn btn-primary" asp-action="Create">Nuevo vehículo</a>
->>>>>>> 4a333319846b0c18fe70a834f28488532408321a
     }
 </div>
 
