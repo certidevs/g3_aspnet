@@ -1,5 +1,9 @@
+using G3AspNet.Authorization;
 using G3AspNet.Data;
 using G3AspNet.Models;
+using G3AspNet.Models.Enum;
+using G3AspNet.Utilities;
+using G3AspNet.ViewModels.RepairParts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -11,19 +15,47 @@ namespace G3AspNet.Controllers;
 public class RepairPartsController : Controller
 {
     private readonly ApplicationDbContext context;
+    private readonly IAuthorizationService authorizationService;
 
-    /// <summary>Inicializa el controlador con el contexto de la base de datos.</summary>
-    /// <param name="context">Contexto usado para consultar y guardar reparaciones y recambios.</param>
-    public RepairPartsController(ApplicationDbContext context)
+    /// <summary>Inicializa el controlador con el contexto de la base de datos y autorización.</summary>
+    public RepairPartsController(
+        ApplicationDbContext context,
+        IAuthorizationService authorizationService)
     {
         this.context = context;
+        this.authorizationService = authorizationService;
+    }
+
+    // Admin ve todas; Mechanic solo piezas de sus reparaciones asignadas; Customer y User solo de sus vehículos.
+    private IQueryable<RepairPart> VisibleRepairParts()
+    {
+        var query = context.RepairParts.AsQueryable();
+
+        if (User.IsInRole(RoleNames.Admin))
+        {
+            return query;
+        }
+
+        var userId = User.GetRequiredUserId();
+        if (User.IsInRole(RoleNames.Mechanic))
+        {
+            return query.Where(rp => rp.Repair.MechanicId == userId);
+        }
+
+        return query.Where(rp => rp.Repair.Vehicle.OwnerId == userId);
     }
 
     /// <summary>Prepara las listas de reparaciones y recambios para los formularios.</summary>
-    /// <param name="repairPart">Pieza cuyos valores deben quedar seleccionados, si corresponde.</param>
-    private async Task PopulateDropdownsAsync(RepairPart? repairPart = null)
+    private async Task PopulateDropdownsAsync(RepairPartFormViewModel? repairPart = null)
     {
-        var repairs = await context.Repairs
+        var repairsQuery = context.Repairs.AsQueryable();
+        if (!User.IsInRole(RoleNames.Admin))
+        {
+            var userId = User.GetRequiredUserId();
+            repairsQuery = repairsQuery.Where(r => r.MechanicId == userId && r.Status != RepairStatus.Delivered);
+        }
+
+        var repairs = await repairsQuery
             .OrderBy(repair => repair.Id)
             .Select(repair => new
             {
@@ -44,11 +76,11 @@ public class RepairPartsController : Controller
         ViewBag.SpareParts = new SelectList(spareParts, "Id", "Description", repairPart?.SparePartId);
     }
 
-    /// <summary>Muestra el listado de piezas utilizadas en las reparaciones.</summary>
+    /// <summary>Muestra el listado de piezas utilizadas en las reparaciones accesibles.</summary>
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var repairParts = await context.RepairParts
+        var repairParts = await VisibleRepairParts()
             .Include(repairPart => repairPart.Repair)
             .ThenInclude(repair => repair.Vehicle)
             .Include(repairPart => repairPart.SparePart)
@@ -59,8 +91,7 @@ public class RepairPartsController : Controller
         return View(repairParts);
     }
 
-    /// <summary>Muestra los datos de una pieza usada o devuelve 404 si no existe.</summary>
-    /// <param name="id">Identificador de la pieza de reparación.</param>
+    /// <summary>Muestra los datos de una pieza usada tras validar acceso al recurso.</summary>
     [HttpGet]
     public async Task<IActionResult> Details(int id)
     {
@@ -70,14 +101,44 @@ public class RepairPartsController : Controller
             .Include(part => part.SparePart)
             .FirstOrDefaultAsync(part => part.Id == id);
 
-        return repairPart is null ? NotFound() : View(repairPart);
+        if (repairPart is null)
+        {
+            return NotFound();
+        }
+
+        var readAuth = await authorizationService.AuthorizeAsync(User, repairPart, WorkshopOperations.Read);
+        if (!readAuth.Succeeded)
+        {
+            return Forbid();
+        }
+
+        ViewBag.CanEdit = (await authorizationService.AuthorizeAsync(User, repairPart, WorkshopOperations.Update)).Succeeded;
+        ViewBag.CanDelete = (await authorizationService.AuthorizeAsync(User, repairPart, WorkshopOperations.Delete)).Succeeded;
+
+        return View(repairPart);
     }
 
     /// <summary>Muestra el formulario unificado para añadir una pieza a una reparación.</summary>
     [HttpGet]
+    [Authorize(Policy = PolicyNames.GestionTaller)]
     public async Task<IActionResult> Create(int? repairId = null)
     {
-        var model = new RepairPart
+        if (repairId is > 0)
+        {
+            var repair = await context.Repairs.FindAsync(repairId.Value);
+            if (repair is null)
+            {
+                return NotFound();
+            }
+
+            var auth = await authorizationService.AuthorizeAsync(User, repair, WorkshopOperations.AddWork);
+            if (!auth.Succeeded)
+            {
+                return Forbid();
+            }
+        }
+
+        var model = new RepairPartFormViewModel
         {
             RepairId = repairId ?? 0,
             Quantity = 1
@@ -87,31 +148,33 @@ public class RepairPartsController : Controller
         return View("Form", model);
     }
 
-    /// <summary>Añade una pieza, valida los datos y descuenta las unidades del stock.</summary>
-    /// <param name="repairPart">Datos de reparación, recambio, cantidad y precio.</param>
+    /// <summary>Añade una pieza, valida permisos sobre la reparación y descuenta stock.</summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(RepairPart repairPart)
+    [Authorize(Policy = PolicyNames.GestionTaller)]
+    public async Task<IActionResult> Create(RepairPartFormViewModel model)
     {
-        ModelState.Remove(nameof(RepairPart.Repair));
-        ModelState.Remove(nameof(RepairPart.SparePart));
-        ValidateRepairPart(repairPart);
-
         if (!ModelState.IsValid)
         {
-            await PopulateDropdownsAsync(repairPart);
-            return View("Form", repairPart);
+            await PopulateDropdownsAsync(model);
+            return View("Form", model);
         }
 
         var repair = await context.Repairs
             .Include(item => item.RepairParts)
-            .FirstOrDefaultAsync(item => item.Id == repairPart.RepairId);
+            .FirstOrDefaultAsync(item => item.Id == model.RepairId);
         if (repair is null)
         {
             return NotFound();
         }
 
-        var sparePart = await context.SpareParts.FindAsync(repairPart.SparePartId);
+        var authResult = await authorizationService.AuthorizeAsync(User, repair, WorkshopOperations.AddWork);
+        if (!authResult.Succeeded)
+        {
+            return Forbid();
+        }
+
+        var sparePart = await context.SpareParts.FindAsync(model.SparePartId);
         if (sparePart is null)
         {
             return NotFound();
@@ -120,13 +183,13 @@ public class RepairPartsController : Controller
         RepairPart addedRepairPart;
         try
         {
-            addedRepairPart = repair.AddPart(sparePart, repairPart.Quantity);
+            addedRepairPart = repair.AddPart(sparePart, model.Quantity);
         }
         catch (InvalidOperationException ex)
         {
-            ModelState.AddModelError(nameof(RepairPart.Quantity), ex.Message);
-            await PopulateDropdownsAsync(repairPart);
-            return View("Form", repairPart);
+            ModelState.AddModelError(nameof(RepairPartFormViewModel.Quantity), ex.Message);
+            await PopulateDropdownsAsync(model);
+            return View("Form", model);
         }
 
         await context.SaveChangesAsync();
@@ -135,8 +198,8 @@ public class RepairPartsController : Controller
     }
 
     /// <summary>Muestra el formulario unificado para editar una pieza ya asignada.</summary>
-    /// <param name="id">Identificador de la pieza de reparación.</param>
     [HttpGet]
+    [Authorize(Policy = PolicyNames.GestionTaller)]
     public async Task<IActionResult> Edit(int id)
     {
         var repairPart = await context.RepairParts
@@ -148,33 +211,38 @@ public class RepairPartsController : Controller
             return NotFound();
         }
 
-        await PopulateDropdownsAsync(repairPart);
-        return View("Form", repairPart);
+        var authResult = await authorizationService.AuthorizeAsync(User, repairPart, WorkshopOperations.Update);
+        if (!authResult.Succeeded)
+        {
+            return Forbid();
+        }
+
+        var model = new RepairPartFormViewModel
+        {
+            Id = repairPart.Id,
+            RepairId = repairPart.RepairId,
+            SparePartId = repairPart.SparePartId,
+            Quantity = repairPart.Quantity,
+            UnitPrice = repairPart.UnitPrice
+        };
+
+        await PopulateDropdownsAsync(model);
+        return View("Form", model);
     }
 
     /// <summary>Actualiza una pieza y ajusta el stock según los cambios realizados.</summary>
-    /// <param name="id">Identificador de la pieza que se va a editar.</param>
-    /// <param name="model">Nuevos datos de la pieza de reparación.</param>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, RepairPart model)
+    [Authorize(Policy = PolicyNames.GestionTaller)]
+    public async Task<IActionResult> Edit(int id, RepairPartFormViewModel model)
     {
         if (id != model.Id)
         {
             return BadRequest();
         }
 
-        ModelState.Remove(nameof(RepairPart.Repair));
-        ModelState.Remove(nameof(RepairPart.SparePart));
-        ValidateRepairPart(model);
-
-        if (!ModelState.IsValid)
-        {
-            await PopulateDropdownsAsync(model);
-            return View("Form", model);
-        }
-
         var repairPart = await context.RepairParts
+            .Include(part => part.Repair)
             .Include(part => part.SparePart)
             .FirstOrDefaultAsync(part => part.Id == id);
         if (repairPart is null)
@@ -182,11 +250,40 @@ public class RepairPartsController : Controller
             return NotFound();
         }
 
-        var repair = await context.Repairs.FindAsync(model.RepairId);
+        var authResult = await authorizationService.AuthorizeAsync(User, repairPart, WorkshopOperations.Update);
+        if (!authResult.Succeeded)
+        {
+            return Forbid();
+        }
+
+        var isAdmin = User.IsInRole(RoleNames.Admin);
+        if (!isAdmin)
+        {
+            // Solo Admin puede modificar manualmente el precio histórico facturado.
+            model.UnitPrice = repairPart.UnitPrice;
+            ModelState.Remove(nameof(RepairPartFormViewModel.UnitPrice));
+        }
+
+        if (!ModelState.IsValid)
+        {
+            await PopulateDropdownsAsync(model);
+            return View("Form", model);
+        }
+
+        var targetRepair = await context.Repairs.FindAsync(model.RepairId);
         var newSparePart = await context.SpareParts.FindAsync(model.SparePartId);
-        if (repair is null || newSparePart is null)
+        if (targetRepair is null || newSparePart is null)
         {
             return NotFound();
+        }
+
+        if (targetRepair.Id != repairPart.RepairId)
+        {
+            var targetAuth = await authorizationService.AuthorizeAsync(User, targetRepair, WorkshopOperations.AddWork);
+            if (!targetAuth.Succeeded)
+            {
+                return Forbid();
+            }
         }
 
         var oldSparePart = repairPart.SparePart;
@@ -198,7 +295,7 @@ public class RepairPartsController : Controller
 
         if (stockAfterRestoringOldPart < newQuantity)
         {
-            ModelState.AddModelError(nameof(RepairPart.Quantity),
+            ModelState.AddModelError(nameof(RepairPartFormViewModel.Quantity),
                 "No hay stock suficiente para la cantidad seleccionada.");
             await PopulateDropdownsAsync(model);
             return View("Form", model);
@@ -210,12 +307,15 @@ public class RepairPartsController : Controller
         }
 
         newSparePart.Stock = stockAfterRestoringOldPart - newQuantity;
-        repairPart.RepairId = repair.Id;
-        repairPart.Repair = repair;
+        repairPart.RepairId = targetRepair.Id;
+        repairPart.Repair = targetRepair;
         repairPart.SparePartId = newSparePart.Id;
         repairPart.SparePart = newSparePart;
         repairPart.Quantity = newQuantity;
-        repairPart.UnitPrice = model.UnitPrice;
+        if (isAdmin)
+        {
+            repairPart.UnitPrice = model.UnitPrice;
+        }
 
         await context.SaveChangesAsync();
         TempData["Message"] = "Pieza de reparación actualizada correctamente.";
@@ -223,8 +323,8 @@ public class RepairPartsController : Controller
     }
 
     /// <summary>Muestra la confirmación antes de eliminar una pieza de reparación.</summary>
-    /// <param name="id">Identificador de la pieza de reparación.</param>
     [HttpGet]
+    [Authorize(Policy = PolicyNames.GestionTaller)]
     public async Task<IActionResult> Delete(int id)
     {
         var repairPart = await context.RepairParts
@@ -233,21 +333,39 @@ public class RepairPartsController : Controller
             .Include(part => part.SparePart)
             .FirstOrDefaultAsync(part => part.Id == id);
 
-        return repairPart is null ? NotFound() : View(repairPart);
+        if (repairPart is null)
+        {
+            return NotFound();
+        }
+
+        var authResult = await authorizationService.AuthorizeAsync(User, repairPart, WorkshopOperations.Delete);
+        if (!authResult.Succeeded)
+        {
+            return Forbid();
+        }
+
+        return View(repairPart);
     }
 
     /// <summary>Elimina la pieza y devuelve su cantidad al stock del recambio.</summary>
-    /// <param name="id">Identificador de la pieza que se va a eliminar.</param>
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [Authorize(Policy = PolicyNames.GestionTaller)]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var repairPart = await context.RepairParts
+            .Include(part => part.Repair)
             .Include(part => part.SparePart)
             .FirstOrDefaultAsync(part => part.Id == id);
         if (repairPart is null)
         {
             return NotFound();
+        }
+
+        var authResult = await authorizationService.AuthorizeAsync(User, repairPart, WorkshopOperations.Delete);
+        if (!authResult.Succeeded)
+        {
+            return Forbid();
         }
 
         repairPart.SparePart.Stock += repairPart.Quantity;
@@ -256,30 +374,5 @@ public class RepairPartsController : Controller
 
         TempData["Message"] = "Pieza eliminada de la reparación y stock restablecido.";
         return RedirectToAction(nameof(Index));
-    }
-
-    /// <summary>Valida las referencias y los límites de cantidad y precio de una pieza.</summary>
-    /// <param name="repairPart">Pieza cuyos datos se validan.</param>
-    private void ValidateRepairPart(RepairPart repairPart)
-    {
-        if (repairPart.RepairId <= 0)
-        {
-            ModelState.AddModelError(nameof(RepairPart.RepairId), "Debes seleccionar una reparación.");
-        }
-
-        if (repairPart.SparePartId <= 0)
-        {
-            ModelState.AddModelError(nameof(RepairPart.SparePartId), "Debes seleccionar un recambio.");
-        }
-
-        if (repairPart.Quantity is < 1 or > 1000)
-        {
-            ModelState.AddModelError(nameof(RepairPart.Quantity), "La cantidad debe estar entre 1 y 1000.");
-        }
-
-        if (repairPart.UnitPrice is < 0 or > 100000)
-        {
-            ModelState.AddModelError(nameof(RepairPart.UnitPrice), "El precio debe estar entre 0 y 100000.");
-        }
     }
 }

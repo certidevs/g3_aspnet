@@ -1,11 +1,17 @@
+@using G3AspNet.Models.Enum
 @model IEnumerable<RepairPart>
 @{
     ViewData["Title"] = "Piezas usadas";
+    var isAdmin = User.IsInRole(RoleNames.Admin);
+    var isStaff = isAdmin || User.IsInRole(RoleNames.Mechanic);
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="h2 mb-0">Piezas usadas en reparaciones</h1>
-    <a class="btn btn-primary" asp-action="Create">Añadir pieza</a>
+    @if (isStaff)
+    {
+        <a class="btn btn-primary" asp-action="Create">Añadir pieza</a>
+    }
 </div>
 
 @if (!Model.Any())
@@ -31,6 +37,7 @@ else
             <tbody>
             @foreach (var item in Model)
             {
+                var canModify = isAdmin || (isStaff && item.Repair.Status != RepairStatus.Delivered);
                 <tr>
                     <td><a asp-controller="Repairs" asp-action="Details" asp-route-id="@item.RepairId">#@item.RepairId</a></td>
                     <td>@item.Repair.Vehicle?.LicensePlate</td>
@@ -41,8 +48,11 @@ else
                     <td class="text-end text-nowrap">
                         <div class="btn-group" role="group">
                             <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@item.Id">Ver</a>
-                            <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.Id">Editar</a>
-                            <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@item.Id">Eliminar</a>
+                            @if (canModify)
+                            {
+                                <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.Id">Editar</a>
+                                <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@item.Id">Eliminar</a>
+                            }
                         </div>
                     </td>
                 </tr>

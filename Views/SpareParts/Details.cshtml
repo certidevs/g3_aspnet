@@ -1,13 +1,12 @@
-﻿@model SparePart
+@model SparePart
 @{
     ViewData["Title"] = $"Recambio {Model.Name}";
+    var isStaff = User.IsInRole(RoleNames.Admin) || User.IsInRole(RoleNames.Mechanic);
 }
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <h1 class="h2 mb-0">@Model.Name</h1>
-    <div class="card-footer bg-transparent">
-        <a class="btn btn-outline-secondary" asp-action="Index">Volver</a>
-    </div>
+    <a class="btn btn-outline-secondary" asp-action="Index">Volver</a>
 </div>
 
 <div class="card mb-4">
@@ -37,13 +36,16 @@
             <dd class="col-sm-9">@Model.MinStock unidades</dd>
         </dl>
     </div>
-        <div class="d-flex gap-2">
-            <div class="btn-group">
-                <a class="btn btn-outline-secondary" asp-action="Edit" asp-route-id="@Model.Id">Editar</a> 
-                <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.Id">Eliminar</a> 
-             </div>
-    </div>
-
+    @if (isStaff)
+    {
+        <div class="card-footer d-flex gap-2">
+            <a class="btn btn-outline-secondary" asp-action="Edit" asp-route-id="@Model.Id">Editar</a>
+            <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="d-inline"
+                  onsubmit="return confirm('¿Eliminar este recambio?');">
+                <button type="submit" class="btn btn-outline-danger">Eliminar</button>
+            </form>
+        </div>
+    }
 </div>
 
 <h2 class="h4 mb-3">Reparaciones en las que se ha usado</h2>

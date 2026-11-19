@@ -1,4 +1,4 @@
-﻿@model ProfileViewModel
+@model ProfileViewModel
 @inject ImageStorage ImageStorage
 @{
     ViewData["Title"] = "Mi perfil";
@@ -11,11 +11,20 @@
         <h1 class="h2 mb-1">Mi perfil</h1>
         <p class="text-secondary mb-0">Datos de la cuenta común a cualquier proyecto del curso.</p>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-secondary" asp-action="TwoFactor">Seguridad 2FA</a>
         <a class="btn btn-primary" asp-action="ChangePassword">Cambiar contraseña</a>
         <a class="btn btn-secondary" asp-action="Edit">Editar perfil</a>
     </div>
 </div>
+
+@if (User.IsInRole(RoleNames.Admin) && !Model.User.TwoFactorEnabled)
+{
+    <div class="alert alert-warning d-flex justify-content-between align-items-center" role="alert">
+        <span>Tu cuenta de administrador aún no tiene activado el doble factor (2FA TOTP).</span>
+        <a class="btn btn-sm btn-warning" asp-action="TwoFactor">Configurar 2FA</a>
+    </div>
+}
 
 <div class="card">
     <div class="card-body p-4">
@@ -41,6 +50,17 @@
             <dd class="col-sm-9">@Model.User.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
             <dt class="col-sm-3">Estado</dt>
             <dd class="col-sm-9">@(Model.User.IsActive ? "Activa" : "Inactiva")</dd>
+            <dt class="col-sm-3">Doble factor (2FA)</dt>
+            <dd class="col-sm-9">
+                @if (Model.User.TwoFactorEnabled)
+                {
+                    <span class="badge text-bg-success">Activado</span>
+                }
+                else
+                {
+                    <span class="badge text-bg-secondary">Desactivado</span>
+                }
+            </dd>
         </dl>
     </div>
 </div>
