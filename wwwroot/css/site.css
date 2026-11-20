@@ -1,12 +1,15 @@
 ﻿/* Bootstrap lleva el estilo de la plantilla. Solo se añade el avatar, que no existe
    como componente nativo y será común a todos los proyectos de grupo. */
+:root{
+    --bs-primary:#ea271c;
+    --bs-primary-rgb: 234, 39, 28;
+}
 .avatar {
   width: 2rem;
   height: 2rem;
   border-radius: 50%;
   object-fit: cover;
 }
-
 .avatar-placeholder {
   display: inline-flex;
   align-items: center;
@@ -19,7 +22,6 @@
 /* Defino el estilo de los enlaces */
 a{
     color:#a51c15;
-    
 }
 /* Defino el estilo de los botones */
 .btn {
