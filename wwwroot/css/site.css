@@ -1,6 +1,7 @@
 ﻿/* Bootstrap lleva el estilo de la plantilla. Solo se añade el avatar, que no existe
    como componente nativo y será común a todos los proyectos de grupo. */
-:root{
+/* Modifico el color de texto de bootstrap según nuestros colores corporativos*/ 
+   :root{
     --bs-primary:#ea271c;
     --bs-primary-rgb: 234, 39, 28;
 }
