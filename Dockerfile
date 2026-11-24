@@ -1,21 +1,39 @@
-# Etapa de compilación: SDK, restauración de paquetes y publicación Release.
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+# syntax=docker/dockerfile:1
+
+# Imagen de SDK solo para restaurar y publicar. No llega a producción.
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+ARG TARGETARCH
 WORKDIR /src
 
-COPY ["G3AspNet.csproj", "./"]
-RUN dotnet restore "G3AspNet.csproj"
+# Restaurar primero el csproj para cachear NuGet si el código cambia y las dependencias no.
+COPY --link G3AspNet.csproj ./
+RUN dotnet restore ./G3AspNet.csproj -a $TARGETARCH
 
-COPY . .
-RUN dotnet publish "G3AspNet.csproj" --configuration Release --output /app/publish /p:UseAppHost=false
+COPY --link . .
+RUN dotnet publish ./G3AspNet.csproj \
+    -c Release \
+    -a $TARGETARCH \
+    --no-restore \
+    -o /app/publish \
+    /p:UseAppHost=false
 
-# Imagen final pequeña: solo contiene el runtime de ASP.NET Core.
+# Runtime: ASP.NET, sin SDK, sin herramientas de desarrollo.
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 
-COPY --from=build /app/publish .
-RUN mkdir -p App_Data wwwroot/uploads/avatars
+# Puerto HTTP por defecto de las imágenes oficiales de .NET 8+.
+EXPOSE 8080
 
-EXPOSE 10000
+COPY --from=build --chown=$APP_UID:$APP_UID /app/publish .
 
-# Render define PORT; 10000 permite ejecutar también el contenedor localmente.
-ENTRYPOINT ["sh", "-c", "exec dotnet G3AspNet.dll --urls http://0.0.0.0:${PORT:-10000}"]
+# SQLite (App_Data) y avatares necesitan escritura; el usuario app (APP_UID=1654) no es root.
+RUN mkdir -p /app/App_Data /app/wwwroot/uploads/avatars \
+    && chown -R $APP_UID:$APP_UID /app/App_Data /app/wwwroot/uploads
+
+USER $APP_UID
+
+ENV ASPNETCORE_HTTP_PORTS=8080 \
+    ASPNETCORE_ENVIRONMENT=Production \
+    DOTNET_EnableDiagnostics=0
+
+ENTRYPOINT ["dotnet", "G3AspNet.dll"]
