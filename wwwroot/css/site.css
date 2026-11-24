@@ -25,6 +25,11 @@ a{
     color:#a51c15;
 }
 /* Defino el estilo de los botones */
+.alert-success{
+    --bs-alert-bg: #e9b8b5;
+    --bs-alert-color:  #7a1510;
+    --bs-alert-border: #7a1510;
+}
 .btn {
   --bs-btn-padding-x: 1.5rem;
   --bs-btn-padding-y: 0.5rem;
