@@ -8,7 +8,8 @@ namespace G3AspNet.Authorization;
 
 /// <summary>
 /// Autorización basada en recurso para órdenes de reparación:
-/// Admin tiene control total; Mechanic solo sobre sus órdenes asignadas (y no entregadas al editar);
+/// Admin tiene control total salvo añadir trabajo en órdenes completadas o entregadas;
+/// Mechanic solo sobre sus órdenes asignadas y abiertas;
 /// Customer y User solo lectura sobre reparaciones de sus propios vehículos.
 /// </summary>
 public sealed class RepairAuthorizationHandler
@@ -28,6 +29,12 @@ public sealed class RepairAuthorizationHandler
     {
         var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId))
+        {
+            return Task.CompletedTask;
+        }
+
+        if (requirement.Name == WorkshopOperations.AddWork.Name &&
+            resource.Status is RepairStatus.Completed or RepairStatus.Delivered)
         {
             return Task.CompletedTask;
         }
@@ -57,7 +64,7 @@ public sealed class RepairAuthorizationHandler
 
             if ((requirement.Name == WorkshopOperations.Update.Name ||
                  requirement.Name == WorkshopOperations.AddWork.Name) &&
-                resource.Status != RepairStatus.Delivered)
+                resource.Status is not (RepairStatus.Completed or RepairStatus.Delivered))
             {
                 context.Succeed(requirement);
                 return Task.CompletedTask;

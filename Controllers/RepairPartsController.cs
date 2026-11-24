@@ -49,10 +49,14 @@ public class RepairPartsController : Controller
     private async Task PopulateDropdownsAsync(RepairPartFormViewModel? repairPart = null)
     {
         var repairsQuery = context.Repairs.AsQueryable();
+        repairsQuery = repairsQuery.Where(r =>
+            r.Status != RepairStatus.Completed &&
+            r.Status != RepairStatus.Delivered);
+
         if (!User.IsInRole(RoleNames.Admin))
         {
             var userId = User.GetRequiredUserId();
-            repairsQuery = repairsQuery.Where(r => r.MechanicId == userId && r.Status != RepairStatus.Delivered);
+            repairsQuery = repairsQuery.Where(r => r.MechanicId == userId);
         }
 
         var repairs = await repairsQuery

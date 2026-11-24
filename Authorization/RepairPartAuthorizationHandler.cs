@@ -30,6 +30,12 @@ public sealed class RepairPartAuthorizationHandler
             return Task.CompletedTask;
         }
 
+        var repairIsClosed = resource.Repair?.Status is RepairStatus.Completed or RepairStatus.Delivered;
+        if (repairIsClosed && requirement.Name != WorkshopOperations.Read.Name)
+        {
+            return Task.CompletedTask;
+        }
+
         if (context.User.IsInRole(RoleNames.Admin))
         {
             context.Succeed(requirement);
@@ -56,7 +62,7 @@ public sealed class RepairPartAuthorizationHandler
             if ((requirement.Name == WorkshopOperations.Create.Name ||
                  requirement.Name == WorkshopOperations.Update.Name ||
                  requirement.Name == WorkshopOperations.Delete.Name) &&
-                resource.Repair!.Status != RepairStatus.Delivered)
+                resource.Repair!.Status is not (RepairStatus.Completed or RepairStatus.Delivered))
             {
                 context.Succeed(requirement);
                 return Task.CompletedTask;
