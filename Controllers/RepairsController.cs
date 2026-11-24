@@ -1,6 +1,7 @@
 using G3AspNet.Authorization;
 using G3AspNet.Data;
 using G3AspNet.Models;
+using G3AspNet.Models.Enum;
 using G3AspNet.Utilities;
 using G3AspNet.ViewModels.Repairs;
 using Microsoft.AspNetCore.Authorization;
@@ -183,10 +184,10 @@ public class RepairsController : Controller
             VehicleId = model.VehicleId,
             MechanicId = model.MechanicId,
             RepairType = model.RepairType,
-            Status = model.Status,
+            Status = RepairStatus.Pending,
             Description = model.Description.Trim(),
             OpenedAt = model.OpenedAt,
-            CompletedAt = model.CompletedAt,
+            CompletedAt = null,
             MileageAtEntry = model.MileageAtEntry,
             LaborHours = model.LaborHours,
             HourlyRate = model.HourlyRate
@@ -283,15 +284,15 @@ public class RepairsController : Controller
 
         if (!ModelState.IsValid)
         {
+            model.Status = repair.Status;
+            model.CompletedAt = repair.CompletedAt;
             await PopulateDropdownsAsync(model);
             return View("Form", model);
         }
 
         repair.VehicleId = model.VehicleId;
         repair.RepairType = model.RepairType;
-        repair.Status = model.Status;
         repair.OpenedAt = model.OpenedAt;
-        repair.CompletedAt = model.CompletedAt;
         repair.MileageAtEntry = model.MileageAtEntry;
         repair.LaborHours = model.LaborHours;
         repair.Description = model.Description.Trim();
@@ -369,6 +370,129 @@ public class RepairsController : Controller
 
         TempData["Message"] = "Reparación eliminada correctamente.";
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Policy = PolicyNames.GestionTaller)]
+    public async Task<IActionResult> Start(int id)
+    {
+        var repair = await context.Repairs.FirstOrDefaultAsync(r => r.Id == id);
+        if (repair == null)
+        {
+            return NotFound();
+        }
+
+        var authResult = await authorizationService.AuthorizeAsync(User, repair, WorkshopOperations.Update);
+        if (!authResult.Succeeded)
+        {
+            return Forbid();
+        }
+
+        if (repair.Status != RepairStatus.Pending && repair.Status != RepairStatus.WaitingParts)
+        {
+            TempData["Error"] = "Solo se puede iniciar una reparación pendiente o retomar una que espera recambios.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        repair.Status = RepairStatus.InProgress;
+        await context.SaveChangesAsync();
+
+        TempData["Message"] = "Reparación en progreso.";
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Policy = PolicyNames.GestionTaller)]
+    public async Task<IActionResult> WaitForParts(int id)
+    {
+        var repair = await context.Repairs.FirstOrDefaultAsync(r => r.Id == id);
+        if (repair == null)
+        {
+            return NotFound();
+        }
+
+        var authResult = await authorizationService.AuthorizeAsync(User, repair, WorkshopOperations.Update);
+        if (!authResult.Succeeded)
+        {
+            return Forbid();
+        }
+
+        if (repair.Status != RepairStatus.InProgress)
+        {
+            TempData["Error"] = "Solo se puede esperar recambios en una reparación en progreso.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        repair.Status = RepairStatus.WaitingParts;
+        await context.SaveChangesAsync();
+
+        TempData["Message"] = "Reparación en espera de recambios.";
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Policy = PolicyNames.GestionTaller)]
+    public async Task<IActionResult> Complete(int id)
+    {
+        var repair = await context.Repairs
+            .Include(r => r.RepairParts)
+            .FirstOrDefaultAsync(r => r.Id == id);
+        if (repair == null)
+        {
+            return NotFound();
+        }
+
+        var authResult = await authorizationService.AuthorizeAsync(User, repair, WorkshopOperations.Update);
+        if (!authResult.Succeeded)
+        {
+            return Forbid();
+        }
+
+        if (repair.Status != RepairStatus.InProgress)
+        {
+            TempData["Error"] = "Solo se puede completar una reparación en progreso.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        if (repair.LaborHours <= 0)
+        {
+            TempData["Error"] = "Apunta las horas de mano de obra antes de completar la reparación.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        repair.Status = RepairStatus.Completed;
+        repair.CompletedAt = DateTime.UtcNow;
+        await context.SaveChangesAsync();
+
+        TempData["Message"] = $"Reparación completada. Coste total: {repair.TotalCost:N2} €.";
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Policy = PolicyNames.SoloAdmin)]
+    public async Task<IActionResult> Deliver(int id)
+    {
+        var repair = await context.Repairs.FirstOrDefaultAsync(r => r.Id == id);
+        if (repair == null)
+        {
+            return NotFound();
+        }
+
+        if (repair.Status != RepairStatus.Completed)
+        {
+            TempData["Error"] = "Solo se puede entregar una reparación completada.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        repair.Status = RepairStatus.Delivered;
+        await context.SaveChangesAsync();
+
+        TempData["Message"] = "Vehículo entregado al cliente. La reparación queda cerrada.";
+        return RedirectToAction(nameof(Details), new { id });
     }
 
     /// <summary>Añade un recambio a la reparación autorizada y descuenta la cantidad del stock disponible.</summary>

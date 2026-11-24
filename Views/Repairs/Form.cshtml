@@ -54,9 +54,9 @@
                 <span asp-validation-for="RepairType" class="text-danger"></span>
             </div>
             <div class="col-md-6">
-                <label asp-for="Status" class="form-label">Estado</label>
-                <select asp-for="Status" asp-items="Html.GetEnumSelectList<RepairStatus>()" class="form-select"></select>
-                <span asp-validation-for="Status" class="text-danger"></span>
+                <label class="form-label">Estado</label>
+                <div class="form-control-plaintext">@Html.DisplayFor(m => m.Status)</div>
+                <div class="form-text">El estado se cambia con los botones del detalle de la reparación.</div>
             </div>
             <div class="col-12">
                 <label asp-for="Description" class="form-label">Descripción</label>
@@ -69,9 +69,8 @@
                 <span asp-validation-for="OpenedAt" class="text-danger"></span>
             </div>
             <div class="col-md-6">
-                <label asp-for="CompletedAt" class="form-label">Fecha de finalización</label>
-                <input asp-for="CompletedAt" type="datetime-local" asp-format="{0:yyyy-MM-ddTHH:mm}" class="form-control" />
-                <span asp-validation-for="CompletedAt" class="text-danger"></span>
+                <label class="form-label">Fecha de finalización</label>
+                <div class="form-control-plaintext">@(Model.CompletedAt is null ? "Todavía abierta" : Model.CompletedAt.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm"))</div>
             </div>
             <div class="col-md-4">
                 <label asp-for="MileageAtEntry" class="form-label">Kilometraje de entrada</label>

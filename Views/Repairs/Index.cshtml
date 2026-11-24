@@ -41,7 +41,7 @@ else
             <tbody>
                 @foreach (var item in Model)
                 {
-                    var canEditRow = isAdmin || (User.IsInRole(RoleNames.Mechanic) && item.Status != RepairStatus.Delivered);
+                    var canEditRow = isAdmin || (User.IsInRole(RoleNames.Mechanic) && item.Status is not (RepairStatus.Completed or RepairStatus.Delivered));
                     <tr>
                         <td>#@item.Id</td>
                         <td>@item.Vehicle.LicensePlate</td>
