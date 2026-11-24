@@ -1,4 +1,4 @@
-@using G3AspNet.Models.Enum
+﻿@using G3AspNet.Models.Enum
 @model Repair
 @{
     ViewData["Title"] = $"Reparación #{Model.Id}";
@@ -8,7 +8,13 @@
     var canAddWork = ViewBag.CanAddWork as bool? ?? false;
     var isAdmin = User.IsInRole(RoleNames.Admin);
     var isStaff = isAdmin || User.IsInRole(RoleNames.Mechanic);
+    var canStart = canEdit && (Model.Status == RepairStatus.Pending || Model.Status == RepairStatus.WaitingParts);
+    var canComplete = canEdit && Model.Status == RepairStatus.InProgress;
+    var canDeliver = isAdmin && Model.Status == RepairStatus.Completed;
+    var hasActions = canStart || canComplete || canDeliver || canEdit || canDelete;
 }
+
+
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <h1 class="h2 mb-0">Reparación #@Model.Id</h1>
@@ -61,50 +67,53 @@
             <dd class="col-sm-9 fw-semibold">@Model.TotalCost.ToString("N2")&nbsp;€</dd>
         </dl>
 
-        @if (canEdit && (Model.Status == RepairStatus.Pending || Model.Status == RepairStatus.WaitingParts))
-        {
-            <form asp-action="Start" asp-route-id="@Model.Id" method="post" class="mt-3">
-                <button class="btn btn-success" type="submit">
+@if (hasActions)
+{
+    @* Formularios de las acciones de estado: van fuera del grupo y los botones se enlazan con form="..." *@
+    @if (canStart)
+    {
+        <form id="form-start" asp-action="Start" asp-route-id="@Model.Id" method="post"></form>
+    }
+    @if (canComplete)
+    {
+        <form id="form-complete" asp-action="Complete" asp-route-id="@Model.Id" method="post"
+              onsubmit="return confirm('¿Completar la reparación? Ya no se podrán añadir piezas.');"></form>
+        <form id="form-wait" asp-action="WaitForParts" asp-route-id="@Model.Id" method="post"></form>
+    }
+    @if (canDeliver)
+    {
+        <form id="form-deliver" asp-action="Deliver" asp-route-id="@Model.Id" method="post"
+              onsubmit="return confirm('¿Entregar el vehículo al cliente? La reparación quedará cerrada.');"></form>
+    }
+
+    <div class="card-footer d-flex gap-2 mt-3">
+        <div class="btn-group" role="group" aria-label="Acciones de la reparación">
+            @if (canStart)
+            {
+                <button type="submit" form="form-start" class="btn btn-primary">
                     @(Model.Status == RepairStatus.Pending ? "Iniciar reparación" : "Retomar reparación")
                 </button>
-            </form>
-        }
-        else if (canEdit && Model.Status == RepairStatus.InProgress)
-        {
-            <div class="d-flex flex-wrap gap-2 mt-3">
-                <form asp-action="Complete" asp-route-id="@Model.Id" method="post"
-                      onsubmit="return confirm('¿Completar la reparación? Ya no se podrán añadir piezas.');">
-                    <button class="btn btn-primary" type="submit">Completar reparación</button>
-                </form>
-                <form asp-action="WaitForParts" asp-route-id="@Model.Id" method="post">
-                    <button class="btn btn-outline-warning" type="submit">Poner en espera de recambios</button>
-                </form>
-            </div>
-        }
-
-        @if (isAdmin && Model.Status == RepairStatus.Completed)
-        {
-            <form asp-action="Deliver" asp-route-id="@Model.Id" method="post" class="mt-3"
-                  onsubmit="return confirm('¿Entregar el vehículo al cliente? La reparación quedará cerrada.');">
-                <button class="btn btn-success" type="submit">Entregar vehículo al cliente</button>
-            </form>
-        }
-
-        @if (canEdit || canDelete)
-        {
-            <div class="card-footer d-flex gap-2 mt-3">
-                <div class="btn-group">
-                    @if (canEdit)
-                    {
-                        <a class="btn btn-outline-secondary" asp-action="Edit" asp-route-id="@Model.Id">Editar</a>
-                    }
-                    @if (canDelete)
-                    {
-                        <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.Id">Eliminar</a>
-                    }
-                </div>
-            </div>
-        }
+            }
+            @if (canComplete)
+            {
+                <button type="submit" form="form-complete" class="btn btn-primary">Completar reparación</button>
+                <button type="submit" form="form-wait" class="btn btn-primary">Poner en espera de recambios</button>
+            }
+            @if (canDeliver)
+            {
+                <button type="submit" form="form-deliver" class="btn btn-primary">Entregar vehículo al cliente</button>
+            }
+            @if (canEdit)
+            {
+                <a class="btn btn-outline-secondary" asp-action="Edit" asp-route-id="@Model.Id">Editar</a>
+            }
+            @if (canDelete)
+            {
+                <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.Id">Eliminar</a>
+            }
+        </div>
+    </div>
+}
 
         <h2 class="h4 mb-3 mt-4">Piezas usadas</h2>
 
