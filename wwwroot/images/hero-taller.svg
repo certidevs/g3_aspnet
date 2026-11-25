@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 340" role="img" aria-label="Ilustración de un coche rojo en un taller con una llave inglesa">
+  <title>Coche en el taller</title>
+  <defs>
+    <linearGradient id="g3body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F2463B"/>
+      <stop offset="1" stop-color="#B81E15"/>
+    </linearGradient>
+    <linearGradient id="g3glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#CFE7F3"/>
+      <stop offset="1" stop-color="#7FA9C0"/>
+    </linearGradient>
+  </defs>
+  <!-- luz del foco -->
+  <path d="M280 0 L120 300 H440 Z" fill="#FFFFFF" opacity=".05"/>
+  <!-- suelo -->
+  <rect x="0" y="290" width="560" height="50" fill="#0E0E0E"/>
+  <rect x="0" y="290" width="560" height="5" fill="#EA271C"/>
+  <g fill="#FFD43B" opacity=".9">
+    <rect x="20" y="314" width="40" height="6" rx="2"/>
+    <rect x="130" y="314" width="40" height="6" rx="2"/>
+    <rect x="240" y="314" width="40" height="6" rx="2"/>
+    <rect x="350" y="314" width="40" height="6" rx="2"/>
+    <rect x="460" y="314" width="40" height="6" rx="2"/>
+  </g>
+  <ellipse cx="280" cy="292" rx="215" ry="12" fill="#000" opacity=".5"/>
+  <!-- carrocería -->
+  <path d="M60 252 L66 222 Q72 206 96 200 L168 190 Q200 130 258 126 L352 126 Q400 130 428 188 L478 198 Q504 204 506 228 L510 252 Q510 262 500 262 H70 Q60 262 60 252 Z" fill="url(#g3body)"/>
+  <!-- ventanas -->
+  <path d="M184 188 Q208 144 258 142 H296 V188 Z" fill="url(#g3glass)"/>
+  <path d="M308 142 H350 Q386 146 408 188 H308 Z" fill="url(#g3glass)"/>
+  <rect x="296" y="142" width="12" height="46" fill="#8E1710"/>
+  <!-- línea lateral y manilla -->
+  <path d="M96 222 H480" stroke="#8E1710" stroke-width="3" fill="none"/>
+  <rect x="322" y="204" width="28" height="6" rx="3" fill="#8E1710"/>
+  <!-- faros -->
+  <path d="M486 206 h18 q4 0 4 4 v10 q0 4 -4 4 h-22 Z" fill="#FFF4B8"/>
+  <path d="M62 214 h14 v18 h-12 q-4 0 -4 -4 v-10 q0 -4 4 -4 Z" fill="#8E1710"/>
+  <!-- parachoques -->
+  <rect x="58" y="244" width="454" height="12" rx="6" fill="#1A1A1A"/>
+  <!-- ruedas -->
+  <g>
+    <circle cx="152" cy="262" r="40" fill="#141414"/>
+    <circle cx="152" cy="262" r="22" fill="#BFC5CA"/>
+    <circle cx="152" cy="262" r="8" fill="#141414"/>
+    <circle cx="418" cy="262" r="40" fill="#141414"/>
+    <circle cx="418" cy="262" r="22" fill="#BFC5CA"/>
+    <circle cx="418" cy="262" r="8" fill="#141414"/>
+    <g stroke="#141414" stroke-width="4">
+      <line x1="152" y1="244" x2="152" y2="280"/><line x1="134" y1="262" x2="170" y2="262"/>
+      <line x1="418" y1="244" x2="418" y2="280"/><line x1="400" y1="262" x2="436" y2="262"/>
+    </g>
+  </g>
+  <!-- llave inglesa -->
+  <g transform="translate(470 40) rotate(35)">
+    <rect x="-10" y="0" width="20" height="110" rx="10" fill="#D8DCE0"/>
+    <path d="M-28 -6 a28 28 0 0 1 20 -42 v22 h16 v-22 a28 28 0 0 1 20 42 a28 28 0 0 1 -18 22 h-20 a28 28 0 0 1 -18 -22 Z" fill="#EA271C"/>
+    <circle cx="0" cy="92" r="6" fill="#8E1710"/>
+  </g>
+  <!-- chispas -->
+  <g stroke="#FFD43B" stroke-width="4" stroke-linecap="round">
+    <line x1="60" y1="96" x2="60" y2="116"/><line x1="50" y1="106" x2="70" y2="106"/>
+    <line x1="120" y1="56" x2="120" y2="70"/><line x1="113" y1="63" x2="127" y2="63"/>
+  </g>
+</svg>

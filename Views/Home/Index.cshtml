@@ -1,37 +1,174 @@
 ﻿@{
     ViewData["Title"] = "Inicio";
+    var vehicles = (int)ViewData["Vehicles"]!;
+    var repairs = (int)ViewData["Repairs"]!;
+    var inProgress = (int)ViewData["InProgress"]!;
+    var spareParts = (int)ViewData["SpareParts"]!;
 }
 
-<section class="py-4 py-lg-5">
-    <div class="row align-items-center g-4">
-        <div class="col-lg-8">
-            <p class="text-primary text-uppercase fw-semibold small mb-2">Grupo 3</p>
-            <h1 class="display-5 fw-bold">G3 ASP.NET</h1>
-            <p class="lead text-secondary">La infraestructura transversal ya está preparada. El equipo añadirá las entidades, asociaciones, servicios, controladores y vistas del dominio del proyecto.</p>
-            <div class="d-flex flex-wrap gap-2">
-                @if (User.Identity?.IsAuthenticated == true)
-                {
-                    <a class="btn btn-primary" asp-controller="Profile" asp-action="Index">Ver mi perfil</a>
-                }
-                else
-                {
-                    <a class="btn btn-primary" asp-controller="Account" asp-action="Register">Crear cuenta</a>
-                    <a class="btn btn-secondary" asp-controller="Account" asp-action="Login">Iniciar sesión</a>
-                }
+<div class="taller-home">
+
+    <!-- Hero oscuro -->
+    <section class="taller-hero rounded-4 overflow-hidden mb-5">
+        <div class="row g-0 align-items-center">
+            <div class="col-lg-6 p-4 p-lg-5 text-white position-relative">
+                <p class="taller-tag mb-3"><i class="fa-solid fa-wrench me-2"></i>Taller mecánico · Revisión y reparación</p>
+                <h1 class="taller-title mb-3">Tu coche, <br />en <span class="taller-red">buenas manos</span></h1>
+                <p class="lead taller-lead mb-4">
+                    Mantenimiento, neumáticos, frenos y carrocería con presupuesto claro.
+                    Sigue el estado de tu reparación en línea, sin llamadas ni sorpresas.
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a class="btn btn-primary btn-lg" asp-controller="Repairs" asp-action="Index">
+                            <i class="fa-solid fa-screwdriver-wrench me-2"></i>Mis reparaciones
+                        </a>
+                        <a class="btn btn-outline-light btn-lg" asp-controller="Vehicle" asp-action="Index">
+                            <i class="fa-solid fa-car me-2"></i>Mis vehículos
+                        </a>
+                    }
+                    else
+                    {
+                        <a class="btn btn-primary btn-lg" asp-controller="Account" asp-action="Login">
+                            <i class="fa-solid fa-right-to-bracket me-2"></i>Acceder
+                        </a>
+                        <a class="btn btn-outline-light btn-lg" asp-controller="Account" asp-action="Register">
+                            <i class="fa-solid fa-user-plus me-2"></i>Crear cuenta
+                        </a>
+                    }
+                </div>
+            </div>
+            <div class="col-lg-6 taller-hero-art">
+                <img class="img-fluid w-100" src="~/images/hero-taller.svg" alt="Coche rojo en el taller junto a una llave inglesa" />
             </div>
         </div>
-        <div class="col-lg-4">
-            <div class="card">
-                <div class="card-body">
-                    <h2 class="h5">Incluido desde el primer día</h2>
-                    <ul class="mb-0 ps-3">
-                        <li>Identity, roles y login por cookie</li>
-                        <li>SQLite y Entity Framework Core</li>
-                        <li>Perfil, avatar y cambio de contraseña</li>
-                        <li>Administración de usuarios</li>
-                    </ul>
+        <div class="taller-stripe" aria-hidden="true"></div>
+    </section>
+
+    <!-- Contadores -->
+    <section class="row g-3 mb-5" aria-label="Cifras del taller">
+        <div class="col-6 col-lg-3">
+            <div class="taller-counter">
+                <i class="fa-solid fa-car-side"></i>
+                <strong>@vehicles</strong>
+                <span>Vehículos atendidos</span>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="taller-counter">
+                <i class="fa-solid fa-circle-check"></i>
+                <strong>@repairs</strong>
+                <span>Reparaciones terminadas</span>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="taller-counter">
+                <i class="fa-solid fa-gears"></i>
+                <strong>@inProgress</strong>
+                <span>En el taller ahora</span>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="taller-counter">
+                <i class="fa-solid fa-boxes-stacked"></i>
+                <strong>@spareParts</strong>
+                <span>Recambios en almacén</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Servicios -->
+    <section class="mb-5">
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <h2 class="taller-heading mb-0">Nuestros servicios</h2>
+            <span class="taller-rule flex-grow-1"></span>
+        </div>
+        <div class="row g-3">
+            <div class="col-sm-6 col-lg-4">
+                <div class="taller-service">
+                    <i class="fa-solid fa-oil-can"></i>
+                    <h3>Cambio de aceite</h3>
+                    <p>Aceite y filtro adecuados a tu motor para alargar su vida útil.</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="taller-service">
+                    <i class="fa-solid fa-clipboard-check"></i>
+                    <h3>Inspección general</h3>
+                    <p>Revisión de más de cuarenta puntos antes de la ITV o de un viaje largo.</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="taller-service">
+                    <i class="fa-solid fa-droplet"></i>
+                    <h3>Frenos y líquidos</h3>
+                    <p>Cambio de líquido de frenos y control de pastillas y discos.</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="taller-service">
+                    <i class="fa-solid fa-circle-notch"></i>
+                    <h3>Neumáticos</h3>
+                    <p>Montaje, equilibrado y alineado para una conducción segura.</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="taller-service">
+                    <i class="fa-solid fa-car-burst"></i>
+                    <h3>Carrocería</h3>
+                    <p>Reparamos golpes y rozaduras para que tu coche recupere su forma.</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="taller-service">
+                    <i class="fa-solid fa-spray-can-sparkles"></i>
+                    <h3>Pintura</h3>
+                    <p>Igualación de color y acabado profesional en cabina.</p>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
+
+    <!-- Proceso -->
+    <section class="taller-process rounded-4 p-4 p-lg-5 mb-5">
+        <h2 class="taller-heading text-white mb-4">Así trabajamos</h2>
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="taller-step"><span>01</span><h3>Recepción</h3><p>Registramos tu vehículo y el motivo de la visita.</p></div>
+            </div>
+            <div class="col-md-3">
+                <div class="taller-step"><span>02</span><h3>Diagnóstico</h3><p>Un mecánico revisa el coche y te da el presupuesto.</p></div>
+            </div>
+            <div class="col-md-3">
+                <div class="taller-step"><span>03</span><h3>Reparación</h3><p>Trabajamos con recambios controlados en almacén.</p></div>
+            </div>
+            <div class="col-md-3">
+                <div class="taller-step"><span>04</span><h3>Entrega</h3><p>Revisas el coste desglosado y recoges tu coche.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Horario y contacto -->
+    <section class="row g-3">
+        <div class="col-md-6">
+            <div class="taller-info h-100">
+                <h3><i class="fa-regular fa-clock me-2"></i>Horario</h3>
+                <ul class="list-unstyled mb-0">
+                    <li class="d-flex justify-content-between"><span>Lunes a viernes</span><strong>8:00 – 19:00</strong></li>
+                    <li class="d-flex justify-content-between"><span>Sábados</span><strong>9:00 – 14:00</strong></li>
+                    <li class="d-flex justify-content-between"><span>Domingos y festivos</span><strong>Cerrado</strong></li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="taller-info h-100">
+                <h3><i class="fa-solid fa-headset me-2"></i>¿Hablamos?</h3>
+                <p class="mb-2">Si tu coche no arranca o tienes una urgencia, accede a tu cuenta y registra una reparación con prioridad.</p>
+                <a class="btn btn-secondary" asp-controller="Account" asp-action="Login">
+                    <i class="fa-solid fa-right-to-bracket me-2"></i>Acceder a mi cuenta
+                </a>
+            </div>
+        </div>
+    </section>
+</div>

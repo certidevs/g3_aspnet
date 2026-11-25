@@ -1,4 +1,18 @@
-﻿/* Bootstrap lleva el estilo de la plantilla. Solo se añade el avatar, que no existe
+﻿/* Tipografía: Oswald para titulares y Roboto para el texto (Google Fonts, cargadas en _Layout). */
+:root {
+  --g3-font-title: "Oswald", Impact, 'Arial Narrow', sans-serif;
+  --g3-font-body: "Roboto", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --bs-body-font-family: var(--g3-font-body);
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6,
+.display-1, .display-2, .display-3, .display-4, .display-5, .display-6,
+.taller-counter strong, .taller-step span, .navbar-brand {
+  font-family: var(--g3-font-title);
+}
+
+/* Bootstrap lleva el estilo de la plantilla. Solo se añade el avatar, que no existe
    como componente nativo y será común a todos los proyectos de grupo. */
 /* Modifico el color de texto de bootstrap según nuestros colores corporativos*/ 
    :root{
@@ -113,4 +127,186 @@ a{
 .no-spinners {
   -moz-appearance: textfield;
   appearance: textfield;
+}
+
+
+/* ==========================================================================
+   Página de inicio · Taller (rojo, negro y blanco)
+   ========================================================================== */
+.taller-hero {
+  position: relative;
+  background:
+    radial-gradient(circle at 80% 30%, rgba(234, 39, 28, .35), transparent 50%),
+    linear-gradient(135deg, #0E0E0E, #232323);
+}
+
+.taller-tag {
+  display: inline-block;
+  padding: .35rem .9rem;
+  border-left: 4px solid #ea271c;
+  background-color: rgba(255, 255, 255, .08);
+  font-size: .85rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.taller-title {
+  font-size: clamp(2.5rem, 2rem + 3vw, 4.25rem);
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.taller-red {
+  color: #ff5a4f;
+}
+
+.taller-lead {
+  color: rgba(255, 255, 255, .8);
+}
+
+.taller-hero-art {
+  align-self: end;
+}
+
+/* Franja de seguridad inferior */
+.taller-stripe {
+  height: .75rem;
+  background: repeating-linear-gradient(-45deg, #ea271c 0 16px, #111 16px 32px);
+}
+
+.taller-hero .btn-outline-light {
+  --bs-btn-hover-color: #111;
+}
+
+/* Contadores */
+.taller-counter {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  height: 100%;
+  padding: 1.25rem;
+  border-radius: .5rem;
+  border-left: 5px solid #ea271c;
+  background-color: var(--bs-tertiary-bg);
+  box-shadow: 0 .35rem 1rem rgba(0, 0, 0, .08);
+}
+
+.taller-counter i {
+  color: #ea271c;
+  font-size: 1.5rem;
+}
+
+.taller-counter strong {
+  font-size: 2.5rem;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.taller-counter span {
+  color: var(--bs-secondary-color);
+  font-size: .9rem;
+  font-weight: 600;
+}
+
+/* Encabezados */
+.taller-heading {
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+}
+
+.taller-rule {
+  height: 4px;
+  background: linear-gradient(90deg, #ea271c, transparent);
+}
+
+/* Servicios */
+.taller-service {
+  height: 100%;
+  padding: 1.5rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: .5rem;
+  background-color: var(--bs-body-bg);
+  transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+.taller-service i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  margin-bottom: 1rem;
+  border-radius: .5rem;
+  background-color: #111;
+  color: #ff5a4f;
+  font-size: 1.4rem;
+}
+
+.taller-service h3 {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.taller-service p {
+  margin-bottom: 0;
+  color: var(--bs-secondary-color);
+  font-size: .95rem;
+}
+
+.taller-service:hover {
+  transform: translateY(-4px);
+  border-color: #ea271c;
+  box-shadow: 0 .75rem 1.5rem rgba(234, 39, 28, .18);
+}
+
+/* Proceso */
+.taller-process {
+  background-color: #151515;
+  color: #fff;
+}
+
+.taller-step span {
+  display: block;
+  color: #ea271c;
+  font-size: 3rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.taller-step h3 {
+  margin: .25rem 0 .5rem;
+  font-size: 1.15rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.taller-step p {
+  margin-bottom: 0;
+  color: rgba(255, 255, 255, .7);
+  font-size: .95rem;
+}
+
+/* Horario y contacto */
+.taller-info {
+  padding: 1.5rem;
+  border-radius: .5rem;
+  border-top: 4px solid #ea271c;
+  background-color: var(--bs-tertiary-bg);
+}
+
+.taller-info h3 {
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.taller-info li {
+  padding: .4rem 0;
+  border-bottom: 1px dashed var(--bs-border-color);
+}
+
+.taller-info li:last-child {
+  border-bottom: 0;
 }
