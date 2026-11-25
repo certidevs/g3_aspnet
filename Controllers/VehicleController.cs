@@ -140,8 +140,11 @@ public class VehicleController : Controller
     [Authorize(Policy = PolicyNames.GestionTaller)]
     public async Task<IActionResult> Save(VehicleFormViewModel formModel)
     {
+        // La matrícula se compara ya recortada y sin distinguir mayúsculas (el índice único de la base de datos
+        // sí las distingue, y los espacios sobrantes se recortan al guardar): así "1234abc" y " 1234ABC" cuentan como repetidas.
+        var licensePlate = formModel.LicensePlate.Trim();
         var plateInUse = await context.Vehicles
-            .AnyAsync(other => other.LicensePlate == formModel.LicensePlate && other.Id != formModel.Id);
+            .AnyAsync(other => other.LicensePlate.ToUpper() == licensePlate.ToUpper() && other.Id != formModel.Id);
         if (plateInUse)
         {
             ModelState.AddModelError(nameof(VehicleFormViewModel.LicensePlate), "Ya existe un vehículo con esa matrícula.");
@@ -164,7 +167,7 @@ public class VehicleController : Controller
         {
             var entity = new Vehicle
             {
-                LicensePlate = formModel.LicensePlate.Trim(),
+                LicensePlate = licensePlate,
                 VIN = formModel.VIN.Trim(),
                 Brand = formModel.Brand.Trim(),
                 Model = formModel.Model.Trim(),
@@ -191,7 +194,7 @@ public class VehicleController : Controller
                 return Forbid();
             }
 
-            existing.LicensePlate = formModel.LicensePlate.Trim();
+            existing.LicensePlate = licensePlate;
             existing.VIN = formModel.VIN.Trim();
             existing.Brand = formModel.Brand.Trim();
             existing.Model = formModel.Model.Trim();
