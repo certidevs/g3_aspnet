@@ -77,7 +77,7 @@
     @if (canComplete)
     {
         <form id="form-complete" asp-action="Complete" asp-route-id="@Model.Id" method="post"
-              onsubmit="return confirm('¿Completar la reparación? Ya no se podrán añadir piezas.');"></form>
+              onsubmit="return confirm('¿Completar la reparación? Después solo un administrador podrá modificarla.');"></form>
         <form id="form-wait" asp-action="WaitForParts" asp-route-id="@Model.Id" method="post"></form>
     }
     @if (canDeliver)
@@ -156,6 +156,13 @@
                                             <form asp-action="RemovePart" asp-route-id="@Model.Id" method="post" class="d-inline"
                                                   onsubmit="return confirm('¿Quitar esta pieza de la reparación y devolver las unidades al stock?');">
                                                 <input type="hidden" name="repairPartId" value="@part.Id" />
+                                                @if (Model.IsClosed)
+                                                {
+                                                    <label class="form-check-label small me-1">
+                                                        <input class="form-check-input" type="checkbox" name="confirmClosed" value="true" required />
+                                                        Estoy seguro
+                                                    </label>
+                                                }
                                                 <button type="submit" class="btn btn-sm btn-outline-danger">Quitar</button>
                                             </form>
                                         }
@@ -177,6 +184,12 @@
             @if (availableParts is not null && availableParts.Any())
             {
                 <form asp-action="AddPart" asp-route-id="@Model.Id" method="post" class="row g-3 align-items-end">
+                    @if (Model.IsClosed)
+                    {
+                        <div class="col-12">
+                            <partial name="_ClosedRepairConfirmation" />
+                        </div>
+                    }
                     <div class="col-md-7">
                         <label for="sparePartId" class="form-label">Recambio disponible</label>
                         <select id="sparePartId" name="sparePartId" asp-items="availableParts" class="form-select" required>

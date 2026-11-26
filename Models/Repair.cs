@@ -41,6 +41,10 @@ public class Repair
     public decimal TotalCost => LaborHours * HourlyRate
                                 + RepairParts.Sum(part => part.Quantity * part.UnitPrice);
 
+    // Cerrada = completada o entregada: solo un Admin puede modificarla y confirmándolo.
+    [NotMapped]
+    public bool IsClosed => Status is RepairStatus.Completed or RepairStatus.Delivered;
+
     /// <summary>
     /// Añade una pieza a la reparación y descuenta la cantidad del stock del recambio.
     /// </summary>
