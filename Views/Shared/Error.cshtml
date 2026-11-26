@@ -1,13 +1,8 @@
+@using G3AspNet.ViewModels.Errors
 @model ErrorViewModel
 @{
-    ViewData["Title"] = "Error";
+    var page = ErrorPageViewModel.ForStatus(500) with { RequestId = Model.RequestId };
+    ViewData["Title"] = "Error interno";
 }
 
-<div class="alert alert-danger">
-    <h1 class="h3">Se ha producido un error.</h1>
-    <p>La aplicación no ha podido completar la petición.</p>
-    @if (Model.ShowRequestId)
-    {
-        <p class="mb-0"><strong>Identificador de petición:</strong> <code>@Model.RequestId</code></p>
-    }
-</div>
+<partial name="_ErrorPage" model="page" />

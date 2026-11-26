@@ -310,3 +310,14 @@ a{
 .taller-info li:last-child {
   border-bottom: 0;
 }
+
+/* Páginas de error: reutilizan la cabecera de la portada */
+.taller-request-id {
+  color: rgba(255, 255, 255, .7);
+  font-size: .85rem;
+  overflow-wrap: anywhere;
+}
+
+.taller-request-id code {
+  color: #fff;
+}
