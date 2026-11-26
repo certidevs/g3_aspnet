@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using G3AspNet.Models.Enum;
 
 namespace G3AspNet.ViewModels.Vehicles;
@@ -14,7 +14,9 @@ public sealed class VehicleFormViewModel
     public string LicensePlate { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "El VIN es obligatorio.")]
-    [StringLength(17, ErrorMessage = "El VIN no puede superar los 17 caracteres.")]
+    [StringLength(17, MinimumLength = 17, ErrorMessage = "El VIN debe tener exactamente 17 caracteres.")]
+    [RegularExpression("^[A-HJ-NPR-Za-hj-npr-z0-9]{17}$",
+        ErrorMessage = "El VIN solo admite letras y números, sin las letras I, O ni Q.")]
     [Display(Name = "VIN")]
     public string VIN { get; set; } = string.Empty;
 
