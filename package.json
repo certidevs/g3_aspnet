@@ -1,0 +1,20 @@
+{
+  "name": "g3_aspnet",
+  "version": "1.0.0",
+  "description": "[![CI](https://github.com/certidevs/g3_aspnet/actions/workflows/build-and-test.yml/badge.svg?branch=main)](https://github.com/certidevs/g3_aspnet/actions/workflows/build-and-test.yml)\r [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white)](G3AspNet.csproj)\r [![ASP.NET Core MVC](https://img.shields.io/badge/ASP.NET%20Core-MVC-512BD4?logo=dotnet&logoColor=white)](Program.cs)\r [![EF Core](https://img.shields.io/badge/EF%20Core-10.0.11-512BD4?logo=dotnet&logoColor=white)](G3AspNet.csproj)\r [![SQLite](https://img.shields.io/badge/Base%20de%20datos-SQLite-003B57?logo=sqlite&logoColor=white)](appsettings.json)\r [![Identity](https://img.shields.io/badge/Auth-ASP.NET%20Core%20Identity-512BD4)](Program.cs)\r [![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3.3-7952B3?logo=bootstrap&logoColor=white)](wwwroot/lib/bootstrap)\r [![Tests](https://img.shields.io/badge/Tests-xUnit-5C2D91)](tests/G3AspNet.Tests/G3AspNet.Tests.csproj)\r [![Docker](https://img.shields.io/badge/Docker-disponible-2496ED?logo=docker&logoColor=white)](Dockerfile)\r [![Estado](https://img.shields.io/badge/Estado-en%20desarrollo-orange)](#base-de-datos-y-datos-de-ejemplo)",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@tailwindcss/cli": "^4.3.5",
+    "tailwindcss": "^4.3.5"
+  }
+}
