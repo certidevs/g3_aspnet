@@ -1,7 +1,7 @@
 # GRUPO 3 - TALLER .NET
 
 > Estado revisado el 26/11/2026 sobre la rama `main` (commit `b61dc49`). El proyecto de pruebas queda fuera de este planning.
-> Actualizado el 26/11/2026: E8 corregido.
+> Actualizado el 26/11/2026: E6 y E8 corregidos.
 > Las funcionalidades del apartado 4 y el reparto del apartado 6 son una **propuesta** pendiente de acordar en el equipo.
 
 ## 1. Resumen
@@ -74,7 +74,7 @@ No hay errores al compilar ni al arrancar. E1 a E7 se han reproducido ejecutando
 | E3 | Media | El formulario de reparación muestra la fecha de apertura en UTC y el detalle en hora local. Una hora escrita a mano se guarda desplazada. | `RepairsController`, `Views/Repairs/Form.cshtml` |
 | E4 | Media | Se puede asignar una reparación a una cuenta que no es mecánico (por ejemplo, un cliente) manipulando la petición. | `RepairsController` (`Create`, `Edit`) |
 | E5 | Media | Editar una reparación con un mecánico inexistente (petición manipulada) da error 500. | `RepairsController` (`Edit`) |
-| E6 | Media | Un vehículo admite un VIN de un solo carácter y un propietario que no es cliente (esto último, manipulando la petición). | `VehicleController` (`Save`), `VehicleFormViewModel` |
+| E6 | ✅ Corregido | ~~Un vehículo admite un VIN de un solo carácter y un propietario que no es cliente (esto último, manipulando la petición).~~ El VIN exige 17 caracteres válidos y el propietario debe ser un cliente. | `VehicleController` (`Save`), `VehicleFormViewModel` |
 | E7 | Baja | Algunos mensajes de validación y de Identity salen en inglés. | Registro, usuarios, perfil |
 | E8 | ✅ Corregido | ~~Un `Admin` puede editar horas y tarifa de una reparación completada o entregada, y cambia el coste ya cerrado.~~ Ahora solo puede hacerlo confirmando la acción. | `RepairsController`, `RepairPartsController`, `Views/Shared/_ClosedRepairConfirmation.cshtml` |
 | E9 | Media | La imagen Docker usa `Production` pero carga las cuentas de demostración, porque `SeedData:Enabled` es `true` por defecto. | `appsettings.json`, `Dockerfile` |
@@ -153,7 +153,7 @@ No hay errores al compilar ni al arrancar. E1 a E7 se han reproducido ejecutando
 
 | Área | Pendiente |
 |---|---|
-| Validaciones | VIN de 17 caracteres y formato de matrícula. Fecha de apertura no futura. Comprobar el rol del mecánico y del propietario. Mensajes en español. |
+| Validaciones | Formato de matrícula. Fecha de apertura no futura. Comprobar el rol del mecánico. Mensajes en español. |
 | Permisos | Decidir qué ve el rol `User` en el menú Taller. |
 | Diseño | Colores por estado de reparación. Búsqueda y paginación en vehículos, reparaciones y recambios. Revisar la vista en móvil. Unificar el nombre de la aplicación. Ajustar los textos de la portada. |
 | Datos de prueba | Añadir citas, presupuestos y entradas de stock. Cargar las cuentas de demostración solo en desarrollo. |
@@ -185,7 +185,7 @@ Cada persona corrige primero sus errores y después desarrolla su funcionalidad.
 
 ### Rubén — vehículos, entrega e interfaz
 
-1. E6: validaciones del vehículo.
+1. ~~E6: validaciones del vehículo.~~ ✅ Hecho.
 2. Funcionalidad 4.4, entrega y kilometraje (incluye E2).
 3. Diseño: colores por estado, textos de la portada y nombre de la aplicación.
 
