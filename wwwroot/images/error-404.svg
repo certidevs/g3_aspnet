@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 340">
+  <title>Coche perdido junto a una señal con una interrogación</title>
+  <defs>
+    <linearGradient id="g3body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F2463B"/>
+      <stop offset="1" stop-color="#B81E15"/>
+    </linearGradient>
+    <linearGradient id="g3glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#CFE7F3"/>
+      <stop offset="1" stop-color="#7FA9C0"/>
+    </linearGradient>
+  </defs>
+  <!-- luz del foco -->
+  <path d="M280 0 L120 300 H440 Z" fill="#FFFFFF" opacity=".05"/>
+  <!-- suelo -->
+  <rect x="0" y="290" width="560" height="50" fill="#0E0E0E"/>
+  <rect x="0" y="290" width="560" height="5" fill="#EA271C"/>
+  <g fill="#FFD43B" opacity=".9">
+    <rect x="20" y="314" width="40" height="6" rx="2"/>
+    <rect x="130" y="314" width="40" height="6" rx="2"/>
+    <rect x="240" y="314" width="40" height="6" rx="2"/>
+    <rect x="350" y="314" width="40" height="6" rx="2"/>
+    <rect x="460" y="314" width="40" height="6" rx="2"/>
+  </g>
+  <!-- coche -->
+  <g transform="translate(-8 96.6) scale(0.68)">
+    <ellipse cx="280" cy="292" rx="235" ry="12" fill="#000" opacity=".5"/>
+    <path d="M60 252 L66 222 Q72 206 96 200 L168 190 Q200 130 258 126 L352 126 Q400 130 428 188 L478 198 Q504 204 506 228 L510 252 Q510 262 500 262 H70 Q60 262 60 252 Z" fill="url(#g3body)"/>
+    <path d="M184 188 Q208 144 258 142 H296 V188 Z" fill="url(#g3glass)"/>
+    <path d="M308 142 H350 Q386 146 408 188 H308 Z" fill="url(#g3glass)"/>
+    <rect x="296" y="142" width="12" height="46" fill="#8E1710"/>
+    <path d="M96 222 H480" stroke="#8E1710" stroke-width="3" fill="none"/>
+    <rect x="322" y="204" width="28" height="6" rx="3" fill="#8E1710"/>
+    <path d="M486 206 h18 q4 0 4 4 v10 q0 4 -4 4 h-22 Z" fill="#FFF4B8"/>
+    <path d="M62 214 h14 v18 h-12 q-4 0 -4 -4 v-10 q0 -4 4 -4 Z" fill="#8E1710"/>
+    <rect x="58" y="244" width="454" height="12" rx="6" fill="#1A1A1A"/>
+    <g fill="#141414"><circle cx="152" cy="262" r="40"/><circle cx="418" cy="262" r="40"/></g>
+    <g fill="#BFC5CA"><circle cx="152" cy="262" r="22"/><circle cx="418" cy="262" r="22"/></g>
+    <g stroke="#141414" stroke-width="4">
+      <line x1="152" y1="244" x2="152" y2="280"/><line x1="134" y1="262" x2="170" y2="262"/>
+      <line x1="418" y1="244" x2="418" y2="280"/><line x1="400" y1="262" x2="436" y2="262"/>
+    </g>
+    <g fill="#141414"><circle cx="152" cy="262" r="8"/><circle cx="418" cy="262" r="8"/></g>
+  </g>
+  <!-- señal de carretera -->
+  <rect x="446" y="150" width="12" height="142" fill="#8C9298"/>
+  <g transform="translate(452 108)">
+    <rect x="-50" y="-50" width="100" height="100" rx="10" transform="rotate(45)" fill="#FFD43B"/>
+    <rect x="-42" y="-42" width="84" height="84" rx="6" transform="rotate(45)" fill="none" stroke="#141414" stroke-width="4"/>
+    <path d="M-17 -16 C-17 -40 20 -40 20 -17 C20 -2 1 -1 1 15" fill="none" stroke="#141414" stroke-width="11" stroke-linecap="round"/>
+    <circle cx="1" cy="34" r="7" fill="#141414"/>
+  </g>
+  <!-- dudas -->
+  <g fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round">
+    <path d="M112 78 C112 62 138 62 138 78 C138 89 125 89 125 100" opacity=".8"/>
+    <path d="M214 46 C214 26 246 26 246 46 C246 60 230 60 230 74"/>
+  </g>
+  <g fill="#FFFFFF"><circle cx="125" cy="115" r="4" opacity=".8"/><circle cx="230" cy="92" r="5"/></g>
+</svg>
