@@ -1,4 +1,4 @@
-using G3AspNet.Authorization;
+﻿using G3AspNet.Authorization;
 using G3AspNet.Data;
 using G3AspNet.Models;
 using G3AspNet.Utilities;
@@ -140,9 +140,7 @@ public class VehicleController : Controller
     [Authorize(Policy = PolicyNames.GestionTaller)]
     public async Task<IActionResult> Save(VehicleFormViewModel formModel)
     {
-        // La matrícula se compara ya recortada y sin distinguir mayúsculas (el índice único de la base de datos
-        // sí las distingue, y los espacios sobrantes se recortan al guardar): así "1234abc" y " 1234ABC" cuentan como repetidas.
-        var licensePlate = formModel.LicensePlate.Trim();
+        var licensePlate = formModel.LicensePlate?.Trim() ?? string.Empty;
         var plateInUse = await context.Vehicles
             .AnyAsync(other => other.LicensePlate.ToUpper() == licensePlate.ToUpper() && other.Id != formModel.Id);
         if (plateInUse)
@@ -150,10 +148,14 @@ public class VehicleController : Controller
             ModelState.AddModelError(nameof(VehicleFormViewModel.LicensePlate), "Ya existe un vehículo con esa matrícula.");
         }
 
-        var ownerExists = await context.Users.AnyAsync(user => user.Id == formModel.OwnerId);
-        if (!ownerExists && !string.IsNullOrEmpty(formModel.OwnerId))
+        // El desplegable solo ofrece clientes, pero un POST manipulado puede enviar el Id de cualquier cuenta.
+        if (!string.IsNullOrEmpty(formModel.OwnerId))
         {
-            ModelState.AddModelError(nameof(VehicleFormViewModel.OwnerId), "El propietario seleccionado no existe.");
+            var owner = await userManager.FindByIdAsync(formModel.OwnerId);
+            if (owner is null || !await userManager.IsInRoleAsync(owner, RoleNames.Customer))
+            {
+                ModelState.AddModelError(nameof(VehicleFormViewModel.OwnerId), "El propietario debe ser un cliente existente.");
+            }
         }
 
         if (!ModelState.IsValid)
