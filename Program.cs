@@ -131,6 +131,9 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// Las respuestas 4xx y 5xx sin contenido (404, 429...) se completan con una página propia.
+app.UseStatusCodePagesWithReExecute("/Home/ErrorStatus/{0}");
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();

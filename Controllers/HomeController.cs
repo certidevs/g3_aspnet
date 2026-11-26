@@ -1,6 +1,7 @@
 using G3AspNet.Data;
 using G3AspNet.Models;
 using G3AspNet.Models.Enum;
+using G3AspNet.ViewModels.Errors;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,9 +23,21 @@ public sealed class HomeController(ApplicationDbContext context) : Controller
         return View();
     }
 
+    // La petición fallida puede ser un POST sin token válido: la página de error no lo exige.
+    [IgnoreAntiforgeryToken]
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error() => View(new ErrorViewModel
     {
         RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
     });
+
+    /// <summary>Página para las respuestas de error sin contenido; conserva el código de estado.</summary>
+    [IgnoreAntiforgeryToken]
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public IActionResult ErrorStatus(int id)
+    {
+        var code = id is >= 400 and <= 599 ? id : StatusCodes.Status404NotFound;
+        Response.StatusCode = code;
+        return View(ErrorPageViewModel.ForStatus(code));
+    }
 }
