@@ -236,6 +236,7 @@ public class RepairsController : Controller
             HourlyRate = repair.HourlyRate
         };
 
+        ViewBag.IsClosed = repair.IsClosed;
         await PopulateDropdownsAsync(model);
         return View("Form", model);
     }
@@ -244,7 +245,7 @@ public class RepairsController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Policy = PolicyNames.GestionTaller)]
-    public async Task<IActionResult> Edit(int id, RepairFormViewModel model)
+    public async Task<IActionResult> Edit(int id, RepairFormViewModel model, bool confirmClosed = false)
     {
         if (id != model.Id)
         {
@@ -282,8 +283,14 @@ public class RepairsController : Controller
             ModelState.AddModelError(nameof(RepairFormViewModel.VehicleId), "El vehículo seleccionado no existe.");
         }
 
+        if (repair.IsClosed && !confirmClosed)
+        {
+            ModelState.AddModelError(string.Empty, ClosedRepairConfirmation.Required);
+        }
+
         if (!ModelState.IsValid)
         {
+            ViewBag.IsClosed = repair.IsClosed;
             model.Status = repair.Status;
             model.CompletedAt = repair.CompletedAt;
             await PopulateDropdownsAsync(model);
@@ -339,7 +346,7 @@ public class RepairsController : Controller
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
     [Authorize(Policy = PolicyNames.SoloAdmin)]
-    public async Task<IActionResult> DeleteConfirmed(int id)
+    public async Task<IActionResult> DeleteConfirmed(int id, bool confirmClosed = false)
     {
         var repair = await context.Repairs
             .Include(r => r.RepairParts)
@@ -355,6 +362,12 @@ public class RepairsController : Controller
         if (!authResult.Succeeded)
         {
             return Forbid();
+        }
+
+        if (repair.IsClosed && !confirmClosed)
+        {
+            TempData["Error"] = ClosedRepairConfirmation.Required;
+            return RedirectToAction(nameof(Delete), new { id });
         }
 
         foreach (var part in repair.RepairParts)
@@ -499,7 +512,7 @@ public class RepairsController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Policy = PolicyNames.GestionTaller)]
-    public async Task<IActionResult> AddPart(int id, int sparePartId, int quantity)
+    public async Task<IActionResult> AddPart(int id, int sparePartId, int quantity, bool confirmClosed = false)
     {
         var repair = await context.Repairs
             .Include(r => r.RepairParts)
@@ -514,6 +527,12 @@ public class RepairsController : Controller
         if (!authResult.Succeeded)
         {
             return Forbid();
+        }
+
+        if (repair.IsClosed && !confirmClosed)
+        {
+            TempData["Error"] = ClosedRepairConfirmation.Required;
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         if (sparePartId <= 0)
@@ -546,7 +565,7 @@ public class RepairsController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Policy = PolicyNames.GestionTaller)]
-    public async Task<IActionResult> RemovePart(int id, int repairPartId)
+    public async Task<IActionResult> RemovePart(int id, int repairPartId, bool confirmClosed = false)
     {
         var repairPart = await context.RepairParts
             .Include(rp => rp.Repair)
@@ -562,6 +581,12 @@ public class RepairsController : Controller
         if (!authResult.Succeeded)
         {
             return Forbid();
+        }
+
+        if (repairPart.Repair.IsClosed && !confirmClosed)
+        {
+            TempData["Error"] = ClosedRepairConfirmation.Required;
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         repairPart.SparePart.Stock += repairPart.Quantity;

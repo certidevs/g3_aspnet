@@ -48,12 +48,23 @@ public class RepairPartsController : Controller
     /// <summary>Prepara las listas de reparaciones y recambios para los formularios.</summary>
     private async Task PopulateDropdownsAsync(RepairPartFormViewModel? repairPart = null)
     {
-        var repairsQuery = context.Repairs.AsQueryable();
-        repairsQuery = repairsQuery.Where(r =>
-            r.Status != RepairStatus.Completed &&
-            r.Status != RepairStatus.Delivered);
+        var isAdmin = User.IsInRole(RoleNames.Admin);
+        var selectedRepairId = repairPart?.RepairId ?? 0;
+        var partId = repairPart?.Id ?? 0;
 
-        if (!User.IsInRole(RoleNames.Admin))
+        // Reparación elegida en el formulario y, al editar, la que ya contiene la pieza.
+        var involvedRepairs = context.Repairs.Where(r =>
+            r.Id == selectedRepairId || r.RepairParts.Any(p => p.Id == partId));
+
+        // Las cerradas solo aparecen para Admin cuando están implicadas en el formulario.
+        var repairsQuery = context.Repairs.Where(r =>
+            (r.Status != RepairStatus.Completed && r.Status != RepairStatus.Delivered) ||
+            (isAdmin && involvedRepairs.Any(involved => involved.Id == r.Id)));
+
+        ViewBag.RequiresClosedConfirmation = isAdmin && await involvedRepairs.AnyAsync(r =>
+            r.Status == RepairStatus.Completed || r.Status == RepairStatus.Delivered);
+
+        if (!isAdmin)
         {
             var userId = User.GetRequiredUserId();
             repairsQuery = repairsQuery.Where(r => r.MechanicId == userId);
@@ -156,7 +167,7 @@ public class RepairPartsController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Policy = PolicyNames.GestionTaller)]
-    public async Task<IActionResult> Create(RepairPartFormViewModel model)
+    public async Task<IActionResult> Create(RepairPartFormViewModel model, bool confirmClosed = false)
     {
         if (!ModelState.IsValid)
         {
@@ -176,6 +187,13 @@ public class RepairPartsController : Controller
         if (!authResult.Succeeded)
         {
             return Forbid();
+        }
+
+        if (repair.IsClosed && !confirmClosed)
+        {
+            ModelState.AddModelError(string.Empty, ClosedRepairConfirmation.Required);
+            await PopulateDropdownsAsync(model);
+            return View("Form", model);
         }
 
         var sparePart = await context.SpareParts.FindAsync(model.SparePartId);
@@ -238,7 +256,7 @@ public class RepairPartsController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Policy = PolicyNames.GestionTaller)]
-    public async Task<IActionResult> Edit(int id, RepairPartFormViewModel model)
+    public async Task<IActionResult> Edit(int id, RepairPartFormViewModel model, bool confirmClosed = false)
     {
         if (id != model.Id)
         {
@@ -288,6 +306,13 @@ public class RepairPartsController : Controller
             {
                 return Forbid();
             }
+        }
+
+        if ((repairPart.Repair.IsClosed || targetRepair.IsClosed) && !confirmClosed)
+        {
+            ModelState.AddModelError(string.Empty, ClosedRepairConfirmation.Required);
+            await PopulateDropdownsAsync(model);
+            return View("Form", model);
         }
 
         var oldSparePart = repairPart.SparePart;
@@ -355,7 +380,7 @@ public class RepairPartsController : Controller
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
     [Authorize(Policy = PolicyNames.GestionTaller)]
-    public async Task<IActionResult> DeleteConfirmed(int id)
+    public async Task<IActionResult> DeleteConfirmed(int id, bool confirmClosed = false)
     {
         var repairPart = await context.RepairParts
             .Include(part => part.Repair)
@@ -370,6 +395,12 @@ public class RepairPartsController : Controller
         if (!authResult.Succeeded)
         {
             return Forbid();
+        }
+
+        if (repairPart.Repair.IsClosed && !confirmClosed)
+        {
+            TempData["Error"] = ClosedRepairConfirmation.Required;
+            return RedirectToAction(nameof(Delete), new { id });
         }
 
         repairPart.SparePart.Stock += repairPart.Quantity;
