@@ -17,13 +17,6 @@
                         <span asp-validation-for="Username" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
-                        <label asp-for="Rol" class="form-label"></label>
-                        <select asp-for="Rol" asp-items="Model.RolesDisponibles" class="form-select">
-                            <option value="">-- Selecciona un rol --</option>
-                        </select>
-                     <span asp-validation-for="Rol " class="text-danger"></span>
-                    </div>
-                    <div class="mb-3">
                         <label asp-for="Email" class="form-label"></label>
                         <input asp-for="Email" class="form-control" autocomplete="email" />
                         <span asp-validation-for="Email" class="text-danger"></span>
@@ -45,6 +38,7 @@
                             <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                         </div>
                     </div>
+                        <partial name="_PasswordRequirements" />
                     <button class="btn btn-primary mt-4" type="submit">Crear cuenta</button>
                 </form>
                 <p class="small text-secondary mt-3 mb-0">¿Ya tienes cuenta? <a asp-action="Login">Inicia sesión</a>.</p>
@@ -52,7 +46,6 @@
         </div>
     </div>
 </div>
-
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }

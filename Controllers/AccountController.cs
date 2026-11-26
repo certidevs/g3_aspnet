@@ -1,7 +1,6 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.RateLimiting;
 using G3AspNet.Models;
 using G3AspNet.ViewModels.Account;
@@ -147,27 +146,15 @@ public sealed class AccountController : Controller
 
     [HttpGet]
     [AllowAnonymous]
-    public IActionResult Register()
-    {
-        var model = new RegisterViewModel();
-        CargarRoles(model);
-        return View(model);
-    }
+    public IActionResult Register() => View(new RegisterViewModel());
 
     [HttpPost]
     [AllowAnonymous]
     [EnableRateLimiting("login")]
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
-        // Validación en servidor: el valor del <select> se puede manipular desde el navegador.
-        if (!RolesPermitidos.Contains(model.Rol))
-        {
-            ModelState.AddModelError(nameof(model.Rol), "El rol seleccionado no es válido.");
-        }
-
         if (!ModelState.IsValid)
         {
-            CargarRoles(model);
             return View(model);
         }
 
@@ -186,20 +173,19 @@ public sealed class AccountController : Controller
         if (!result.Succeeded)
         {
             AddIdentityErrors(result);
-            CargarRoles(model);
             return View(model);
         }
 
-        var roleResult = await userManager.AddToRoleAsync(user, model.Rol);
+        // Todo registro público recibe el rol User. Admin, Mechanic y Customer los asigna un administrador.
+        var roleResult = await userManager.AddToRoleAsync(user, RoleNames.User);
         if (!roleResult.Succeeded)
         {
             await userManager.DeleteAsync(user);
             AddIdentityErrors(roleResult);
-            CargarRoles(model);
             return View(model);
         }
 
-        logger.LogInformation("Nueva cuenta registrada: {UserId} con rol {Role}.", user.Id, model.Rol);
+        logger.LogInformation("Nueva cuenta registrada: {UserId} con rol {Role}.", user.Id, RoleNames.User);
         await signInManager.SignInAsync(user, isPersistent: false);
         TempData["Message"] = "Tu cuenta se ha creado correctamente.";
         return RedirectToAction("Index", "Home");
@@ -244,10 +230,5 @@ public sealed class AccountController : Controller
         RoleNames.User
     };
 
-    private static void CargarRoles(RegisterViewModel model)
-    {
-        model.RolesDisponibles = RolesPermitidos
-            .Select(r => new SelectListItem(r, r))
-            .ToList();
-    }
+
 }

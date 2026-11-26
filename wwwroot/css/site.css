@@ -129,6 +129,19 @@ a{
   appearance: textfield;
 }
 
+/* ==========================================================================
+   Requisitos de la contraseña 
+   ========================================================================== */
+
+.password-requirements li {
+  color: var(--bs-secondary-color, #6c757d);
+  transition: color 0.2s ease;
+}
+
+.password-requirements li.is-met {
+  color: #a51c15;
+  font-weight: 600;
+}
 
 /* ==========================================================================
    Página de inicio · Taller (rojo, negro y blanco)
