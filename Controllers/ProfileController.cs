@@ -182,11 +182,14 @@ public sealed class ProfileController : Controller
             urlEncoder.Encode(email),
             key);
 
+        var isEnabled = await userManager.GetTwoFactorEnabledAsync(user);
+
         return new TwoFactorViewModel
         {
-            Is2faEnabled = await userManager.GetTwoFactorEnabledAsync(user),
+            Is2faEnabled = isEnabled,
             SharedKey = formattedKey,
-            AuthenticatorUri = authenticatorUri
+            AuthenticatorUri = authenticatorUri,
+            QrCodeImage = isEnabled ? string.Empty : QrCodeDataUri.FromText(authenticatorUri)
         };
     }
 

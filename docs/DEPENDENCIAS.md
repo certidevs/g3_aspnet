@@ -23,6 +23,7 @@ esquema se realizan en las entidades y en la configuración de `ApplicationDbCon
 | `Microsoft.EntityFrameworkCore.Sqlite` | 10.0.11 | Runtime | ORM EF Core con base de datos SQLite | Activa | Debe coincidir con la versión de `Design` e `Identity.EntityFrameworkCore` |
 | `Microsoft.EntityFrameworkCore.Design` | 10.0.11 | Desarrollo | Herramientas de diseño de EF Core | Activa | `PrivateAssets=all`, no se distribuye. El proyecto no usa migraciones |
 | `Microsoft.AspNetCore.Identity.EntityFrameworkCore` | 10.0.11 | Runtime | Login, cookies, contraseñas y roles | Activa | Persistencia de Identity con EF Core |
+| `QRCoder` | 1.9.0 | Runtime | Código QR en SVG para configurar el 2FA | Activa | Licencia MIT. Se genera en el servidor. Arrastra `System.Drawing.Common` 6.0.0 |
 
 ## 2. Dependencias de pruebas (`tests/G3AspNet.Tests/G3AspNet.Tests.csproj`)
 
@@ -47,6 +48,7 @@ esquema se realizan en las entidades y en la configuración de `ApplicationDbCon
 | Fecha | Paquete | De | A | Motivo | Responsable |
 |---|---|---|---|---|---|
 | 2026-10-19 | Todos | - | - | Alta inicial del registro | |
+| 2026-11-26 | `QRCoder` | - | 1.9.0 | QR para configurar el 2FA | |
 
 ---
 

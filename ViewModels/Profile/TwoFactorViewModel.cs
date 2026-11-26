@@ -11,6 +11,9 @@ public sealed class TwoFactorViewModel
 
     public string AuthenticatorUri { get; set; } = string.Empty;
 
+    /// <summary>QR de <see cref="AuthenticatorUri"/> como data URI. Vacío si el 2FA ya está activo.</summary>
+    public string QrCodeImage { get; set; } = string.Empty;
+
     [Required(ErrorMessage = "Introduce el código de 6 dígitos generado por tu app autenticadora.")]
     [StringLength(7, MinimumLength = 6, ErrorMessage = "El código debe tener 6 dígitos.")]
     [Display(Name = "Código de verificación")]
