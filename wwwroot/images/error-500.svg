@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 340">
+  <title>Coche averiado con el capó abierto y echando humo</title>
+  <defs>
+    <linearGradient id="g3body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F2463B"/>
+      <stop offset="1" stop-color="#B81E15"/>
+    </linearGradient>
+    <linearGradient id="g3glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#CFE7F3"/>
+      <stop offset="1" stop-color="#7FA9C0"/>
+    </linearGradient>
+  </defs>
+  <!-- luz del foco -->
+  <path d="M280 0 L120 300 H440 Z" fill="#FFFFFF" opacity=".05"/>
+  <!-- suelo -->
+  <rect x="0" y="290" width="560" height="50" fill="#0E0E0E"/>
+  <rect x="0" y="290" width="560" height="5" fill="#EA271C"/>
+  <g fill="#FFD43B" opacity=".9">
+    <rect x="20" y="314" width="40" height="6" rx="2"/>
+    <rect x="130" y="314" width="40" height="6" rx="2"/>
+    <rect x="240" y="314" width="40" height="6" rx="2"/>
+    <rect x="350" y="314" width="40" height="6" rx="2"/>
+    <rect x="460" y="314" width="40" height="6" rx="2"/>
+  </g>
+  <!-- coche -->
+  <g transform="translate(108 84.6) scale(0.72)">
+    <ellipse cx="280" cy="292" rx="235" ry="12" fill="#000" opacity=".5"/>
+    <path d="M60 252 L66 222 Q72 206 96 200 L168 190 Q200 130 258 126 L352 126 Q400 130 428 188 L478 198 Q504 204 506 228 L510 252 Q510 262 500 262 H70 Q60 262 60 252 Z" fill="url(#g3body)"/>
+    <path d="M184 188 Q208 144 258 142 H296 V188 Z" fill="url(#g3glass)"/>
+    <path d="M308 142 H350 Q386 146 408 188 H308 Z" fill="url(#g3glass)"/>
+    <rect x="296" y="142" width="12" height="46" fill="#8E1710"/>
+    <path d="M96 222 H480" stroke="#8E1710" stroke-width="3" fill="none"/>
+    <rect x="322" y="204" width="28" height="6" rx="3" fill="#8E1710"/>
+    <path d="M486 206 h18 q4 0 4 4 v10 q0 4 -4 4 h-22 Z" fill="#FFF4B8"/>
+    <path d="M62 214 h14 v18 h-12 q-4 0 -4 -4 v-10 q0 -4 4 -4 Z" fill="#8E1710"/>
+    <rect x="58" y="244" width="454" height="12" rx="6" fill="#1A1A1A"/>
+    <g fill="#141414"><circle cx="152" cy="262" r="40"/><circle cx="418" cy="262" r="40"/></g>
+    <g fill="#BFC5CA"><circle cx="152" cy="262" r="22"/><circle cx="418" cy="262" r="22"/></g>
+    <g stroke="#141414" stroke-width="4">
+      <line x1="152" y1="244" x2="152" y2="280"/><line x1="134" y1="262" x2="170" y2="262"/>
+      <line x1="418" y1="244" x2="418" y2="280"/><line x1="400" y1="262" x2="436" y2="262"/>
+    </g>
+    <g fill="#141414"><circle cx="152" cy="262" r="8"/><circle cx="418" cy="262" r="8"/></g>
+  </g>
+  <!-- vano motor y capó abierto -->
+  <g transform="translate(108 84.6) scale(0.72)">
+    <path d="M430 190 L482 200 L480 214 L430 208 Z" fill="#1A1A1A"/>
+    <path d="M428 188 L478 92 L498 100 L446 192 Z" fill="url(#g3body)" stroke="#8E1710" stroke-width="3"/>
+    <line x1="474" y1="198" x2="466" y2="150" stroke="#D8DCE0" stroke-width="4"/>
+  </g>
+  <!-- humo -->
+  <g fill="#D8DCE0">
+    <circle cx="452" cy="132" r="17" opacity=".75"/>
+    <circle cx="476" cy="112" r="23" opacity=".6"/>
+    <circle cx="448" cy="86" r="28" opacity=".45"/>
+    <circle cx="486" cy="58" r="34" opacity=".3"/>
+    <circle cx="438" cy="36" r="24" opacity=".18"/>
+  </g>
+  <!-- triángulo de emergencia -->
+  <path d="M74 196 L128 290 H20 Z" fill="#FFFFFF" stroke="#EA271C" stroke-width="12" stroke-linejoin="round"/>
+  <rect x="69" y="228" width="10" height="32" rx="5" fill="#141414"/>
+  <circle cx="74" cy="272" r="6" fill="#141414"/>
+  <!-- chispas -->
+  <g stroke="#FFD43B" stroke-width="4" stroke-linecap="round">
+    <path d="M520 150 v20 M510 160 h20 M396 108 v14 M389 115 h14"/>
+  </g>
+</svg>
