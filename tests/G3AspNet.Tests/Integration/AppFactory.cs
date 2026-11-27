@@ -16,7 +16,7 @@ namespace G3AspNet.Tests.Integration;
 /// Arranca la aplicación real en memoria con una base SQLite temporal propia.
 /// DbInitializer recrea la base y siembra los usuarios demo (admin, mechanic, customer...).
 /// </summary>
-public sealed class AppFactory : WebApplicationFactory<Program>
+public class AppFactory : WebApplicationFactory<Program>
 {
     private readonly string dbPath = Path.Combine(Path.GetTempPath(), $"g3-tests-{Guid.NewGuid():N}.db");
     private readonly Dictionary<string, HttpClient> sessions = new();
@@ -35,7 +35,16 @@ public sealed class AppFactory : WebApplicationFactory<Program>
 
         // El limitador de login particiona por IP y TestServer no trae IP: cada cliente de prueba
         // se identifica con una IP propia (cabecera X-Test-Ip) para no compartir cupo entre tests.
-        builder.ConfigureTestServices(services => services.AddTransient<IStartupFilter, FakeRemoteIpStartupFilter>());
+        builder.ConfigureTestServices(services =>
+        {
+            services.AddTransient<IStartupFilter, FakeRemoteIpStartupFilter>();
+            ConfigureExtraServices(services);
+        });
+    }
+
+    /// <summary>Punto de extensión para las factorías que necesitan sustituir o añadir servicios.</summary>
+    protected virtual void ConfigureExtraServices(IServiceCollection services)
+    {
     }
 
     private sealed class FakeRemoteIpStartupFilter : IStartupFilter

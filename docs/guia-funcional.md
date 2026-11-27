@@ -144,7 +144,7 @@ Coste = (LaborHours × HourlyRate) + Σ(Quantity × UnitPrice)
 
 - No se puede eliminar un vehículo que tenga reparaciones.
 - No se puede eliminar un recambio que se haya usado en alguna reparación.
-- La base de datos impide borrar una cuenta que tenga vehículos o reparaciones asignadas.
+- No se puede eliminar una cuenta que tenga vehículos o reparaciones asignadas; la aplicación avisa y se puede desactivar.
 - Eliminar una reparación elimina también sus líneas de piezas.
 
 ### Datos únicos
@@ -158,7 +158,6 @@ Los valores están en [Modelo de datos](diagrama-er.md#valores-de-los-enums).
 
 ## Limitaciones conocidas
 
-- Eliminar desde la administración una cuenta con vehículos o reparaciones produce un error 500 en vez de un aviso. Como alternativa, desactívala.
 - El estado **Entregada** no guarda la fecha de entrega.
 - Abrir una reparación no comprueba ni actualiza el kilometraje del vehículo.
 - El filtro `/SpareParts?lowStock=true` funciona, pero ninguna pantalla enlaza a él.

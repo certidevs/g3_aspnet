@@ -110,7 +110,7 @@ Asigna el rol desde **Administración de usuarios**.
 
 - Un vehículo con reparaciones no se elimina.
 - Un recambio usado en alguna reparación no se elimina.
-- Una cuenta con vehículos o reparaciones asignadas no se elimina. Hoy la aplicación responde con un error 500 (E1 en el [planning](planning.md)); desactiva la cuenta.
+- Una cuenta con vehículos o reparaciones asignadas no se elimina; desactívala desde **Editar**.
 - Tampoco puedes eliminar tu propia cuenta ni al último administrador.
 
 Es la protección del historial. Consulta la [guía funcional](guia-funcional.md#protección-del-historial).

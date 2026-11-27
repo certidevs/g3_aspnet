@@ -222,7 +222,8 @@ public sealed class UserService
             }
 
             securityChanged = true;
-            logger.LogInformation("Contraseña restablecida para usuario {TargetUserId} por admin {AdminId}.", user.Id, currentAdminId);
+            logger.LogInformation("Contraseña restablecida para usuario {TargetUserId} por admin {AdminId}.", user.Id,
+                currentAdminId);
         }
 
         if (currentRoles.Count != 1 || currentRoles[0] != model.Role)
@@ -289,7 +290,8 @@ public sealed class UserService
             return roleResult;
         }
 
-        logger.LogInformation("Usuario {UserId} ({UserName}) creado con rol {Role}.", user.Id, user.UserName, model.Role);
+        logger.LogInformation("Usuario {UserId} ({UserName}) creado con rol {Role}.", user.Id, user.UserName,
+            model.Role);
 
         if (model.Avatar is null)
         {
@@ -315,37 +317,101 @@ public sealed class UserService
     }
 
     /// <summary>Elimina una cuenta sin permitir borrar la propia ni el último admin.</summary>
-    public async Task<IdentityResult> DeleteAsync(string id, string currentAdminId)
+    public async Task<IdentityResult> DeleteAsync(
+        string id,
+        string currentAdminId)
     {
+        // 1. No permitir eliminar la propia cuenta
         if (id == currentAdminId)
         {
-            return Failure("No puedes eliminar tu propia cuenta desde la administración.");
+            return Failure(
+                "No puedes eliminar tu propia cuenta desde la administración.");
         }
 
+        // 2. Comprobar que el usuario existe
         var user = await userManager.FindByIdAsync(id);
+
         if (user is null)
         {
             return Failure("El usuario no existe.");
         }
 
+        // 3. Proteger al último administrador
         if (await userManager.IsInRoleAsync(user, RoleNames.Admin))
         {
-            var administrators = await userManager.GetUsersInRoleAsync(RoleNames.Admin);
+            var administrators =
+                await userManager.GetUsersInRoleAsync(RoleNames.Admin);
+
             if (administrators.Count <= 1)
             {
-                return Failure("No se puede eliminar al último administrador.");
+                return Failure(
+                    "No se puede eliminar al último administrador.");
             }
         }
 
-        var avatarFileName = user.AvatarFileName;
-        var result = await userManager.DeleteAsync(user);
-        if (result.Succeeded)
+        // 4. Comprobar vehículos relacionados
+        var tieneVehiculos = await context.Vehicles
+            .AnyAsync(v => v.OwnerId == id);
+
+        // 5. Comprobar reparaciones asignadas al mecánico
+        var tieneReparaciones = await context.Repairs
+            .AnyAsync(r => r.MechanicId == id);
+
+        // 6. Impedir el borrado si existen dependencias
+        if (tieneVehiculos || tieneReparaciones)
         {
-            images.Delete(avatarFileName);
-            logger.LogInformation("Usuario {TargetUserId} ({UserName}) eliminado por admin {AdminId}.", user.Id, user.UserName, currentAdminId);
+            return Failure(
+                "No se puede eliminar el usuario porque tiene " +
+                "vehículos o reparaciones asociados. " +
+                "Puedes desactivar su cuenta.");
         }
 
-        return result;
+        var avatarFileName = user.AvatarFileName;
+
+        try
+        {
+            // 7. Eliminar usuario
+            var result = await userManager.DeleteAsync(user);
+
+            if (result.Succeeded)
+            {
+                // 8. Eliminar avatar
+                try
+                {
+                    images.Delete(avatarFileName);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(
+                        ex,
+                        "No se pudo eliminar el avatar del usuario {UserId}.",
+                        id);
+                }
+
+                logger.LogInformation(
+                    "Usuario {TargetUserId} ({UserName}) eliminado por admin {AdminId}.",
+                    user.Id,
+                    user.UserName,
+                    currentAdminId);
+            }
+
+            return result;
+        }
+        // Respaldo por si se asignan datos entre la comprobación y el borrado. SQLite usa
+        // 1811 cuando una relación Restrict impide borrar y 787 en el resto de claves ajenas.
+        catch (DbUpdateException ex) when (
+            ex.InnerException is Microsoft.Data.Sqlite.SqliteException sqlite
+            && sqlite.SqliteExtendedErrorCode is 787 or 1811)
+        {
+            logger.LogWarning(
+                ex,
+                "No se pudo eliminar el usuario {UserId} por una clave foránea.",
+                id);
+
+            return Failure(
+                "No se puede eliminar el usuario porque existen " +
+                "registros relacionados. Puedes desactivar su cuenta.");
+        }
     }
 
     private static IdentityResult Failure(string message) =>

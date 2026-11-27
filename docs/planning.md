@@ -2,7 +2,7 @@
 
 > Estado revisado el 26/11/2026 sobre la rama `main` (commit `b61dc49`). El proyecto de pruebas queda fuera de este planning.
 > Actualizado el 26/11/2026: E6 y E8 corregidos.
-> Actualizado el 27/11/2026: E10 y E15 corregidos; QR de 2FA y registro sin desplegable de rol, hechos.
+> Actualizado el 27/11/2026: E1, E10 y E15 corregidos; QR de 2FA y registro sin desplegable de rol, hechos.
 > Las funcionalidades del apartado 4 y el reparto del apartado 6 son una **propuesta** pendiente de acordar en el equipo.
 
 ## 1. Resumen
@@ -70,7 +70,7 @@ No hay errores al compilar ni al arrancar. E1 a E7 se han reproducido ejecutando
 
 | # | Prioridad | Error | Dónde |
 |---|---|---|---|
-| E1 | Alta | Eliminar un usuario con vehículos o reparaciones asignadas da error 500 (`DbUpdateException`). Debe mostrar un mensaje y ofrecer desactivar la cuenta. | `Services/UserService.cs` (`DeleteAsync`) |
+| E1 | ✅ Corregido | ~~Eliminar un usuario con vehículos o reparaciones asignadas da error 500 (`DbUpdateException`).~~ Muestra un mensaje y propone desactivar la cuenta. | `Services/UserService.cs` (`DeleteAsync`) |
 | E2 | Alta | Eliminar una reparación completada o entregada devuelve al stock piezas que ya se montaron. | `Controllers/RepairsController.cs` (`DeleteConfirmed`) |
 | E3 | Media | El formulario de reparación muestra la fecha de apertura en UTC y el detalle en hora local. Una hora escrita a mano se guarda desplazada. | `RepairsController`, `Views/Repairs/Form.cshtml` |
 | E4 | Media | Se puede asignar una reparación a una cuenta que no es mecánico (por ejemplo, un cliente) manipulando la petición. | `RepairsController` (`Create`, `Edit`) |
@@ -167,7 +167,7 @@ Cada persona corrige primero sus errores y después desarrolla su funcionalidad.
 
 ### Iván — usuarios, seguridad y citas
 
-1. E1: eliminar usuarios con datos asociados.
+1. ~~E1: eliminar usuarios con datos asociados.~~ ✅ Hecho.
 2. E7 y E9: mensajes en español y cuentas de demostración solo en desarrollo.
 3. Funcionalidad 4.1, solicitud de cita.
 4. ~~E10: documentación y README.~~ ✅ Hecho.
