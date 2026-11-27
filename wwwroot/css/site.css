@@ -334,3 +334,136 @@ a{
 .taller-request-id code {
   color: #fff;
 }
+
+/* ==========================================================================
+   Páginas interiores · mismo lenguaje visual que la portada y la factura
+   ========================================================================== */
+
+/* Títulos en mayúsculas con la línea roja que se desvanece */
+main h1.h2,
+main h2.h4.mb-3 {
+  font-weight: 700;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+
+main h1.h2::after,
+main h2.h4.mb-3::after {
+  content: "";
+  display: block;
+  width: 100%;
+  max-width: 8rem;
+  height: 4px;
+  margin-top: .35rem;
+  background: linear-gradient(90deg, #ea271c, transparent);
+}
+
+/* Tarjetas de detalle y formularios: borde rojo, como los contadores */
+main .card {
+  border-left: 5px solid #ea271c;
+  box-shadow: 0 .35rem 1rem rgba(0, 0, 0, .08);
+}
+
+/* Cabecera de las tablas: oscura en los dos temas */
+main .table > thead {
+  --bs-table-bg: #151515;
+  --bs-table-color: #fff;
+  --bs-table-border-color: #151515;
+  font-family: var(--g3-font-title);
+  font-size: .85rem;
+  text-transform: uppercase;
+}
+
+/* Menos aire entre columnas para que los listados anchos quepan */
+main .table > :not(caption) > * > * {
+  padding-inline: .4rem;
+}
+
+/* Botones dentro de tablas: sin ancho mínimo, para que las acciones quepan */
+.table .btn {
+  --bs-btn-padding-x: .75rem;
+  min-width: 0;
+}
+
+/* Acción secundaria («Ver», «Descargar factura»): negra; el rojo queda para lo principal
+   y para eliminar */
+.btn-outline-primary {
+  --bs-btn-color: #151515;
+  --bs-btn-border-color: #151515;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #151515;
+  --bs-btn-hover-border-color: #151515;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #000;
+  --bs-btn-active-border-color: #000;
+  --bs-btn-disabled-color: #6c757d;
+  --bs-btn-disabled-border-color: #6c757d;
+  --bs-btn-focus-shadow-rgb: 234, 39, 28;
+}
+
+/* Foco y casillas en rojo en lugar del azul de Bootstrap */
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+  border-color: #ea271c;
+  box-shadow: 0 0 0 .25rem rgba(234, 39, 28, .25);
+}
+
+.form-check-input:checked {
+  background-color: #ea271c;
+  border-color: #ea271c;
+}
+
+/* En pantallas estrechas las acciones de una tarjeta saltan de línea en lugar de salirse */
+.card-footer .btn-group {
+  flex-wrap: wrap;
+  min-width: 0;
+  row-gap: .35rem;
+}
+
+/* Un color por estado de la reparación */
+.estado { color: #fff; }
+.estado-Pending { background-color: #6c757d; }
+.estado-InProgress { background-color: #0a58ca; }
+.estado-WaitingParts { background-color: #ffc107; color: #212529; }
+.estado-Completed { background-color: #146c43; }
+.estado-Delivered { background-color: #151515; border: 1px solid #adb5bd; }
+
+/* ==========================================================================
+   Modo oscuro
+   ========================================================================== */
+[data-bs-theme="dark"] .navbar {
+  --bs-navbar-color: #f1f1f1;
+  --bs-navbar-hover-color: #ff5a4f;
+  --bs-navbar-active-color: #fff;
+  --bs-navbar-brand-color: #fff;
+  --bs-navbar-brand-hover-color: #ff5a4f;
+}
+
+/* El logotipo es negro: sobre fondo oscuro necesita una base clara */
+[data-bs-theme="dark"] .taller-logo {
+  padding: .25rem .4rem;
+  border-radius: .5rem;
+  background-color: #fff;
+}
+
+[data-bs-theme="dark"] main a:not(.btn) {
+  color: #ff7a72;
+}
+
+[data-bs-theme="dark"] .btn-outline-primary {
+  --bs-btn-color: #f1f1f1;
+  --bs-btn-border-color: #adb5bd;
+  --bs-btn-hover-color: #111;
+  --bs-btn-hover-bg: #f1f1f1;
+  --bs-btn-hover-border-color: #f1f1f1;
+  --bs-btn-active-color: #111;
+  --bs-btn-active-bg: #dee2e6;
+  --bs-btn-active-border-color: #dee2e6;
+}
+
+[data-bs-theme="dark"] .btn-toggle-password {
+  --bs-btn-color: #adb5bd;
+  --bs-btn-bg: var(--bs-body-bg);
+  --bs-btn-border-color: var(--bs-border-color);
+}

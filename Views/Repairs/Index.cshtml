@@ -48,7 +48,7 @@ else
                         <td>@(item.Mechanic.DisplayName ?? item.Mechanic.UserName)</td>
                         <td>@item.Description</td>
                         <td>@Html.DisplayFor(modelItem => item.RepairType)</td>
-                        <td><span class="badge text-bg-secondary">@Html.DisplayFor(modelItem => item.Status)</span></td>
+                        <td><span class="badge estado estado-@item.Status">@Html.DisplayFor(modelItem => item.Status)</span></td>
                         <td>@item.OpenedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
                         <td class="text-end text-nowrap">
                             <div class="btn-group" role="group">

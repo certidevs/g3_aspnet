@@ -74,7 +74,7 @@ else
                         <td>@repair.OpenedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
                         <td>@repair.Description</td>
                         <td>@Html.DisplayFor(m => repair.RepairType)</td>
-                        <td><span class="badge text-bg-secondary">@Html.DisplayFor(m => repair.Status)</span></td>
+                        <td><span class="badge estado estado-@repair.Status">@Html.DisplayFor(m => repair.Status)</span></td>
                         <td>@(repair.Mechanic.DisplayName ?? repair.Mechanic.UserName)</td>
                     </tr>
                 }

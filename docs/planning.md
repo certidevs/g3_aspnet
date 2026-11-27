@@ -2,7 +2,7 @@
 
 > Estado revisado el 26/11/2026 sobre la rama `main` (commit `b61dc49`). El proyecto de pruebas queda fuera de este planning.
 > Actualizado el 26/11/2026: E6 y E8 corregidos.
-> Actualizado el 27/11/2026: E1, E9, E10 y E15 corregidos; la base se conserva fuera de desarrollo; QR de 2FA y registro sin desplegable de rol, hechos.
+> Actualizado el 27/11/2026: E1, E9, E10, E11 y E15 corregidos; la base se conserva fuera de desarrollo; QR de 2FA y registro sin desplegable de rol, hechos.
 > Las funcionalidades del apartado 4 y el reparto del apartado 6 son una **propuesta** pendiente de acordar en el equipo.
 
 ## 1. Resumen
@@ -222,7 +222,7 @@ Funcionan los permisos por rol, el flujo completo de una reparación, el control
 
 | # | Prioridad | Error | Dónde | Responsable |
 |---|---|---|---|---|
-| E11 | Alta | En modo oscuro el menú queda en negro sobre gris oscuro y casi no se lee, también en móvil. | `wwwroot/css/site.css` (`.navbar`) | Rubén |
+| E11 | ✅ Corregido | ~~En modo oscuro el menú queda en negro sobre gris oscuro y casi no se lee, también en móvil.~~ El menú y el logotipo se leen en modo oscuro. | `wwwroot/css/site.css` (`.navbar`) | Rubén |
 | E12 | Media | El historial del vehículo muestra a un mecánico enlaces a reparaciones de otros; al abrirlos recibe «acceso denegado». | `Views/Vehicle/Details.cshtml` | Rafa |
 | E13 | Media | Al activar 2FA, la aplicación cierra la sesión pasados un par de minutos. Falta refrescarla; revisar también la desactivación. | `Controllers/ProfileController.cs` (`EnableTwoFactor`) | Iván |
 | E14 | Media | Los mensajes de éxito salen en tonos rojos y los listados vacíos en rojo intenso; parecen errores. | `wwwroot/css/site.css` (`.alert-success`, `.alert-info`) | Rubén |

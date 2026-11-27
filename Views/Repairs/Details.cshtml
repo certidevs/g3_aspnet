@@ -43,7 +43,7 @@
             <dd class="col-sm-9">@Html.DisplayFor(m => m.RepairType)</dd>
 
             <dt class="col-sm-3">Estado</dt>
-            <dd class="col-sm-9"><span class="badge text-bg-secondary">@Html.DisplayFor(m => m.Status)</span></dd>
+            <dd class="col-sm-9"><span class="badge estado estado-@Model.Status">@Html.DisplayFor(m => m.Status)</span></dd>
 
             <dt class="col-sm-3">Descripción</dt>
             <dd class="col-sm-9">@Model.Description</dd>
