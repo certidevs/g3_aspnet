@@ -2,6 +2,7 @@
 # GRUPO 3 - TALLER .NET
 
 > Estado revisado el 26/11/2026 sobre la rama `main` (commit `b61dc49`). El proyecto de pruebas queda fuera de este planning.
+> Actualizado el 27/11/2026: E1, E6, E8, E9 y E10 corregidos en `main`.
 > Las funcionalidades del apartado 4 y el reparto del apartado 6 son una **propuesta** pendiente de acordar en el equipo.
 
 ## 1. Resumen
@@ -67,16 +68,16 @@ No hay errores al compilar ni al arrancar. E1 a E7 se han reproducido ejecutando
 
 | # | Prioridad | Error | Dónde |
 |---|---|---|---|
-| E1 | Alta | Eliminar un usuario con vehículos o reparaciones asignadas da error 500 (`DbUpdateException`). Debe mostrar un mensaje y ofrecer desactivar la cuenta. | `Services/UserService.cs` (`DeleteAsync`) |
+| E1 | ✅ Corregido | ~~Eliminar un usuario con vehículos o reparaciones asignadas da error 500 (`DbUpdateException`). Debe mostrar un mensaje y ofrecer desactivar la cuenta.~~ Muestra un mensaje y propone desactivar la cuenta. | `Services/UserService.cs` (`DeleteAsync`) |
 | E2 | Alta | Eliminar una reparación completada o entregada devuelve al stock piezas que ya se montaron. | `Controllers/RepairsController.cs` (`DeleteConfirmed`) |
 | E3 | Media | El formulario de reparación muestra la fecha de apertura en UTC y el detalle en hora local. Una hora escrita a mano se guarda desplazada. | `RepairsController`, `Views/Repairs/Form.cshtml` |
 | E4 | Media | Se puede asignar una reparación a una cuenta que no es mecánico (por ejemplo, un cliente) manipulando la petición. | `RepairsController` (`Create`, `Edit`) |
 | E5 | Media | Editar una reparación con un mecánico inexistente (petición manipulada) da error 500. | `RepairsController` (`Edit`) |
-| E6 | Media | Un vehículo admite un VIN de un solo carácter y un propietario que no es cliente (esto último, manipulando la petición). | `VehicleController` (`Save`), `VehicleFormViewModel` |
+| E6 | ✅ Corregido | ~~Un vehículo admite un VIN de un solo carácter y un propietario que no es cliente (esto último, manipulando la petición).~~ El VIN exige 17 caracteres válidos y el propietario debe ser un cliente. | `VehicleController` (`Save`), `VehicleFormViewModel` |
 | E7 | Baja | Algunos mensajes de validación y de Identity salen en inglés. | Registro, usuarios, perfil |
-| E8 | Media | Un `Admin` puede editar horas y tarifa de una reparación completada o entregada, y cambia el coste ya cerrado. Confirmar si es intencionado. | `Authorization/RepairAuthorizationHandler.cs` |
-| E9 | Media | La imagen Docker usa `Production` pero carga las cuentas de demostración, porque `SeedData:Enabled` es `true` por defecto. | `appsettings.json`, `Dockerfile` |
-| E10 | Baja | La documentación no coincide con el código: dice puerto `10000` (el Dockerfile usa `8080`), bloqueo de 10 minutos (son 15) y una matriz de permisos antigua. | `README.md`, `docs/` |
+| E8 | ✅ Corregido | ~~Un `Admin` puede editar horas y tarifa de una reparación completada o entregada, y cambia el coste ya cerrado.~~ Un `Admin` solo puede modificar una reparación cerrada confirmando la acción. | `Authorization/RepairAuthorizationHandler.cs` |
+| E9 | ✅ Corregido | ~~La imagen Docker usa `Production` pero carga las cuentas de demostración, porque `SeedData:Enabled` es `true` por defecto.~~ Las cuentas demo y la recreación de la base solo están activas en desarrollo; el primer administrador se define con `AdminAccount`. | `appsettings.json`, `Dockerfile` |
+| E10 | ✅ Corregido | ~~La documentación no coincide con el código: dice puerto `10000` (el Dockerfile usa `8080`), bloqueo de 10 minutos (son 15) y una matriz de permisos antigua.~~ Puerto, bloqueo y permisos actualizados. | `README.md`, `docs/` |
 
 ### Cosas a medias
 
@@ -140,7 +141,7 @@ No hay errores al compilar ni al arrancar. E1 a E7 se han reproducido ejecutando
   - Solo se entrega una reparación completada, y se guarda la fecha.
   - El kilometraje de entrada no puede ser menor que el del vehículo.
   - Al abrir la reparación se actualiza el kilometraje del vehículo.
-  - Una reparación completada o entregada no se elimina ni cambia sus horas o tarifa (resuelve E2 y E8).
+  - Una reparación completada o entregada no se elimina ni cambia sus horas o tarifa (resuelve E2; E8 ya está corregido con confirmación de `Admin`).
 - **Modelo:** `DeliveredAt?` en `Repair`. Actualizar los datos de ejemplo.
 - **Controlador y acciones:** `RepairsController`: `Create`, `Edit`, `Deliver` y `Delete`; reglas en `RepairAuthorizationHandler`.
 - **Vistas:** fecha de entrega en `Repairs/Details` y en el historial de `Vehicle/Details`.
@@ -163,10 +164,10 @@ Cada persona corrige primero sus errores y después desarrolla su funcionalidad.
 
 ### Iván — usuarios, reparaciones, seguridad y citas
 
-1. E1: eliminar usuarios con datos asociados.
-2. E7 y E9: mensajes en español y cuentas de demostración solo en desarrollo.
+1. ~~E1: eliminar usuarios con datos asociados.~~ ✅ Hecho.
+2. E7: mensajes en español. (E9 ✅ hecho.)
 3. Funcionalidad 4.1, solicitud de cita.
-4. E10: documentación y README.
+4. ~~E10: documentación y README.~~ ✅ Hecho.
 
 
 ### Ricardo — recambios, almacén y presupuesto
@@ -177,8 +178,8 @@ Cada persona corrige primero sus errores y después desarrolla su funcionalidad.
 
 ### Rubén — vehículos, presentador e interfaz
 
-1. E6: validaciones del vehículo.
-2. Funcionalidad 4.4, entrega y kilometraje (incluye E2 y E8).
+1. ~~E6: validaciones del vehículo.~~ ✅ Hecho.
+2. Funcionalidad 4.4, entrega y kilometraje (incluye E2; E8 ✅ hecho).
 3. Diseño: colores por estado, textos de la portada y nombre de la aplicación.
 
 **Dependencias:** 4.1, 4.2 y 4.4 tocan `Repair` o `RepairsController`. Conviene fusionar primero los cambios de modelo y trabajar con pull requests pequeñas.
