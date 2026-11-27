@@ -232,18 +232,25 @@ public sealed class AccountFlowTests : IClassFixture<AppFactory>
     [InlineData(RoleNames.Mechanic)]
     public async Task Register_CannotEscalateToPrivilegedRole(string role)
     {
+        // El formulario no pide rol: un campo añadido a mano se ignora.
         var response = await factory.CreateAnonymousClient().PostFormAsync("/account/register", "/account/register", new()
         {
             ["Username"] = $"hacker-{role}",
             ["Email"] = $"hacker-{role}@g3.local",
             ["Rol"] = role,
+            ["Role"] = role,
             ["Password"] = "Hacker1234!",
             ["ConfirmPassword"] = "Hacker1234!"
         });
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Contains("rol seleccionado no es válido", await response.HtmlAsync());
-        Assert.False(await factory.WithDbAsync(ctx => ctx.Users.AnyAsync(u => u.UserName == $"hacker-{role}")));
+        response.AssertRedirectTo("/");
+        var roles = await factory.WithDbAsync(async ctx =>
+        {
+            var user = await ctx.Users.SingleAsync(u => u.UserName == $"hacker-{role}");
+            return await ctx.UserRoles.Where(r => r.UserId == user.Id)
+                .Join(ctx.Roles, r => r.RoleId, r => r.Id, (_, assigned) => assigned.Name).ToListAsync();
+        });
+        Assert.Equal([RoleNames.User], roles);
     }
 
     [Fact]

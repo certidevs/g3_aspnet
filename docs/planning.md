@@ -87,7 +87,7 @@ No hay errores al compilar ni al arrancar. E1 a E7 se han reproducido ejecutando
 - **Entrega:** el estado «Entregado» no guarda la fecha de entrega.
 - **Kilometraje:** abrir una reparación no comprueba ni actualiza el kilometraje del vehículo.
 - **Portada:** promete presupuesto y que el cliente registre una reparación con prioridad; ninguna de las dos cosas existe.
-- ~~**Registro:** muestra un desplegable de rol con una única opción.~~ ✅ Eliminado. Quedan dos pruebas de `AccountFlowTests` que esperan el comportamiento anterior y fallan.
+- ~~**Registro:** muestra un desplegable de rol con una única opción.~~ ✅ Eliminado. Las pruebas de `AccountFlowTests` ya comprueban que la cuenta solo recibe el rol `User`.
 - **2FA:** ✅ ya muestra código QR; faltan los códigos de recuperación.
 - **Nombres:** conviven «TALLER .NET» y «G3 ASP.NET», y «Esperando repuestos» con «Esperando recambios».
 
