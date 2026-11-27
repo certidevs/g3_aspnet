@@ -30,6 +30,7 @@
             document.documentElement.setAttribute("data-bs-theme", theme);
         })();
     </script>
+    <link rel="icon" type="image/svg+xml" href="~/favicon.svg" asp-append-version="true"/>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css"/>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -41,10 +42,15 @@
     <header class="border-bottom">
         <nav class="navbar navbar-expand-lg bg-body-tertiary">
             <div class="container">
-                <img src="~/images/logo-net.png"
+                <!-- Una versión del logotipo por tema; el CSS muestra solo la que corresponde. -->
+                <img src="~/images/logo-net-header.png"
                      alt="Logotipo .NET Taller de Mecánica"
-                     class="taller-logo img-fluid mb-3"
-                     style="max-width: 100px;" />
+                     class="taller-logo taller-logo-light img-fluid me-2"
+                     style="max-width: 150px;" />
+                <img src="~/images/logo-net-header-dark.png"
+                     alt="Logotipo .NET Taller de Mecánica"
+                     class="taller-logo taller-logo-dark img-fluid me-2"
+                     style="max-width: 150px;" />
                 <a class="navbar-brand fw-semibold" asp-controller="Home" asp-action="Index"> TALLER .NET</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
                         aria-controls="mainNav" aria-expanded="false" aria-label="Mostrar navegación">
