@@ -9,15 +9,19 @@ Documentos relacionados: [Primeros pasos](primeros-pasos.md) · [Autenticación 
 | Clave o variable | Uso |
 |---|---|
 | `ConnectionStrings:DefaultConnection` | Configura la conexión SQLite utilizada por `ApplicationDbContext`. No se documenta aquí su valor. |
-| `SeedData:Enabled` | Activa o desactiva la creación de datos demo. No evita que la base se elimine y se cree de nuevo al iniciar. |
+| `SeedData:Enabled` | Activa o desactiva la creación de roles y datos demo; vale `true` por defecto en todos los entornos. Desactivado, la base queda vacía y sin roles. No evita que la base se elimine al iniciar. |
 | `FileUploads:Images:MaxFileSizeBytes` | Límite del tamaño de una imagen subida. |
 | `FileUploads:Images:AllowedExtensions` | Extensiones permitidas para las imágenes. |
 | `Logging:LogLevel` | Niveles de registro de la aplicación y de ASP.NET Core. |
 | `AllowedHosts` | Configuración estándar de hosts permitidos. |
 | `ASPNETCORE_ENVIRONMENT` | Selecciona el entorno de ejecución; los perfiles locales usan `Development`. |
-| `PORT` | Puerto HTTP que usa el contenedor si se define; si no, el Dockerfile utiliza el puerto `10000`. |
+| `ASPNETCORE_HTTP_PORTS` | Puertos HTTP en el contenedor; el Dockerfile fija `8080`. |
 
 ASP.NET Core permite sustituir claves de configuración con variables de entorno usando `__` en lugar de `:`. Por ejemplo, la clave `SeedData:Enabled` corresponde al nombre `SeedData__Enabled`; esta guía no incluye valores de configuración ni cadenas de conexión.
+
+## Valores fijados en el código
+
+Estas opciones no se leen de la configuración; están en [`Program.cs`](../Program.cs): reglas de contraseña, bloqueo de cuentas, cookie, intervalo de revalidación de sesión y límite de peticiones. Sus valores están en [Autenticación y roles](autenticacion-y-roles.md).
 
 ## Secretos y archivos locales
 

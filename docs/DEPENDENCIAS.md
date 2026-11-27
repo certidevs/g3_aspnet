@@ -2,7 +2,7 @@
 
 Registro de las dependencias del proyecto, su versión, su propósito y su estado de revisión.
 
-**Última revisión:** 2026-10-19
+**Última revisión:** 2026-11-27 (contraste con los `.csproj` y `wwwroot/lib`)
 **Runtime:** .NET 10.0 (`net10.0`)
 **SDK:** 10.0.100 (`global.json`, `rollForward: latestFeature`, sin preliminares)
 
@@ -29,6 +29,7 @@ esquema se realizan en las entidades y en la configuración de `ApplicationDbCon
 
 | Paquete NuGet | Versión | Tipo | Propósito | Estado | Notas |
 |---|---|---|---|---|---|
+| `Microsoft.AspNetCore.Mvc.Testing` | 10.0.0 | Pruebas | Arranque en memoria para las pruebas de integración | Activa | |
 | `Microsoft.NET.Test.Sdk` | 17.14.1 | Pruebas | Infraestructura para `dotnet test` | Activa | |
 | `xunit` | 2.9.3 | Pruebas | Framework de pruebas unitarias | Activa | |
 | `xunit.runner.visualstudio` | 3.1.4 | Pruebas | Adaptador para Rider y Visual Studio | Activa | |
@@ -39,7 +40,19 @@ esquema se realizan en las entidades y en la configuración de `ApplicationDbCon
 
 | Librería | Versión | Propósito | Notas |
 |---|---|---|---|
+| Bootstrap | 5.3.3 | Estilos y componentes | |
+| jQuery | 3.7.1 | Dependencia de la validación en el cliente | |
+| jQuery Validation | 1.21.0 | Validación en el cliente | |
+| jQuery Validation Unobtrusive | 4.0.0 | Enlace con las anotaciones de los view models | |
 | Font Awesome Free | 6.7.2 | Iconos | Solo `css/all.min.css` y `webfonts/`; antes se cargaba por CDN |
+
+La layout carga además las tipografías Oswald y Roboto desde Google Fonts (CDN).
+
+## 2.2. Herramientas locales (`.config/dotnet-tools.json`)
+
+| Herramienta | Versión | Notas |
+|---|---|---|
+| `dotnet-ef` | 10.0.11 | Declarada, pero el proyecto no usa migraciones |
 
 ---
 

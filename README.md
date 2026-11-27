@@ -18,13 +18,16 @@ Aplicación web para gestionar un taller mecánico: clientes y vehículos, repar
 
 ## Funcionalidades
 
-- Registro, inicio de sesión, perfil con avatar, cambio de contraseña y tema claro u oscuro.
+- Registro, inicio de sesión con usuario o email, perfil con avatar, cambio de contraseña y tema claro u oscuro.
+- Verificación en dos pasos (TOTP) con código QR, bloqueo de cuentas y límite de peticiones en el acceso.
 - Administración de cuentas: búsqueda, alta, edición, asignación de rol, activación/desactivación y baja.
 - Vehículos con propietario. Un cliente solo ve los suyos.
-- Reparaciones con mecánico, tipo, estado, horas y tarifa. El coste suma mano de obra y piezas.
-- Catálogo de recambios con stock y stock mínimo.
+- Reparaciones con mecánico, tipo, horas y tarifa, y un flujo de estados desde pendiente hasta entregada. El coste suma mano de obra y piezas.
+- Reparaciones cerradas protegidas: solo un administrador puede modificarlas, y confirmándolo.
+- Catálogo de recambios con stock, stock mínimo y aviso de stock bajo.
 - Piezas por reparación con ajuste automático de stock y precio unitario histórico.
 - Protección del historial: no se borran vehículos con reparaciones ni recambios ya usados.
+- Autorización por rol y por recurso, y páginas de error propias.
 
 Detalle completo en la [guía funcional](docs/guia-funcional.md).
 
@@ -33,9 +36,9 @@ Detalle completo en la [guía funcional](docs/guia-funcional.md).
 | Perfil | Resumen |
 |---|---|
 | `Admin` | Gestiona cuentas, roles y todo el taller. |
-| `Mechanic` | Gestiona vehículos, reparaciones, piezas y recambios. |
+| `Mechanic` | Gestiona vehículos y recambios, y trabaja las reparaciones que tiene asignadas. |
 | `Customer` | Consulta sus vehículos, sus reparaciones y el catálogo de recambios. |
-| `User` | Rol asignado al registrarse. Gestiona su perfil hasta que un administrador le asigne otro. |
+| `User` | Rol asignado al registrarse. Gestiona su perfil y consulta el catálogo hasta que un administrador le asigne otro. |
 
 La tabla de permisos está en la [guía funcional](docs/guia-funcional.md#permisos-por-perfil).
 
@@ -45,9 +48,9 @@ La tabla de permisos está en la [guía funcional](docs/guia-funcional.md#permis
 |---|---|
 | Plataforma | .NET 10 (`net10.0`), ASP.NET Core MVC con vistas Razor |
 | Acceso a datos | Entity Framework Core 10.0.11 con SQLite |
-| Autenticación | ASP.NET Core Identity, con cookies |
-| Interfaz | Bootstrap 5.3.3, jQuery 3.7.1 y Font Awesome 6.7.2, servidos desde `wwwroot/lib` |
-| Pruebas | xUnit 2.9.3 |
+| Autenticación | ASP.NET Core Identity, con cookies y 2FA TOTP (QR generado con QRCoder 1.9.0) |
+| Interfaz | Bootstrap 5.3.3, jQuery 3.7.1 y Font Awesome 6.7.2, servidos desde `wwwroot/lib`; tipografías de Google Fonts |
+| Pruebas | xUnit 2.9.3, unitarias y de integración |
 | Entrega | Docker y GitHub Actions |
 
 ## Requisitos
@@ -80,10 +83,10 @@ dotnet test G3AspNet.sln
 
 ```bash
 docker build -t g3-aspnet .
-docker run --rm -p 10000:10000 g3-aspnet
+docker run --rm -p 8080:8080 g3-aspnet
 ```
 
-El contenedor escucha en el puerto de la variable `PORT` o, si no existe, en el `10000`. No configura persistencia para SQLite.
+El contenedor escucha en el puerto `8080`, se ejecuta en entorno `Production`, carga las cuentas de demostración y no configura persistencia para SQLite. No lo expongas en un entorno compartido. Fuera de `Development` la cookie de sesión exige HTTPS: lee la [guía de despliegue](docs/despliegue.md) antes de usarlo.
 
 ## Configuración
 
@@ -104,18 +107,21 @@ La configuración puede sobrescribirse mediante variables de entorno con `__` co
 
 El proyecto no usa migraciones de EF Core. Al arrancar, [`DbInitializer`](Data/DbInitializer.cs) ejecuta `EnsureDeleted` y `EnsureCreated`, de modo que el esquema se genera a partir de las entidades y los datos se pierden en cada inicio. Esto ocurre aunque `SeedData:Enabled` sea `false`.
 
-Con `SeedData:Enabled` en `true`, el arranque carga los cuatro roles, cuentas de ejemplo, vehículos, recambios y reparaciones. Las cuentas y el guion de demostración están en [`docs/demo.md`](docs/demo.md).
+Con `SeedData:Enabled` en `true` (valor por defecto, en cualquier entorno), el arranque carga los cuatro roles, cuentas de ejemplo, vehículos, recambios y reparaciones. Las cuentas y el guion de demostración están en [`docs/demo.md`](docs/demo.md).
+
+Con el seed desactivado la base queda vacía y sin roles, por lo que el registro de cuentas no funciona.
 
 Para el esquema, consulta el [modelo de datos](docs/diagrama-er.md).
 
 ## Estructura de carpetas
 
 ```text
+Authorization/          Políticas y handlers de autorización por recurso
 Controllers/            Acciones MVC
 Data/                   ApplicationDbContext y DbInitializer
 Models/                 Entidades y enums
 Services/               Cuentas de usuario y almacenamiento de avatares
-Utilities/              Extensiones para los claims del usuario
+Utilities/              Claims del usuario, QR y confirmación de reparaciones cerradas
 ViewModels/             Modelos de formularios y páginas
 Views/                  Vistas Razor, agrupadas por controlador
 wwwroot/                CSS, JavaScript, imágenes y librerías locales
@@ -138,16 +144,18 @@ Material para **presentaciones con empresas y consultores** (p. ej. Fundación A
 | [Primeros pasos](docs/primeros-pasos.md) | Requisitos, restauración, ejecución y pruebas locales. |
 | [Arquitectura](docs/arquitectura.md) | Estructura MVC, inyección de dependencias y pipeline HTTP. |
 | [Base de datos y migraciones](docs/base-de-datos-y-migraciones.md) | SQLite, relaciones y ciclo de vida de la base de datos. |
-| [Autenticación y roles](docs/autenticacion-y-roles.md) | ASP.NET Core Identity, cookies y autorización actual. |
+| [Autenticación y roles](docs/autenticacion-y-roles.md) | Identity, cookies, 2FA y autorización por rol y recurso. |
 | [Controladores y vistas](docs/controladores-y-vistas.md) | Acciones MVC, vistas Razor y recursos frontend. |
 | [Configuración](docs/configuracion.md) | Claves de configuración y variables de entorno, sin valores sensibles. |
 | [Testing y CI](docs/testing-y-ci.md) | Suite xUnit y workflow de integración continua. |
+| [Módulo de reparaciones](docs/documentacion-tecnica-reparaciones.md) | Estados, autorización y código del módulo. |
 | [Despliegue](docs/despliegue.md) | Ejecución con Docker y límites conocidos del despliegue. |
 | [Demostración](docs/demo.md) | Cuentas de ejemplo y guion. |
 | [Problemas frecuentes](docs/problemas-frecuentes.md) | Errores habituales y soluciones. |
 | [Guía de contribución](CONTRIBUTING.md) | Ramas, pull requests y reglas de código. |
 | [Guía de IDE](docs/IDE-SETUP.md) | Preparación del entorno de desarrollo. |
 | [Dependencias](docs/DEPENDENCIAS.md) | Registro de paquetes y su revisión. |
+| [Planning](docs/planning.md) | Estado, errores conocidos y reparto del trabajo. |
 
 ## Equipo
 

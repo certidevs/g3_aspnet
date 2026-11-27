@@ -34,7 +34,7 @@ Margen: si hay preguntas durante la demo, **acortar** el bloque 8–12 o la secc
 1. Presentar **TALLER .NET** en una frase (gestión de taller + área cliente).
 2. Sector: pyme automoción, trazabilidad y stock.
 3. Proyecto **Grupo 3**, formación .NET; enlace al repo si la audiencia es técnica.
-4. Mencionar [competencias del dossier](presentacion-adecco.md#competencias-y-empleabilidad): MVC, EF, Identity, tests, CI, Git.
+4. Mencionar [competencias del dossier](presentacion-adecco.md#competencias-y-empleabilidad): MVC, EF, Identity, seguridad, tests, CI, Git.
 5. No entrar aún en limitaciones de producción (llegan al minuto 38).
 
 **Diapositivas:** 1–5 del outline.
@@ -75,14 +75,14 @@ Seguir [demo.md](demo.md). Orden optimizado para audiencia mixta:
 
 1. Login `mechanic`.
 2. Crear vehículo y asignar cliente (o usar uno existente si falta tiempo).
-3. Nueva **reparación** con horas y tarifa.
-4. Anotar stock de un recambio; crear línea en **Piezas usadas**.
+3. Nueva **reparación** con horas (la tarifa del mecánico es fija).
+4. Anotar stock de un recambio; añadir la pieza desde el detalle de la reparación.
 5. Comprobar **stock reducido**; intentar cantidad superior al stock → aviso.
 6. (Si hay tiempo) eliminar línea y ver stock repuesto.
 
 #### D. Precio histórico (≈3 min) — demo.md §5
 
-1. Reparación de `1234ABC` con aceite a 36,90 € en línea.
+1. Login `admin`. Reparación de `1234ABC` con aceite a 36,90 € en línea.
 2. Catálogo del aceite a 38,90 €; cambiar precio en recambio.
 3. Volver al detalle: **línea sin cambio**.
 
@@ -142,7 +142,7 @@ Enlace a detalle: [guía funcional — reglas](guia-funcional.md#reglas-de-negoc
 
 | Pregunta | Respuesta orientativa |
 |---|---|
-| ¿Está listo para venderse? | Prototipo para demostrar capacidad; piloto tras persistencia y seguridad por rol. |
-| ¿Un cliente puede modificar reparaciones? | Diseño por roles; refuerzo de permisos en roadmap. |
+| ¿Está listo para venderse? | Prototipo para demostrar capacidad; piloto tras persistencia y despliegue seguro. |
+| ¿Un cliente puede modificar reparaciones? | No. Solo consulta las de sus vehículos; el servidor lo comprueba. |
 | ¿Por qué SQLite? | Simplicidad en formación; piloto puede cambiar de motor. |
 | ¿Cuántas personas en el equipo? | Grupo 3 — cuatro integrantes (+ mentores listados en README). |

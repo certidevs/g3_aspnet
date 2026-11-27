@@ -152,8 +152,8 @@ Se calcula al consultar cada reparación
 
 1. Migraciones y datos persistentes
 2. Seed solo en desarrollo
-3. Autorización por rol en módulos de taller
-4. Alertas de stock mínimo
+3. Cita previa y presupuesto
+4. Reposición de stock
 5. Licencia y piloto con empresa colaboradora
 
 ---

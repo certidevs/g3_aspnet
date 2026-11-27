@@ -259,8 +259,8 @@ Estructura alineada con [diapositivas-presentacion-adecco.marp.md](diapositivas-
 **Bullets:**
 
 - Persistencia y migraciones
-- Seguridad por rol en taller
-- Alertas de stock mínimo
+- Cita y presupuesto del cliente
+- Reposición de stock
 - Piloto con empresa colaboradora
 
 **Notas:** Seis hitos en dossier; no leer todos si falta tiempo.

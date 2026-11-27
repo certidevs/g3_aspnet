@@ -2,6 +2,7 @@
 
 > Estado revisado el 26/11/2026 sobre la rama `main` (commit `b61dc49`). El proyecto de pruebas queda fuera de este planning.
 > Actualizado el 26/11/2026: E6 y E8 corregidos.
+> Actualizado el 27/11/2026: E10 y E15 corregidos; QR de 2FA y registro sin desplegable de rol, hechos.
 > Las funcionalidades del apartado 4 y el reparto del apartado 6 son una **propuesta** pendiente de acordar en el equipo.
 
 ## 1. Resumen
@@ -78,7 +79,7 @@ No hay errores al compilar ni al arrancar. E1 a E7 se han reproducido ejecutando
 | E7 | Baja | Algunos mensajes de validación y de Identity salen en inglés. | Registro, usuarios, perfil |
 | E8 | ✅ Corregido | ~~Un `Admin` puede editar horas y tarifa de una reparación completada o entregada, y cambia el coste ya cerrado.~~ Ahora solo puede hacerlo confirmando la acción. | `RepairsController`, `RepairPartsController`, `Views/Shared/_ClosedRepairConfirmation.cshtml` |
 | E9 | Media | La imagen Docker usa `Production` pero carga las cuentas de demostración, porque `SeedData:Enabled` es `true` por defecto. | `appsettings.json`, `Dockerfile` |
-| E10 | Baja | La documentación no coincide con el código: dice puerto `10000` (el Dockerfile usa `8080`), bloqueo de 10 minutos (son 15) y una matriz de permisos antigua. | `README.md`, `docs/` |
+| E10 | ✅ Corregido | ~~La documentación no coincide con el código: dice puerto `10000` (el Dockerfile usa `8080`), bloqueo de 10 minutos (son 15) y una matriz de permisos antigua.~~ Documentación actualizada. | `README.md`, `docs/` |
 
 ### Cosas a medias
 
@@ -86,8 +87,8 @@ No hay errores al compilar ni al arrancar. E1 a E7 se han reproducido ejecutando
 - **Entrega:** el estado «Entregado» no guarda la fecha de entrega.
 - **Kilometraje:** abrir una reparación no comprueba ni actualiza el kilometraje del vehículo.
 - **Portada:** promete presupuesto y que el cliente registre una reparación con prioridad; ninguna de las dos cosas existe.
-- **Registro:** muestra un desplegable de rol con una única opción.
-- **2FA:** se configura copiando la clave, sin código QR ni códigos de recuperación.
+- ~~**Registro:** muestra un desplegable de rol con una única opción.~~ ✅ Eliminado. Quedan dos pruebas de `AccountFlowTests` que esperan el comportamiento anterior y fallan.
+- **2FA:** ✅ ya muestra código QR; faltan los códigos de recuperación.
 - **Nombres:** conviven «TALLER .NET» y «G3 ASP.NET», y «Esperando repuestos» con «Esperando recambios».
 
 ## 4. Qué falta de lógica de negocio para MVP
@@ -157,7 +158,7 @@ No hay errores al compilar ni al arrancar. E1 a E7 se han reproducido ejecutando
 | Permisos | Decidir qué ve el rol `User` en el menú Taller. |
 | Diseño | Colores por estado de reparación. Búsqueda y paginación en vehículos, reparaciones y recambios. Revisar la vista en móvil. Unificar el nombre de la aplicación. Ajustar los textos de la portada. |
 | Datos de prueba | Añadir citas, presupuestos y entradas de stock. Cargar las cuentas de demostración solo en desarrollo. |
-| README y documentación | Corregir puerto, bloqueo y permisos. Declarar licencia. Unificar el flujo de ramas entre `CONTRIBUTING.md` y `.github/copilot-instructions.md`. |
+| README y documentación | Declarar licencia. Unificar el flujo de ramas entre `CONTRIBUTING.md` y `.github/copilot-instructions.md`. |
 | Repositorio | `App_Data/g3.db.bak` no está cubierto por `.gitignore`. Revisar los archivos sin seguimiento antes del próximo commit. |
 
 ## 6. Reparto por persona
@@ -169,7 +170,7 @@ Cada persona corrige primero sus errores y después desarrolla su funcionalidad.
 1. E1: eliminar usuarios con datos asociados.
 2. E7 y E9: mensajes en español y cuentas de demostración solo en desarrollo.
 3. Funcionalidad 4.1, solicitud de cita.
-4. E10: documentación y README.
+4. ~~E10: documentación y README.~~ ✅ Hecho.
 
 ### Rafa — reparaciones y presupuesto
 
@@ -199,7 +200,7 @@ Cada persona corrige primero sus errores y después desarrolla su funcionalidad.
 - Panel con indicadores: ingresos, reparaciones por mecánico y recambios más usados.
 - Calendario de citas y carga de trabajo por mecánico.
 - Fotos de la reparación.
-- Código QR y códigos de recuperación para 2FA.
+- Códigos de recuperación para 2FA.
 - Despliegue con base de datos persistente.
 
 ## 8. Dudas, ruegos y preguntas
@@ -225,7 +226,7 @@ Funcionan los permisos por rol, el flujo completo de una reparación, el control
 | E12 | Media | El historial del vehículo muestra a un mecánico enlaces a reparaciones de otros; al abrirlos recibe «acceso denegado». | `Views/Vehicle/Details.cshtml` | Rafa |
 | E13 | Media | Al activar 2FA, la aplicación cierra la sesión pasados un par de minutos. Falta refrescarla; revisar también la desactivación. | `Controllers/ProfileController.cs` (`EnableTwoFactor`) | Iván |
 | E14 | Media | Los mensajes de éxito salen en tonos rojos y los listados vacíos en rojo intenso; parecen errores. | `wwwroot/css/site.css` (`.alert-success`, `.alert-info`) | Rubén |
-| E15 | Baja | Los errores 404 y 429 muestran la página genérica del navegador, sin explicación ni menú. | `Program.cs` | Iván |
+| E15 | ✅ Corregido | ~~Los errores 404 y 429 muestran la página genérica del navegador, sin explicación ni menú.~~ Hay páginas de error propias. | `Program.cs` | Iván |
 | E16 | Baja | Al crear un recambio, «Marca» es obligatoria aunque el modelo no la marca así, y el aviso sale en inglés. | `ViewModels/SpareParts/SparePartFormViewModel.cs` | Ricardo |
 
 ### Errores del apartado 3 comprobados en el navegador

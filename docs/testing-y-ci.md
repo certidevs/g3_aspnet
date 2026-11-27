@@ -14,7 +14,20 @@ dotnet build G3AspNet.sln
 dotnet test G3AspNet.sln
 ```
 
-La solución incluye pruebas para lógica de dominio, relaciones, modelos de vista y resultados de carga de imágenes.
+## Qué cubre la suite
+
+| Tipo | Ubicación | Cubre |
+|---|---|---|
+| Unitarias | `tests/G3AspNet.Tests/` | Lógica de dominio, relaciones, almacenamiento de imágenes, modelo de login y autorización de piezas usadas. |
+| Integración | `tests/G3AspNet.Tests/Integration/` | Cuentas, perfil, administración de usuarios, vehículos, recambios, reparaciones, piezas, reparaciones cerradas, portada, datos de ejemplo y regresiones de seguridad. |
+
+Las pruebas de integración arrancan la aplicación en memoria con `WebApplicationFactory` ([`AppFactory`](../tests/G3AspNet.Tests/Integration/AppFactory.cs)). Cada fábrica usa una base SQLite temporal, que se borra al terminar, y carga los datos de ejemplo. No tocan `App_Data/g3.db`.
+
+Para ejecutar solo una parte:
+
+```bash
+dotnet test tests/G3AspNet.Tests/G3AspNet.Tests.csproj --filter "FullyQualifiedName~Integration"
+```
 
 ## Integración continua
 
@@ -30,4 +43,4 @@ dotnet test G3AspNet.sln --configuration Release --no-build --verbosity normal
 
 ## Datos de prueba
 
-Las pruebas de modelos y relaciones no deben depender de datos productivos. La aplicación principal recrea su SQLite al iniciar; consulta [Base de datos y migraciones](base-de-datos-y-migraciones.md) antes de ejecutar la aplicación con una base local que quieras conservar.
+Las pruebas no deben depender de datos productivos. Usa los métodos de `AppFactory` (`CreateVehicleAsync`, `CreateRepairAsync`, `CreateSparePartAsync`) para preparar los datos de cada prueba.

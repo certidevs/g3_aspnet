@@ -54,19 +54,21 @@ Esta documentación no publica contraseñas. Usa estas cuentas únicamente en un
 1. Cierra sesión e inicia con la cuenta de demostración `customer`.
 2. Abre **Taller → Vehículos**. Solo aparecen `1234ABC`, `5678DEF` y `9012GHI`.
 3. Abre **Taller → Reparaciones** y entra en el detalle de una. Se ven mecánico, estado, piezas y coste total.
-4. Abre **Taller → Recambios** para consultar el catálogo.
+4. Abre **Taller → Recambios** para consultar el catálogo. No aparecen botones de edición.
 5. Inicia con `customer2` y comprueba que ve otros vehículos.
 
 ### 3. Trabajo del mecánico
 
 1. Inicia con la cuenta de demostración `mechanic`.
 2. Crea un vehículo en **Taller → Vehículos** y asígnalo a un cliente.
-3. Crea una reparación para ese vehículo. Elige tipo y estado, e indica horas y tarifa.
+3. Crea una reparación para ese vehículo. Elige el tipo e indica las horas. Queda **Pendiente**, asignada a `mechanic` y con la tarifa de 45 €/h.
 4. Anota el stock de un recambio en **Taller → Recambios**.
-5. Abre **Taller → Piezas usadas** y crea una nueva. Elige la reparación, el recambio y la cantidad.
+5. En el detalle de la reparación, añade ese recambio. También se puede hacer desde **Taller → Piezas usadas**.
 6. Vuelve a **Recambios**. El stock ha bajado en la cantidad añadida.
 7. Prueba a añadir más unidades de las que hay. La aplicación avisa de que no hay stock suficiente.
-8. Elimina la línea desde **Taller → Piezas usadas**. El stock se repone.
+8. Quita la línea. El stock se repone.
+9. En el detalle, pulsa **Iniciar reparación**, **Esperando recambios**, **Retomar reparación** y **Completar reparación**. La reparación queda cerrada para el mecánico.
+10. Inicia con `admin`, abre la reparación y pulsa **Entregar vehículo al cliente**. Al intentar editarla se pide confirmación.
 
 ### 4. Protección del historial
 
@@ -75,13 +77,20 @@ Esta documentación no publica contraseñas. Usa estas cuentas únicamente en un
 
 ### 5. Precio histórico
 
-1. Abre la reparación de `1234ABC` con el cambio de aceite. La línea del aceite 5W30 figura a 36,90 €.
+1. Inicia con `admin` y abre la reparación de `1234ABC` con el cambio de aceite. La línea del aceite 5W30 figura a 36,90 €.
 2. Abre el recambio «Aceite 5W30 5L». El catálogo figura a 38,90 €.
 3. Cambia el precio del recambio.
 4. Vuelve a la reparación. El precio de la línea no cambia.
 
 ### 6. Registro y tema
 
-1. Cierra sesión y usa **Crear cuenta**. El único rol disponible es `User`.
+1. Cierra sesión y usa **Crear cuenta**. El formulario no pide rol: la cuenta recibe `User`.
 2. Edita el perfil y sube un avatar.
 3. Cambia entre tema claro y oscuro con el botón de la barra.
+
+### 7. Doble factor (opcional)
+
+1. Abre **Mi perfil → Seguridad 2FA** y escanea el código QR con una app autenticadora.
+2. Introduce el código de 6 dígitos y activa la 2FA.
+3. Cierra sesión y vuelve a entrar. Se pide el código.
+4. La 2FA desaparece al reiniciar la aplicación.

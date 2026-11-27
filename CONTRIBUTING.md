@@ -94,7 +94,10 @@ dotnet test G3AspNet.sln --configuration Release --no-build
 - Los controladores se mantienen simples: usa view models, comprueba `ModelState.IsValid` en los formularios y delega la lógica de cuentas en `UserService`.
 - Usa `RoleNames` en lugar de escribir los nombres de rol como texto.
 - Obtén el identificador del usuario con `ClaimsPrincipalExtensions.GetRequiredUserId()`.
-- Protege las acciones con `[Authorize]` y, cuando proceda, con roles.
+- Toda acción exige sesión por defecto; usa `[AllowAnonymous]` solo en páginas públicas.
+- Restringe por rol con las políticas de `PolicyNames` y comprueba el acceso a cada registro con `IAuthorizationService` y `WorkshopOperations`.
+- Aplica en los listados el mismo filtro de visibilidad que en el detalle.
+- Exige `confirmClosed` en cualquier acción que modifique una reparación cerrada.
 - Si cambias una entidad, avisa a quien la mantiene. No modifiques entidades, controladores ni vistas de otra persona sin comentarlo.
 
 ## Cambios en el modelo de datos
@@ -122,7 +125,30 @@ Si cambias el comportamiento visible, actualiza el documento que corresponda:
 | Configuración, base de datos o despliegue | [Configuración](docs/configuracion.md), [Base de datos y migraciones](docs/base-de-datos-y-migraciones.md), [Despliegue](docs/despliegue.md) |
 | Ejecución, pruebas o integración continua | [Primeros pasos](docs/primeros-pasos.md), [Testing y CI](docs/testing-y-ci.md) |
 | Paquetes | [Dependencias](docs/DEPENDENCIAS.md) |
+| Módulo de reparaciones | [Documentación técnica](docs/documentacion-tecnica-reparaciones.md) |
 | Configuración, ejecución o estructura | [README](README.md) |
+
+## Traducción al inglés
+
+La documentación se escribe en español. [`scripts/translate-docs.py`](scripts/translate-docs.py) la traduce al inglés con la API de DeepL y deja el resultado en `docs/en/`.
+
+- Se traducen `README.md`, `CONTRIBUTING.md` y los Markdown de `docs/` versionados en git. Los archivos sin seguimiento no se envían a DeepL.
+- No se traducen los bloques de código (tampoco los diagramas Mermaid), el código en línea, las URL, los comentarios HTML ni el front matter.
+- Solo se envía el texto nuevo o modificado. El resto se reutiliza de `docs/en/.translation-cache.json`.
+- No edites `docs/en/` a mano: se regenera por completo. Corrige el texto en español.
+
+Para ejecutarlo en local, define la variable de entorno `DEEPL_API_KEY` sin escribir la clave en ningún archivo del repositorio:
+
+```bash
+python3 scripts/translate-docs.py --dry-run   # cuenta lo pendiente, sin clave
+read -rs DEEPL_API_KEY && export DEEPL_API_KEY
+python3 scripts/translate-docs.py
+```
+
+En GitHub, el workflow [`translate-docs.yml`](.github/workflows/translate-docs.yml) se ejecuta cuando llegan cambios de documentación a `main` y abre una pull request desde la rama `docs/traduccion-en`. Necesita:
+
+1. El secreto `DEEPL_API_KEY` en **Settings → Secrets and variables → Actions**. Sin él, el workflow avisa y no traduce.
+2. La opción **Allow GitHub Actions to create and approve pull requests**, en **Settings → Actions → General**. Sin ella, la rama se sube, pero la pull request hay que abrirla a mano.
 
 ## Wiki
 

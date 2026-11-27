@@ -32,4 +32,6 @@ dotnet build G3AspNet.sln
 dotnet test G3AspNet.sln
 ```
 
+Las cuentas para iniciar sesión están en [Demostración](demo.md).
+
 Para ejecutar el contenedor, sigue [Despliegue](despliegue.md). Para revisar las claves de configuración disponibles, consulta [Configuración](configuracion.md).

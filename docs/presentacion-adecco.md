@@ -43,7 +43,7 @@ TALLER .NET no sustituye un ERP completo; **demuestra un núcleo digital** que u
 | **Gestión integral del taller** | Vehículos, reparaciones, mecánico asignado, estados y tipos de intervención |
 | **Almacén conectado al trabajo** | Catálogo de recambios; las piezas usadas en reparación ajustan el stock |
 | **Cliente informado** | Perfil `Customer`: solo sus vehículos y reparaciones; ve coste total y piezas |
-| **Seguridad y cuentas** | Registro, roles (`Admin`, `Mechanic`, `Customer`, `User`), perfil, bloqueo tras intentos fallidos |
+| **Seguridad y cuentas** | Registro, roles (`Admin`, `Mechanic`, `Customer`, `User`), permisos por recurso, doble factor, bloqueo tras intentos fallidos |
 
 Detalle de permisos y reglas: [guía funcional](guia-funcional.md).
 
@@ -52,7 +52,7 @@ Detalle de permisos y reglas: [guía funcional](guia-funcional.md).
 | Perfil | En la práctica |
 |---|---|
 | `Admin` | Usuarios del sistema y operación completa del taller |
-| `Mechanic` | Vehículos, reparaciones, piezas y recambios |
+| `Mechanic` | Vehículos y recambios; reparaciones y piezas que tiene asignadas |
 | `Customer` | Consulta de sus vehículos y reparaciones; catálogo de recambios |
 | `User` | Cuenta recién registrada hasta que un administrador asigne otro rol |
 
@@ -96,9 +96,9 @@ El proyecto consolida habilidades demandadas en desarrollo web y en equipos ági
 |---|---|
 | Desarrollo back-end .NET | ASP.NET Core MVC, .NET 10 |
 | Modelo de datos y ORM | Entity Framework Core, SQLite |
-| Autenticación y autorización | ASP.NET Core Identity, roles, políticas de contraseña |
+| Autenticación y autorización | ASP.NET Core Identity, 2FA, políticas por rol y por recurso |
 | Front-end web | Razor, Bootstrap 5, accesibilidad básica, tema claro/oscuro |
-| Calidad | Pruebas unitarias (xUnit) en `tests/G3AspNet.Tests/` |
+| Calidad | Pruebas unitarias y de integración (xUnit) en `tests/G3AspNet.Tests/` |
 | Entrega e ingeniería | Docker, GitHub Actions (CI), flujo de ramas y pull requests |
 | Trabajo en equipo | Repositorio compartido, documentación y wiki sincronizado |
 
@@ -107,7 +107,7 @@ Formación contextualizada en un **dominio de negocio** (taller) facilita explic
 ## Evidencias de calidad
 
 - Integración continua en cada cambio a `main` (badge CI en [README](../README.md)).
-- Suite de pruebas automatizadas (modelos de dominio, relaciones, validaciones).
+- Suite de pruebas automatizadas (dominio, flujos del taller, cuentas y seguridad).
 - Documentación estructurada: funcional, modelo de datos, demo y guías de contribución.
 - Contenedor Docker para ejecutar la aplicación sin instalar el SDK en el auditorio.
 
@@ -115,12 +115,13 @@ Formación contextualizada en un **dominio de negocio** (taller) facilita explic
 
 | Aspecto | Estado |
 |---|---|
-| Funcionalidad de taller | Implementada: vehículos, reparaciones, stock, costes, área cliente |
+| Funcionalidad de taller | Implementada: vehículos, flujo de reparaciones, stock, costes, área cliente |
+| Seguridad | Permisos por rol y por recurso, 2FA, bloqueo y límite de peticiones |
 | Entorno | Prototipo **en desarrollo**; adecuado para demo y evaluación formativa |
 | Base de datos | En cada arranque se recrea el esquema y los datos de ejemplo; **no es persistencia de producción** |
 | Despliegue | Perfil local y Docker; sin piloto productivo declarado aún |
 
-Mensaje para consultores: el equipo demuestra **capacidad de llevar un producto de cero a demo estable**; el paso a piloto con un taller implica persistencia, endurecimiento de seguridad por rol y acuerdos de datos (véase roadmap).
+Mensaje para consultores: el equipo demuestra **capacidad de llevar un producto de cero a demo estable**; el paso a piloto con un taller implica persistencia, configuración de despliegue y acuerdos de datos (véase roadmap).
 
 ## Roadmap hacia un piloto
 
@@ -128,8 +129,8 @@ Hitos realistas alineados con el estado del código y la documentación técnica
 
 1. **Persistencia** — migraciones EF Core y datos que no se borren en cada arranque.
 2. **Datos de ejemplo** — seed solo en desarrollo; credenciales fuertes o sin cuentas fijas en otros entornos.
-3. **Autorización en módulos de taller** — reforzar qué rol puede crear, editar o borrar reparaciones y recambios.
-4. **Alertas de stock** — avisar cuando el stock llega al mínimo (`MinStock` ya existe en el modelo).
+3. **Cita y presupuesto** — el cliente pide cita y aprueba el presupuesto antes de empezar (propuesta del [planning](planning.md)).
+4. **Reposición de stock** — registrar entradas de almacén y su coste; el aviso de stock bajo ya existe.
 5. **Licencia y gobernanza** — declarar licencia en el repositorio y criterios de uso con empresa colaboradora.
 6. **Piloto controlado** — despliegue en entorno de prueba con un taller y feedback de usuarios reales.
 

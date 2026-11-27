@@ -15,41 +15,45 @@ TALLER .NET centraliza la gestión de un taller mecánico:
 
 ## Perfiles
 
-La aplicación define cuatro roles: `Admin`, `Mechanic`, `Customer` y `User`.
+La aplicación define cuatro roles: `Admin`, `Mechanic`, `Customer` y `User`. Sin iniciar sesión solo se accede a la portada, el login y el registro.
 
 ### Admin
 
-- Gestiona las cuentas desde **Administración de usuarios**: buscar, crear, editar, asignar rol, activar/desactivar y eliminar.
+- Gestiona las cuentas desde **Administración de usuarios**: buscar, crear, editar, asignar rol, activar/desactivar, restablecer la contraseña y eliminar.
 - No puede quitarse a sí mismo el rol `Admin`, desactivar su cuenta ni eliminarla.
-- No se puede eliminar al último administrador.
-- Gestiona vehículos, reparaciones, piezas usadas y recambios.
+- Siempre debe quedar al menos un administrador activo.
+- Gestiona vehículos, recambios y todas las reparaciones.
+- Es el único que asigna mecánico y tarifa, entrega vehículos, elimina reparaciones, cambia el precio de una pieza usada y modifica reparaciones cerradas.
 
 ### Mechanic
 
 - Consulta todos los vehículos del taller y puede crearlos, editarlos y eliminarlos.
-- Abre y actualiza reparaciones: vehículo, mecánico asignado, tipo, estado, fechas, kilometraje, horas y tarifa.
-- Añade piezas a una reparación. El stock se ajusta de forma automática.
-- Consulta y gestiona el catálogo de recambios.
+- Gestiona el catálogo de recambios.
+- Ve solo las reparaciones que tiene asignadas.
+- Abre reparaciones, que quedan asignadas a su cuenta con una tarifa de 45 €/h.
+- Edita, cambia de estado y añade o quita piezas en sus reparaciones mientras no estén cerradas.
 
 ### Customer
 
 - Consulta solo sus propios vehículos y las reparaciones de esos vehículos.
 - Ve en cada reparación el mecánico, el estado, el kilometraje de entrada, las piezas usadas y el coste total.
+- Cuando la reparación está completada, ve un aviso para recoger el vehículo.
 - Consulta el catálogo de recambios.
-- No puede crear, editar ni eliminar vehículos.
+- No modifica nada del taller.
 
 ### User
 
-- Es el rol que recibe cualquier persona que se registra desde **Crear cuenta**. El registro no permite elegir otro.
+- Es el rol que recibe cualquier persona que se registra desde **Crear cuenta**.
 - Un administrador puede cambiarle el rol desde **Administración de usuarios**.
-- Puede iniciar sesión y gestionar su perfil: nombre visible, avatar y contraseña.
+- Gestiona su perfil y consulta el catálogo de recambios. No tiene vehículos hasta que pasa a `Customer`.
 
 ### Todos los perfiles
 
 - Cambio de tema claro u oscuro, con la preferencia guardada en el navegador.
-- Edición de perfil y cambio de contraseña.
+- Edición de perfil (nombre visible, email y avatar) y cambio de contraseña.
+- Verificación en dos pasos (2FA TOTP).
 - Contraseña de al menos 8 caracteres, con un dígito y un carácter no alfanumérico.
-- Bloqueo de la cuenta durante 10 minutos tras 5 intentos de acceso fallidos.
+- Bloqueo de la cuenta durante 15 minutos tras 5 intentos de acceso fallidos.
 
 ## Permisos por perfil
 
@@ -58,20 +62,41 @@ La tabla refleja lo que el código aplica hoy.
 | Funcionalidad | Admin | Mechanic | Customer | User |
 |---|:---:|:---:|:---:|:---:|
 | Administración de usuarios | Sí | No | No | No |
-| Gestionar el perfil propio | Sí | Sí | Sí | Sí |
-| Consultar vehículos | Todos | Todos | Solo propios | Todos |
+| Gestionar el perfil propio y 2FA | Sí | Sí | Sí | Sí |
+| Consultar vehículos | Todos | Todos | Solo propios | Solo propios (1) |
 | Crear, editar y eliminar vehículos | Sí | Sí | No | No |
-| Consultar reparaciones | Todas | Todas | Solo de sus vehículos | Todas |
-| Crear, editar y eliminar reparaciones; añadir piezas | Sí | Sí | Sí (1) | Sí (1) |
-| Consultar y gestionar piezas usadas | Sí | Sí | Sí (1) | Sí (1) |
-| Consultar y gestionar recambios | Sí (2) | Sí (2) | Sí (2) | Sí (2) |
+| Consultar reparaciones y piezas usadas | Todas | Solo asignadas | De sus vehículos | De sus vehículos (1) |
+| Crear reparaciones | Sí | Sí, asignadas a sí mismo | No | No |
+| Editar reparaciones, cambiar estado y gestionar piezas | Todas (2) | Asignadas y abiertas | No | No |
+| Cambiar mecánico, tarifa o precio de una pieza | Sí | No | No | No |
+| Entregar y eliminar reparaciones | Sí (2) | No | No | No |
+| Consultar recambios | Sí | Sí | Sí | Sí |
+| Crear, editar y eliminar recambios | Sí | Sí | No | No |
 
 Notas:
 
-1. <!-- TODO: confirmar el comportamiento previsto. `RepairsController` y `RepairPartsController` solo exigen sesión iniciada. El filtro por propietario de `RepairsController` solo se aplica al listado y detalle, no a Create/Edit/Delete/AddPart; `RepairPartsController` tampoco filtra por propietario. -->
-   Estas acciones no están restringidas por rol.
-2. <!-- TODO: confirmar el comportamiento previsto. `SparePartsController` no tiene `[Authorize]`. -->
-   El catálogo de recambios no exige iniciar sesión, tampoco para crear, editar o eliminar.
+1. Un `User` normalmente no tiene vehículos, porque solo un `Customer` puede asignarse como propietario.
+2. Si la reparación está cerrada hay que confirmar la acción.
+
+El detalle de un recambio muestra solo las reparaciones que la cuenta puede ver.
+
+## Ciclo de vida de una reparación
+
+```mermaid
+stateDiagram-v2
+    [*] --> Pendiente: Crear
+    Pendiente --> EnProgreso: Iniciar
+    EnProgreso --> EsperandoRepuestos: Esperando recambios
+    EsperandoRepuestos --> EnProgreso: Retomar
+    EnProgreso --> Completada: Completar (con horas)
+    Completada --> Entregada: Entregar (solo Admin)
+    Entregada --> [*]
+```
+
+- Toda reparación nueva empieza como **Pendiente**.
+- El estado solo cambia con los botones del detalle. El formulario no permite editarlo.
+- Para completar hay que haber apuntado horas de mano de obra. Se registra la fecha de cierre.
+- **Completada** y **Entregada** son estados cerrados. No hay forma de reabrir una reparación.
 
 ## Reglas de negocio
 
@@ -80,13 +105,20 @@ Notas:
 - Al añadir una pieza a una reparación, el stock del recambio baja en la cantidad indicada.
 - Si no hay stock suficiente, la aplicación muestra un aviso y no guarda la pieza.
 - Al editar la cantidad o cambiar el recambio de una línea, el stock se recalcula.
-- Al eliminar una línea o una reparación, las unidades vuelven al almacén.
+- Al eliminar una línea o una reparación, las unidades vuelven al almacén, también si la reparación estaba cerrada.
 - La cantidad por línea debe estar entre 1 y 1000.
+- El listado de recambios resalta con **Stock bajo** los que tienen un stock igual o inferior al mínimo.
+
+### Reparaciones cerradas
+
+- Un mecánico no puede modificar una reparación completada o entregada, ni sus piezas.
+- Un administrador puede editarla, eliminarla o cambiar sus piezas marcando una casilla de confirmación. El servidor también la comprueba.
 
 ### Precio histórico
 
 - Cada línea de reparación guarda el precio unitario del momento en que se añade la pieza.
 - Un cambio posterior del precio en el catálogo no modifica las reparaciones ya registradas.
+- Solo un administrador puede cambiar a mano el precio de una línea.
 
 ### Coste de la reparación
 
@@ -95,6 +127,11 @@ La aplicación no guarda un total. Lo calcula al consultar la reparación:
 ```text
 Coste = (LaborHours × HourlyRate) + Σ(Quantity × UnitPrice)
 ```
+
+### Validaciones del vehículo
+
+- El VIN tiene exactamente 17 letras o números, sin I, O ni Q.
+- El propietario debe ser una cuenta con rol `Customer`.
 
 ### Protección del historial
 
@@ -114,7 +151,10 @@ Los valores están en [Modelo de datos](diagrama-er.md#valores-de-los-enums).
 
 ## Limitaciones conocidas
 
-- <!-- TODO: confirmar si se quiere avisar del stock bajo. Existe `MinStock`, pero no hay ninguna alerta en la interfaz (hay un TODO en `SparePartsController`). -->
-  `MinStock` se guarda, pero la aplicación no avisa cuando el stock llega al mínimo.
-- <!-- TODO: el detalle de reparación no tiene aún formulario «Añadir pieza» (TODO en `Views/Repairs/Details.cshtml`). -->
-  Las piezas se añaden desde el módulo **Piezas usadas**.
+- Eliminar desde la administración una cuenta con vehículos o reparaciones produce un error 500 en vez de un aviso. Como alternativa, desactívala.
+- El estado **Entregada** no guarda la fecha de entrega.
+- Abrir una reparación no comprueba ni actualiza el kilometraje del vehículo.
+- El filtro `/SpareParts?lowStock=true` funciona, pero ninguna pantalla enlaza a él.
+- La portada menciona presupuesto y registro de reparaciones con prioridad por parte del cliente; la aplicación no ofrece ninguna de las dos cosas.
+
+La lista completa de errores abiertos está en el [planning](planning.md).

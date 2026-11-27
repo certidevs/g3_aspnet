@@ -9,7 +9,7 @@ Documentos relacionados: [Primeros pasos](primeros-pasos.md) · [Configuración]
 ### El puerto 5107 está ocupado
 
 Otra aplicación usa el puerto. Cierra el proceso o cambia `applicationUrl` en [`Properties/launchSettings.json`](../Properties/launchSettings.json).
-En Docker, el puerto es el de la variable `PORT` o, si no existe, el `10000`.
+En Docker el puerto es el `8080`.
 
 ### `dotnet` no encuentra el SDK
 
@@ -27,6 +27,14 @@ dotnet dev-certs https --trust
 
 El perfil `http` no lo necesita.
 
+### En Docker no puedo mantener la sesión
+
+La imagen se ejecuta en `Production`, donde la cookie de sesión exige HTTPS. Usa un proxy con TLS; consulta [Despliegue](despliegue.md#limitaciones).
+
+### Falla el registro con el seed desactivado
+
+Con `SeedData:Enabled` en `false` no se crean los roles, y el registro necesita el rol `User`. Activa el seed.
+
 ### Los datos desaparecen al reiniciar
 
 Es el comportamiento previsto. Cada arranque ejecuta `EnsureDeleted` y `EnsureCreated`.
@@ -42,13 +50,25 @@ Un cambio de esquema es un cambio en las entidades y en [`ApplicationDbContext`]
 
 ### No puedo iniciar sesión
 
-- Comprueba el usuario y la contraseña. Las cuentas de ejemplo están en [Demostración](demo.md).
-- Tras 5 intentos fallidos, la cuenta se bloquea 10 minutos. Reiniciar la aplicación también la desbloquea, porque la base se recrea.
+- Comprueba el usuario (o email) y la contraseña. Las cuentas de ejemplo están en [Demostración](demo.md).
+- Tras 5 intentos fallidos, la cuenta se bloquea 15 minutos. Reiniciar la aplicación también la desbloquea, porque la base se recrea.
 - Una cuenta desactivada por un administrador pierde la sesión.
 
-### Al registrarme solo puedo elegir `User`
+### Aparece «Demasiadas peticiones» (429)
 
-Es intencionado. El registro público solo permite ese rol.
+Login, verificación 2FA y registro admiten 10 envíos por minuto e IP. Espera un minuto.
+
+### He perdido el acceso a la app autenticadora
+
+No hay códigos de recuperación. Reiniciar la aplicación recrea la base y elimina la 2FA junto con el resto de datos.
+
+### La sesión se cierra poco después de activar o desactivar la 2FA
+
+Es un error conocido (E13 en el [planning](planning.md)). Vuelve a iniciar sesión.
+
+### Al registrarme no puedo elegir rol
+
+Es intencionado. El registro público siempre asigna `User`.
 Un administrador puede cambiarlo desde **Administración de usuarios**.
 
 ### La contraseña no se acepta
@@ -62,6 +82,18 @@ La aplicación también comprueba el contenido real del archivo.
 Los límites están en `FileUploads:Images`, en [`appsettings.json`](../appsettings.json).
 
 ## Uso de la aplicación
+
+### Un mecánico no ve una reparación
+
+Cada mecánico ve solo las reparaciones que tiene asignadas. Un administrador puede reasignarla.
+
+### No puedo modificar una reparación
+
+Las reparaciones completadas o entregadas están cerradas. Solo un `Admin` puede modificarlas, marcando la casilla de confirmación.
+
+### No puedo completar una reparación
+
+Debe estar **En progreso** y tener horas de mano de obra apuntadas.
 
 ### Un cliente no ve ningún vehículo
 
@@ -78,7 +110,7 @@ Asigna el rol desde **Administración de usuarios**.
 
 - Un vehículo con reparaciones no se elimina.
 - Un recambio usado en alguna reparación no se elimina.
-- Una cuenta con vehículos o reparaciones asignadas no se elimina.
+- Una cuenta con vehículos o reparaciones asignadas no se elimina. Hoy la aplicación responde con un error 500 (E1 en el [planning](planning.md)); desactiva la cuenta.
 - Tampoco puedes eliminar tu propia cuenta ni al último administrador.
 
 Es la protección del historial. Consulta la [guía funcional](guia-funcional.md#protección-del-historial).

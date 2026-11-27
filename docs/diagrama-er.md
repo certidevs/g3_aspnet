@@ -107,13 +107,13 @@ Extiende `IdentityUser`. Los campos de Identity (contraseña, roles, bloqueo) no
 |---|---|---|
 | `Id` | int | PK |
 | `LicensePlate` | string | Requerido; único; máx. 10 caracteres |
-| `VIN` | string | Requerido; máx. 17 caracteres |
+| `VIN` | string | Requerido; máx. 17 caracteres. El formulario exige exactamente 17 letras o números, sin I, O ni Q |
 | `Brand` | string | Requerido; máx. 50 caracteres |
 | `Model` | string | Requerido; máx. 50 caracteres |
 | `Year` | int | Entre 1950 y 2100 |
 | `FuelType` | enum | Ver [valores](#valores-de-los-enums) |
 | `Mileage` | int | Entre 0 y 2 000 000 |
-| `OwnerId` | string | Requerido; FK → `ApplicationUser.Id` |
+| `OwnerId` | string | Requerido; FK → `ApplicationUser.Id`. Al guardar se exige una cuenta con rol `Customer` |
 
 ### Repair
 
@@ -131,7 +131,7 @@ Extiende `IdentityUser`. Los campos de Identity (contraseña, roles, bloqueo) no
 | `LaborHours` | decimal | Entre 0 y 1000 |
 | `HourlyRate` | decimal | Entre 0 y 1000 |
 
-`TotalCost` es una propiedad calculada y no se almacena.
+`TotalCost` e `IsClosed` (estado `Completed` o `Delivered`) son propiedades calculadas y no se almacenan.
 
 ### SparePart
 
@@ -200,7 +200,7 @@ flowchart LR
     A["1. Alta del vehículo<br/>Vehicle.OwnerId = ApplicationUser.Id"]
     B["2. Apertura de la reparación<br/>VehicleId, MechanicId,<br/>RepairType, Status, OpenedAt"]
     C["3. Piezas utilizadas<br/>RepairPart: Quantity y UnitPrice<br/>Stock del recambio -= Quantity"]
-    D["4. Cierre<br/>Se editan Status y CompletedAt"]
+    D["4. Cierre y entrega<br/>Complete: Status y CompletedAt<br/>Deliver: Status"]
 
     A --> B --> C --> D
 ```
@@ -208,7 +208,7 @@ flowchart LR
 1. Un vehículo pertenece a una cuenta mediante `Vehicle.OwnerId`.
 2. Una reparación referencia el vehículo y la cuenta del mecánico asignado.
 3. Cada pieza usada es una fila de `RepairPart`. La aplicación descuenta `SparePart.Stock` al guardarla.
-4. Al terminar, se editan `Status` y `CompletedAt` en el formulario de la reparación.
+4. El estado cambia con las acciones del detalle, no desde el formulario. Al completar se registra `CompletedAt`. Ver el [ciclo de vida](guia-funcional.md#ciclo-de-vida-de-una-reparación).
 
 El descuento de stock lo hace la lógica de la aplicación en `Repair.AddPart` y en los controladores. La base de datos no lo gestiona.
 

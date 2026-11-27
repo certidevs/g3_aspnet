@@ -146,7 +146,8 @@ stateDiagram-v2
     Delivered --> [*]
 
     note right of Completed
-        Bloquea AddWork y edición de piezas.
+        Orden cerrada: el mecánico no la modifica.
+        Admin solo con confirmación.
         Muestra aviso al cliente para recogida.
     end note
 ```
@@ -155,8 +156,8 @@ stateDiagram-v2
 | ----- | ----- | ----- | ----- |
 | `Pending` / `WaitingParts` → `InProgress` | `Start` | `GestionTaller` + `Update` | Inicia una orden nueva o retoma una pausada por recambios. |
 | `InProgress` → `WaitingParts` | `WaitForParts` | `GestionTaller` + `Update` | Pausa la reparación a la espera de piezas. |
-| `InProgress` → `Completed` | `Complete` | `GestionTaller` + `Update` | Exige LaborHours > 0. Registra `CompletedAt = DateTime.UtcNow`. Bloquea la adición/retirada de piezas y avisa al cliente. |
-| `Completed` → `Delivered` | `Deliver` | `SoloAdmin` | Marca el vehículo como entregado y cierra definitivamente la orden. |
+| `InProgress` → `Completed` | `Complete` | `GestionTaller` + `Update` | Exige LaborHours > 0. Registra `CompletedAt = DateTime.UtcNow`. Cierra la orden (`IsClosed`) y avisa al cliente. |
+| `Completed` → `Delivered` | `Deliver` | `SoloAdmin` | Marca el vehículo como entregado. No guarda la fecha de entrega. |
 
 # 4. Autorización, Seguridad y Flujos Clave
 
@@ -166,11 +167,11 @@ El acceso a los datos está controlado tanto en consultas (`VisibleRepairs()`) c
 
 | Rol | `Read` (Ver) | `Create` (Crear) | `Update` (Editar / Estados) | `AddWork` / Modificar piezas | `Delete` (Eliminar) |
 | ----- | ----- | ----- | ----- | ----- | ----- |
-| **Admin** | Todas las reparaciones | Sí (elige mecánico y tarifa) | Todas las reparaciones | Solo si **no** está `Completed` ni `Delivered` | Todas (devuelve stock) |
+| **Admin** | Todas las reparaciones | Sí (elige mecánico y tarifa) | Todas; si está cerrada, con confirmación | Todas; si está cerrada, con confirmación | Todas (devuelve stock); si está cerrada, con confirmación |
 | **Mechanic** | Solo reparaciones asignadas | Sí (autoasignado y tarifa fija 45 €/h) | Solo asignadas y **no** cerradas (`Completed` / `Delivered`) | Solo asignadas y **no** cerradas | No permitido |
 | **Customer / User** | Solo reparaciones de sus propios vehículos (`OwnerId`) | No permitido | No permitido | No permitido | No permitido |
 
-> **Nota de seguridad:** Incluso para el rol `Admin`, las operaciones de modificación de piezas (`AddWork` en `Repair` y `Create/Update/Delete` en `RepairPart`) quedan bloqueadas cuando la reparación alcanza el estado `Completed` o `Delivered`, garantizando la integridad contable y de facturación una vez cerrado el trabajo.
+> **Reparaciones cerradas:** con estado `Completed` o `Delivered` (`Repair.IsClosed`), el mecánico no puede modificar la orden ni sus piezas. Los handlers autorizan al `Admin`, y los controladores le exigen además `confirmClosed=true` al editar, eliminar, o añadir, cambiar y quitar piezas. Las vistas muestran una casilla de confirmación.
 
 ## 4.2. Diagrama de Decisión de `RepairAuthorizationHandler`
 
@@ -180,9 +181,7 @@ Este flujo resume la evaluación exacta que ejecuta `HandleRequirementAsync` par
 flowchart TD
     A(["Petición AuthorizeAsync(User, Repair, Op)"]) --> B{"¿Existe Claim NameIdentifier?"}
     B -- No --> DENY["Denegar (Forbid)"]
-    B -- Sí --> C{"¿Op == AddWork y Estado en Completed o Delivered?"}
-    C -- Sí --> DENY
-    C -- No --> D{"¿Rol Admin?"}
+    B -- Sí --> D{"¿Rol Admin?"}
     D -- Sí --> OK(["Conceder (Succeed)"])
     D -- No --> E{"¿Rol Mechanic?"}
 
@@ -218,6 +217,9 @@ sequenceDiagram
     Ctrl->>DB: Cargar Repair (+ RepairParts)
     Ctrl->>Auth: AuthorizeAsync(User, repair, AddWork)
     Auth-->>Ctrl: Succeeded
+    opt Reparación cerrada sin confirmClosed
+        Ctrl-->>View: Redirect Details + TempData Error
+    end
     Ctrl->>DB: Buscar SparePart por sparePartId
     Ctrl->>Dom: repair.AddPart(sparePart, quantity)
     alt Stock suficiente y cantidad válida
@@ -235,6 +237,9 @@ sequenceDiagram
     Ctrl->>DB: Cargar RepairPart (+ Repair, SparePart)
     Ctrl->>Auth: AuthorizeAsync(User, repair, AddWork)
     Auth-->>Ctrl: Succeeded
+    opt Reparación cerrada sin confirmClosed
+        Ctrl-->>View: Redirect Details + TempData Error
+    end
     Ctrl->>DB: SparePart.Stock += Quantity y Remove(repairPart)
     Ctrl->>DB: SaveChangesAsync()
     Ctrl-->>View: Redirect Details + TempData Message
@@ -262,7 +267,9 @@ sequenceDiagram
 
    * En `RemovePart` y `DeleteConfirmed`, devuelve al stock del almacén (`Stock += Quantity`) las unidades que estaban reservadas en la reparación.
 
-6. **Seguridad CSRF:** Todas las acciones que modifican estado (`POST`) están protegidas con `[ValidateAntiForgeryToken]`.
+6. **Reparaciones cerradas:** `Edit`, `DeleteConfirmed`, `AddPart` y `RemovePart` rechazan los cambios sobre una orden cerrada si no llega `confirmClosed=true`.
+
+7. **Seguridad CSRF:** Todas las acciones que modifican estado (`POST`) están protegidas con `[ValidateAntiForgeryToken]`.
 
 ### Código fuente
 
@@ -505,6 +512,7 @@ public class RepairsController : Controller
             HourlyRate = repair.HourlyRate
         };
 
+        ViewBag.IsClosed = repair.IsClosed;
         await PopulateDropdownsAsync(model);
         return View("Form", model);
     }
@@ -513,7 +521,7 @@ public class RepairsController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Policy = PolicyNames.GestionTaller)]
-    public async Task<IActionResult> Edit(int id, RepairFormViewModel model)
+    public async Task<IActionResult> Edit(int id, RepairFormViewModel model, bool confirmClosed = false)
     {
         if (id != model.Id)
         {
@@ -551,8 +559,14 @@ public class RepairsController : Controller
             ModelState.AddModelError(nameof(RepairFormViewModel.VehicleId), "El vehículo seleccionado no existe.");
         }
 
+        if (repair.IsClosed && !confirmClosed)
+        {
+            ModelState.AddModelError(string.Empty, ClosedRepairConfirmation.Required);
+        }
+
         if (!ModelState.IsValid)
         {
+            ViewBag.IsClosed = repair.IsClosed;
             model.Status = repair.Status;
             model.CompletedAt = repair.CompletedAt;
             await PopulateDropdownsAsync(model);
@@ -608,7 +622,7 @@ public class RepairsController : Controller
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
     [Authorize(Policy = PolicyNames.SoloAdmin)]
-    public async Task<IActionResult> DeleteConfirmed(int id)
+    public async Task<IActionResult> DeleteConfirmed(int id, bool confirmClosed = false)
     {
         var repair = await context.Repairs
             .Include(r => r.RepairParts)
@@ -624,6 +638,12 @@ public class RepairsController : Controller
         if (!authResult.Succeeded)
         {
             return Forbid();
+        }
+
+        if (repair.IsClosed && !confirmClosed)
+        {
+            TempData["Error"] = ClosedRepairConfirmation.Required;
+            return RedirectToAction(nameof(Delete), new { id });
         }
 
         foreach (var part in repair.RepairParts)
@@ -768,7 +788,7 @@ public class RepairsController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Policy = PolicyNames.GestionTaller)]
-    public async Task<IActionResult> AddPart(int id, int sparePartId, int quantity)
+    public async Task<IActionResult> AddPart(int id, int sparePartId, int quantity, bool confirmClosed = false)
     {
         var repair = await context.Repairs
             .Include(r => r.RepairParts)
@@ -783,6 +803,12 @@ public class RepairsController : Controller
         if (!authResult.Succeeded)
         {
             return Forbid();
+        }
+
+        if (repair.IsClosed && !confirmClosed)
+        {
+            TempData["Error"] = ClosedRepairConfirmation.Required;
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         if (sparePartId <= 0)
@@ -815,7 +841,7 @@ public class RepairsController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Policy = PolicyNames.GestionTaller)]
-    public async Task<IActionResult> RemovePart(int id, int repairPartId)
+    public async Task<IActionResult> RemovePart(int id, int repairPartId, bool confirmClosed = false)
     {
         var repairPart = await context.RepairParts
             .Include(rp => rp.Repair)
@@ -831,6 +857,12 @@ public class RepairsController : Controller
         if (!authResult.Succeeded)
         {
             return Forbid();
+        }
+
+        if (repairPart.Repair.IsClosed && !confirmClosed)
+        {
+            TempData["Error"] = ClosedRepairConfirmation.Required;
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         repairPart.SparePart.Stock += repairPart.Quantity;
@@ -849,8 +881,8 @@ public class RepairsController : Controller
 
 Ambos manejadores heredan de `AuthorizationHandler<OperationAuthorizationRequirement, TResource>` y permiten tomar decisiones de autorización que dependen de los datos concretos de la entidad consultada (mitigando vulnerabilidades **IDOR / BOLA**):
 
-* **`RepairAuthorizationHandler`:** comprueba el claim `NameIdentifier`, impide `AddWork` si la reparación está `Completed` o `Delivered`, concede control al `Admin`, restringe al `Mechanic` a órdenes asignadas y abiertas, y permite `Read` al cliente propietario del vehículo.
-* **`RepairPartAuthorizationHandler`:** aplica reglas equivalentes sobre cada línea de recambio navegando hacia `resource.Repair` y bloquea cualquier operación distinta de `Read` cuando la reparación padre está cerrada.
+* **`RepairAuthorizationHandler`:** comprueba el claim `NameIdentifier`, concede control total al `Admin`, restringe al `Mechanic` a órdenes asignadas y abiertas, y permite `Read` al cliente propietario del vehículo.
+* **`RepairPartAuthorizationHandler`:** aplica reglas equivalentes sobre cada línea de recambio navegando hacia `resource.Repair`. El `Mechanic` solo puede leer cuando la reparación padre está cerrada.
 
 ### Código fuente: `RepairAuthorizationHandler.cs`
 
@@ -865,7 +897,7 @@ namespace G3AspNet.Authorization;
 
 /// <summary>
 /// Autorización basada en recurso para órdenes de reparación:
-/// Admin tiene control total salvo añadir trabajo en órdenes completadas o entregadas;
+/// Admin tiene control total (en órdenes completadas o entregadas, los controladores le exigen confirmación);
 /// Mechanic solo sobre sus órdenes asignadas y abiertas;
 /// Customer y User solo lectura sobre reparaciones de sus propios vehículos.
 /// </summary>
@@ -886,12 +918,6 @@ public sealed class RepairAuthorizationHandler
     {
         var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId))
-        {
-            return Task.CompletedTask;
-        }
-
-        if (requirement.Name == WorkshopOperations.AddWork.Name &&
-            resource.Status is RepairStatus.Completed or RepairStatus.Delivered)
         {
             return Task.CompletedTask;
         }
@@ -985,12 +1011,6 @@ public sealed class RepairPartAuthorizationHandler
             return Task.CompletedTask;
         }
 
-        var repairIsClosed = resource.Repair?.Status is RepairStatus.Completed or RepairStatus.Delivered;
-        if (repairIsClosed && requirement.Name != WorkshopOperations.Read.Name)
-        {
-            return Task.CompletedTask;
-        }
-
         if (context.User.IsInRole(RoleNames.Admin))
         {
             context.Succeed(requirement);
@@ -1062,7 +1082,13 @@ Es la pantalla principal de trabajo de una reparación: desglose económico, avi
     var canAddWork = ViewBag.CanAddWork as bool? ?? false;
     var isAdmin = User.IsInRole(RoleNames.Admin);
     var isStaff = isAdmin || User.IsInRole(RoleNames.Mechanic);
+    var canStart = canEdit && (Model.Status == RepairStatus.Pending || Model.Status == RepairStatus.WaitingParts);
+    var canComplete = canEdit && Model.Status == RepairStatus.InProgress;
+    var canDeliver = isAdmin && Model.Status == RepairStatus.Completed;
+    var hasActions = canStart || canComplete || canDeliver || canEdit || canDelete;
 }
+
+
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <h1 class="h2 mb-0">Reparación #@Model.Id</h1>
@@ -1115,50 +1141,53 @@ Es la pantalla principal de trabajo de una reparación: desglose económico, avi
             <dd class="col-sm-9 fw-semibold">@Model.TotalCost.ToString("N2")&nbsp;€</dd>
         </dl>
 
-        @if (canEdit && (Model.Status == RepairStatus.Pending || Model.Status == RepairStatus.WaitingParts))
-        {
-            <form asp-action="Start" asp-route-id="@Model.Id" method="post" class="mt-3">
-                <button class="btn btn-success" type="submit">
+@if (hasActions)
+{
+    @* Formularios de las acciones de estado: van fuera del grupo y los botones se enlazan con form="..." *@
+    @if (canStart)
+    {
+        <form id="form-start" asp-action="Start" asp-route-id="@Model.Id" method="post"></form>
+    }
+    @if (canComplete)
+    {
+        <form id="form-complete" asp-action="Complete" asp-route-id="@Model.Id" method="post"
+              onsubmit="return confirm('¿Completar la reparación? Después solo un administrador podrá modificarla.');"></form>
+        <form id="form-wait" asp-action="WaitForParts" asp-route-id="@Model.Id" method="post"></form>
+    }
+    @if (canDeliver)
+    {
+        <form id="form-deliver" asp-action="Deliver" asp-route-id="@Model.Id" method="post"
+              onsubmit="return confirm('¿Entregar el vehículo al cliente? La reparación quedará cerrada.');"></form>
+    }
+
+    <div class="card-footer d-flex gap-2 mt-3">
+        <div class="btn-group" role="group" aria-label="Acciones de la reparación">
+            @if (canStart)
+            {
+                <button type="submit" form="form-start" class="btn btn-primary">
                     @(Model.Status == RepairStatus.Pending ? "Iniciar reparación" : "Retomar reparación")
                 </button>
-            </form>
-        }
-        else if (canEdit && Model.Status == RepairStatus.InProgress)
-        {
-            <div class="d-flex flex-wrap gap-2 mt-3">
-                <form asp-action="Complete" asp-route-id="@Model.Id" method="post"
-                      onsubmit="return confirm('¿Completar la reparación? Ya no se podrán añadir piezas.');">
-                    <button class="btn btn-primary" type="submit">Completar reparación</button>
-                </form>
-                <form asp-action="WaitForParts" asp-route-id="@Model.Id" method="post">
-                    <button class="btn btn-outline-warning" type="submit">Poner en espera de recambios</button>
-                </form>
-            </div>
-        }
-
-        @if (isAdmin && Model.Status == RepairStatus.Completed)
-        {
-            <form asp-action="Deliver" asp-route-id="@Model.Id" method="post" class="mt-3"
-                  onsubmit="return confirm('¿Entregar el vehículo al cliente? La reparación quedará cerrada.');">
-                <button class="btn btn-success" type="submit">Entregar vehículo al cliente</button>
-            </form>
-        }
-
-        @if (canEdit || canDelete)
-        {
-            <div class="card-footer d-flex gap-2 mt-3">
-                <div class="btn-group">
-                    @if (canEdit)
-                    {
-                        <a class="btn btn-outline-secondary" asp-action="Edit" asp-route-id="@Model.Id">Editar</a>
-                    }
-                    @if (canDelete)
-                    {
-                        <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.Id">Eliminar</a>
-                    }
-                </div>
-            </div>
-        }
+            }
+            @if (canComplete)
+            {
+                <button type="submit" form="form-complete" class="btn btn-primary">Completar reparación</button>
+                <button type="submit" form="form-wait" class="btn btn-secondary">Esperando recambios</button>
+            }
+            @if (canDeliver)
+            {
+                <button type="submit" form="form-deliver" class="btn btn-primary">Entregar vehículo al cliente</button>
+            }
+            @if (canEdit)
+            {
+                <a class="btn btn-outline-secondary" asp-action="Edit" asp-route-id="@Model.Id">Editar</a>
+            }
+            @if (canDelete)
+            {
+                <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.Id">Eliminar</a>
+            }
+        </div>
+    </div>
+}
 
         <h2 class="h4 mb-3 mt-4">Piezas usadas</h2>
 
@@ -1201,6 +1230,13 @@ Es la pantalla principal de trabajo de una reparación: desglose económico, avi
                                             <form asp-action="RemovePart" asp-route-id="@Model.Id" method="post" class="d-inline"
                                                   onsubmit="return confirm('¿Quitar esta pieza de la reparación y devolver las unidades al stock?');">
                                                 <input type="hidden" name="repairPartId" value="@part.Id" />
+                                                @if (Model.IsClosed)
+                                                {
+                                                    <label class="form-check-label small me-1">
+                                                        <input class="form-check-input" type="checkbox" name="confirmClosed" value="true" required />
+                                                        Estoy seguro
+                                                    </label>
+                                                }
                                                 <button type="submit" class="btn btn-sm btn-outline-danger">Quitar</button>
                                             </form>
                                         }
@@ -1222,6 +1258,12 @@ Es la pantalla principal de trabajo de una reparación: desglose económico, avi
             @if (availableParts is not null && availableParts.Any())
             {
                 <form asp-action="AddPart" asp-route-id="@Model.Id" method="post" class="row g-3 align-items-end">
+                    @if (Model.IsClosed)
+                    {
+                        <div class="col-12">
+                            <partial name="_ClosedRepairConfirmation" />
+                        </div>
+                    }
                     <div class="col-md-7">
                         <label for="sparePartId" class="form-label">Recambio disponible</label>
                         <select id="sparePartId" name="sparePartId" asp-items="availableParts" class="form-select" required>
@@ -1356,6 +1398,12 @@ Sirve tanto para `Create` como para `Edit`. El estado y la fecha de cierre son d
                 <span asp-validation-for="HourlyRate" class="text-danger"></span>
             </div>
         </div>
+        @if (ViewBag.IsClosed as bool? ?? false)
+        {
+            <div class="mt-3">
+                <partial name="_ClosedRepairConfirmation" />
+            </div>
+        }
     </div>
     <div class="card-footer bg-transparent text-end">
         <button class="btn btn-primary" type="submit">@(isNew ? "Crear reparación" : "Guardar cambios")</button>
@@ -1371,7 +1419,7 @@ Sirve tanto para `Create` como para `Edit`. El estado y la fecha de cierre son d
 
 ### Explicación técnica
 
-En el listado de reparaciones, Editar solo aparece para `Admin` o para `Mechanic` si la orden no está `Completed` ni `Delivered`. En piezas, `canModify` oculta edición y borrado cuando la reparación asociada ya está cerrada.
+En el listado de reparaciones, Editar solo aparece para `Admin` o para `Mechanic` si la orden no está `Completed` ni `Delivered`. En piezas, `canModify` muestra edición y borrado al `Admin` siempre, y al `Mechanic` solo si la reparación asociada está abierta.
 
 ### Código fuente: `Views/Repairs/Index.cshtml`
 
@@ -1492,7 +1540,7 @@ else
             <tbody>
             @foreach (var item in Model)
             {
-                var canModify = isStaff && item.Repair.Status is not (RepairStatus.Completed or RepairStatus.Delivered);
+                var canModify = isAdmin || (isStaff && !item.Repair.IsClosed);
                 <tr>
                     <td><a asp-controller="Repairs" asp-action="Details" asp-route-id="@item.RepairId">#@item.RepairId</a></td>
                     <td>@item.Repair.Vehicle?.LicensePlate</td>
