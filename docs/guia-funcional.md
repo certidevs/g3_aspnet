@@ -133,6 +133,13 @@ Coste = (LaborHours × HourlyRate) + Σ(Quantity × UnitPrice)
 - El VIN tiene exactamente 17 letras o números, sin I, O ni Q.
 - El propietario debe ser una cuenta con rol `Customer`.
 
+### Factura
+
+- Una reparación completada o entregada ofrece **Descargar factura** (PDF) a quien puede verla: el `Admin`, el mecánico asignado y el cliente propietario.
+- Los conceptos son la mano de obra y las piezas, con su precio histórico. A esa base se le suma el IVA configurado (21 % por defecto): el **coste total** que muestra la aplicación no lo incluye.
+- El número es `F-<año>-<número de reparación>` y la fecha, la de cierre.
+- **No es un documento fiscal válido:** la numeración no es correlativa, la factura no se registra y no se guardan el NIF ni el domicilio del cliente.
+
 ### Protección del historial
 
 - No se puede eliminar un vehículo que tenga reparaciones.

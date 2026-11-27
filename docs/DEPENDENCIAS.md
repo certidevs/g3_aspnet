@@ -24,6 +24,7 @@ esquema se realizan en las entidades y en la configuración de `ApplicationDbCon
 | `Microsoft.EntityFrameworkCore.Design` | 10.0.11 | Desarrollo | Herramientas de diseño de EF Core | Activa | `PrivateAssets=all`, no se distribuye. El proyecto no usa migraciones |
 | `Microsoft.AspNetCore.Identity.EntityFrameworkCore` | 10.0.11 | Runtime | Login, cookies, contraseñas y roles | Activa | Persistencia de Identity con EF Core |
 | `QRCoder` | 1.9.0 | Runtime | Código QR en SVG para configurar el 2FA | Activa | Licencia MIT. Se genera en el servidor. Arrastra `System.Drawing.Common` 6.0.0 |
+| `QuestPDF` | 2026.9.2 | Runtime | Facturas en PDF | Activa | [Licencia Community](https://www.questpdf.com/license/) con condiciones (entre ellas, ingresos anuales bajo 1 M USD en empresas). No es una licencia OSI |
 
 ## 2. Dependencias de pruebas (`tests/G3AspNet.Tests/G3AspNet.Tests.csproj`)
 
@@ -62,6 +63,7 @@ La layout carga además las tipografías Oswald y Roboto desde Google Fonts (CDN
 |---|---|---|---|---|---|
 | 2026-10-19 | Todos | - | - | Alta inicial del registro | |
 | 2026-11-26 | `QRCoder` | - | 1.9.0 | QR para configurar el 2FA | |
+| 2026-11-27 | `QuestPDF` | - | 2026.9.2 | Facturas en PDF | |
 
 ---
 

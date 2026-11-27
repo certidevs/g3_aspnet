@@ -2,6 +2,7 @@ using G3AspNet.Authorization;
 using G3AspNet.Data;
 using G3AspNet.Models;
 using G3AspNet.Models.Enum;
+using G3AspNet.Services.Invoices;
 using G3AspNet.Utilities;
 using G3AspNet.ViewModels.Repairs;
 using Microsoft.AspNetCore.Authorization;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace G3AspNet.Controllers;
 
@@ -126,6 +128,39 @@ public class RepairsController : Controller
         }
 
         return View(repair);
+    }
+
+    /// <summary>Descarga en PDF la factura de una reparación cerrada a la que se tenga acceso.</summary>
+    [HttpGet]
+    public async Task<IActionResult> Invoice(int id, [FromServices] IOptions<InvoiceOptions> options)
+    {
+        var repair = await context.Repairs
+            .AsNoTracking()
+            .Include(r => r.Vehicle)
+            .ThenInclude(vehicle => vehicle.Owner)
+            .Include(r => r.RepairParts)
+            .ThenInclude(part => part.SparePart)
+            .FirstOrDefaultAsync(r => r.Id == id);
+
+        if (repair == null)
+        {
+            return NotFound();
+        }
+
+        var readAuth = await authorizationService.AuthorizeAsync(User, repair, WorkshopOperations.Read);
+        if (!readAuth.Succeeded)
+        {
+            return Forbid();
+        }
+
+        if (!repair.IsClosed)
+        {
+            TempData["Error"] = "La factura estará disponible cuando la reparación esté completada.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        var invoice = Services.Invoices.Invoice.FromRepair(repair, options.Value);
+        return File(InvoicePdf.Generate(invoice), "application/pdf", $"factura-{invoice.Number}.pdf");
     }
 
     /// <summary>Muestra el formulario para dar de alta una nueva reparación.</summary>

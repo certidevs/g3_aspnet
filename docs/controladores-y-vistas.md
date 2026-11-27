@@ -13,7 +13,7 @@ Documentos relacionados: [Arquitectura](arquitectura.md) · [Autenticación y ro
 | `ProfileController` | `Index`, `Edit`, `ChangePassword`, `TwoFactor`, `EnableTwoFactor`, `DisableTwoFactor` | Perfil propio y 2FA. |
 | `UsersController` | `Index`, `Create`, `Details`, `Edit`, `Delete` | Administración de cuentas y roles. |
 | `VehicleController` | `Index`, `Details`, `Create`, `Edit`, `Save`, `ConfirmDelete`, `Delete` | Gestión de vehículos. |
-| `RepairsController` | `Index`, `Details`, `Create`, `Edit`, `Delete`, `Start`, `WaitForParts`, `Complete`, `Deliver`, `AddPart`, `RemovePart` | Reparaciones, cambios de estado y piezas desde el detalle. |
+| `RepairsController` | `Index`, `Details`, `Create`, `Edit`, `Delete`, `Start`, `WaitForParts`, `Complete`, `Deliver`, `AddPart`, `RemovePart`, `Invoice` | Reparaciones, cambios de estado y piezas desde el detalle. |
 | `RepairPartsController` | `Index`, `Details`, `Create`, `Edit`, `Delete` | Líneas de piezas usadas. |
 | `SparePartsController` | `Index`, `Details`, `Create`, `Edit`, `Save`, `Delete` | Catálogo de recambios. |
 

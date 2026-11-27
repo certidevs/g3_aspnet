@@ -11,7 +11,7 @@
     var canStart = canEdit && (Model.Status == RepairStatus.Pending || Model.Status == RepairStatus.WaitingParts);
     var canComplete = canEdit && Model.Status == RepairStatus.InProgress;
     var canDeliver = isAdmin && Model.Status == RepairStatus.Completed;
-    var hasActions = canStart || canComplete || canDeliver || canEdit || canDelete;
+    var hasActions = canStart || canComplete || canDeliver || canEdit || canDelete || Model.IsClosed;
 }
 
 
@@ -102,6 +102,10 @@
             @if (canDeliver)
             {
                 <button type="submit" form="form-deliver" class="btn btn-primary">Entregar vehículo al cliente</button>
+            }
+            @if (Model.IsClosed)
+            {
+                <a class="btn btn-outline-primary" asp-action="Invoice" asp-route-id="@Model.Id">Descargar factura</a>
             }
             @if (canEdit)
             {

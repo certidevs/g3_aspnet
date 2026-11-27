@@ -12,6 +12,8 @@ Documentos relacionados: [Primeros pasos](primeros-pasos.md) · [Autenticación 
 | `SeedData:Enabled` | Activa o desactiva la creación de roles y datos demo; vale `true` por defecto en todos los entornos. Desactivado, la base queda vacía y sin roles. No evita que la base se elimine al iniciar. |
 | `FileUploads:Images:MaxFileSizeBytes` | Límite del tamaño de una imagen subida. |
 | `FileUploads:Images:AllowedExtensions` | Extensiones permitidas para las imágenes. |
+| `Invoice:VatRate` | Porcentaje de IVA que se suma en la factura. |
+| `Invoice:IssuerName`, `Invoice:IssuerTaxId`, `Invoice:IssuerAddress` | Datos del taller que aparecen en la factura; los vacíos no se imprimen. |
 | `Logging:LogLevel` | Niveles de registro de la aplicación y de ASP.NET Core. |
 | `AllowedHosts` | Configuración estándar de hosts permitidos. |
 | `ASPNETCORE_ENVIRONMENT` | Selecciona el entorno de ejecución; los perfiles locales usan `Development`. |

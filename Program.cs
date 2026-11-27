@@ -8,6 +8,8 @@ using G3AspNet.Authorization;
 using G3AspNet.Data;
 using G3AspNet.Models;
 using G3AspNet.Services;
+using G3AspNet.Services.Invoices;
+using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -122,6 +124,11 @@ builder.Services.Configure<FormOptions>(options =>
 });
 builder.Services.AddSingleton<ImageStorage>();
 builder.Services.AddScoped<UserService>();
+
+// Facturas en PDF. La licencia Community de QuestPDF solo vale si se cumplen sus condiciones:
+// https://www.questpdf.com/license/
+QuestPDF.Settings.License = LicenseType.Community;
+builder.Services.Configure<InvoiceOptions>(builder.Configuration.GetSection("Invoice"));
 
 var app = builder.Build();
 
