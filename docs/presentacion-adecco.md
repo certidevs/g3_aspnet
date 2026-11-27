@@ -118,17 +118,17 @@ Formación contextualizada en un **dominio de negocio** (taller) facilita explic
 | Funcionalidad de taller | Implementada: vehículos, flujo de reparaciones, stock, costes, área cliente |
 | Seguridad | Permisos por rol y por recurso, 2FA, bloqueo y límite de peticiones |
 | Entorno | Prototipo **en desarrollo**; adecuado para demo y evaluación formativa |
-| Base de datos | En cada arranque se recrea el esquema y los datos de ejemplo; **no es persistencia de producción** |
+| Base de datos | SQLite con datos conservados fuera de desarrollo; **sin migraciones ni copias de seguridad** |
 | Despliegue | Perfil local y Docker; sin piloto productivo declarado aún |
 
-Mensaje para consultores: el equipo demuestra **capacidad de llevar un producto de cero a demo estable**; el paso a piloto con un taller implica persistencia, configuración de despliegue y acuerdos de datos (véase roadmap).
+Mensaje para consultores: el equipo demuestra **capacidad de llevar un producto de cero a demo estable**; el paso a piloto con un taller implica migraciones, configuración de despliegue y acuerdos de datos (véase roadmap).
 
 ## Roadmap hacia un piloto
 
 Hitos realistas alineados con el estado del código y la documentación técnica:
 
-1. **Persistencia** — migraciones EF Core y datos que no se borren en cada arranque.
-2. **Datos de ejemplo** — seed solo en desarrollo; credenciales fuertes o sin cuentas fijas en otros entornos.
+1. **Evolución de los datos** — migraciones EF Core y copias de seguridad.
+2. **Despliegue seguro** — proxy con HTTPS y gestión de la configuración sensible.
 3. **Cita y presupuesto** — el cliente pide cita y aprueba el presupuesto antes de empezar (propuesta del [planning](planning.md)).
 4. **Reposición de stock** — registrar entradas de almacén y su coste; el aviso de stock bajo ya existe.
 5. **Licencia y gobernanza** — declarar licencia en el repositorio y criterios de uso con empresa colaboradora.
@@ -138,7 +138,7 @@ Hitos realistas alineados con el estado del código y la documentación técnica
 
 ### ¿Se puede usar en producción hoy?
 
-No como producto terminado. Es un **prototipo formativo** con base de datos efímera en el arranque actual. El roadmap describe el camino a piloto.
+No como producto terminado. Es un **prototipo formativo**, sin migraciones ni copias de seguridad. El roadmap describe el camino a piloto.
 
 ### ¿Qué datos personales maneja?
 

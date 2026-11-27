@@ -5,7 +5,7 @@ Sesión orientada a **Fundación Adecco**, empresas y consultores. Material comp
 ## Checklist antes de la reunión
 
 - [ ] `dotnet run --project G3AspNet.csproj --launch-profile http` (o Docker) y URL <http://localhost:5107> accesible.
-- [ ] Datos de ejemplo cargados (`SeedData:Enabled` en `true` por defecto).
+- [ ] Datos de ejemplo cargados (automático en `Development`; con Docker hay que activarlo, ver [despliegue](despliegue.md#demo-en-local)).
 - [ ] Navegador en **tema claro** (mejor en proyector).
 - [ ] Diapositivas exportadas desde [Marp](diapositivas-presentacion-adecco.marp.md) o pestaña del outline abierta.
 - [ ] Credenciales: tabla en [demo.md](demo.md) (no compartir como material impreso en producción).
@@ -112,7 +112,7 @@ Enlace a detalle: [guía funcional — reglas](guia-funcional.md#reglas-de-negoc
 **Objetivo:** transparencia sin restar mérito formativo.
 
 1. Estado: prototipo avanzado, **en desarrollo**; CI y tests.
-2. Hoy: base de datos **recreada al arranque** — adecuado para formación y demo, no para producción directa.
+2. Hoy: los datos se conservan fuera de desarrollo, pero **sin migraciones** — adecuado para formación y demo, no para producción directa.
 3. Roadmap de 6 hitos del [dossier](presentacion-adecco.md#roadmap-hacia-un-piloto).
 4. Propuesta de colaboración: piloto con taller, usuarios de prueba, 4–6 semanas de feedback.
 
@@ -142,7 +142,7 @@ Enlace a detalle: [guía funcional — reglas](guia-funcional.md#reglas-de-negoc
 
 | Pregunta | Respuesta orientativa |
 |---|---|
-| ¿Está listo para venderse? | Prototipo para demostrar capacidad; piloto tras persistencia y despliegue seguro. |
+| ¿Está listo para venderse? | Prototipo para demostrar capacidad; piloto tras migraciones y despliegue seguro. |
 | ¿Un cliente puede modificar reparaciones? | No. Solo consulta las de sus vehículos; el servidor lo comprueba. |
 | ¿Por qué SQLite? | Simplicidad en formación; piloto puede cambiar de motor. |
 | ¿Cuántas personas en el equipo? | Grupo 3 — cuatro integrantes (+ mentores listados en README). |

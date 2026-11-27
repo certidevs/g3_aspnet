@@ -8,11 +8,11 @@ Registro de las dependencias del proyecto, su versión, su propósito y su estad
 
 ## Esquema de base de datos
 
-Este proyecto **no utiliza migraciones de EF Core**. Al iniciar la aplicación, `DbInitializer`
+Este proyecto **no utiliza migraciones de EF Core**. Al iniciar en `Development`, `DbInitializer`
 elimina la base de datos y la vuelve a crear desde las entidades (`EnsureDeleted` y
-`EnsureCreated`); por tanto, los datos existentes se pierden en cada arranque. Los cambios de
-esquema se realizan en las entidades y en la configuración de `ApplicationDbContext`, no mediante
-`dotnet ef migrations add` ni `dotnet ef database update`.
+`EnsureCreated`); fuera de ese entorno solo crea el esquema si no existe y conserva los datos.
+Los cambios de esquema se realizan en las entidades y en la configuración de `ApplicationDbContext`,
+no mediante `dotnet ef migrations add` ni `dotnet ef database update`.
 
 ---
 
@@ -93,7 +93,7 @@ dotnet test
 - [ ] Mantener alineadas las versiones de `Microsoft.EntityFrameworkCore.*` y `Microsoft.AspNetCore.Identity.*` (misma versión mayor y menor).
 - [ ] Actualizar la versión en el `.csproj` correspondiente.
 - [ ] Ejecutar `dotnet build` y `dotnet test` sin errores.
-- [ ] Si cambia el esquema, actualizar las entidades y `ApplicationDbContext`; no crear ni aplicar migraciones. Tener en cuenta que `DbInitializer` recrea la base de datos y borra sus datos en cada arranque.
+- [ ] Si cambia el esquema, actualizar las entidades y `ApplicationDbContext`; no crear ni aplicar migraciones. Fuera de `Development` la base se conserva y `EnsureCreated` no actualiza su esquema.
 - [ ] Anotar el cambio en la sección 3 de este documento.
 
 ### Frecuencia recomendada

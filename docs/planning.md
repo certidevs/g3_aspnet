@@ -2,7 +2,7 @@
 
 > Estado revisado el 26/11/2026 sobre la rama `main` (commit `b61dc49`). El proyecto de pruebas queda fuera de este planning.
 > Actualizado el 26/11/2026: E6 y E8 corregidos.
-> Actualizado el 27/11/2026: E1, E10 y E15 corregidos; QR de 2FA y registro sin desplegable de rol, hechos.
+> Actualizado el 27/11/2026: E1, E9, E10 y E15 corregidos; la base se conserva fuera de desarrollo; QR de 2FA y registro sin desplegable de rol, hechos.
 > Las funcionalidades del apartado 4 y el reparto del apartado 6 son una **propuesta** pendiente de acordar en el equipo.
 
 ## 1. Resumen
@@ -78,7 +78,7 @@ No hay errores al compilar ni al arrancar. E1 a E7 se han reproducido ejecutando
 | E6 | ✅ Corregido | ~~Un vehículo admite un VIN de un solo carácter y un propietario que no es cliente (esto último, manipulando la petición).~~ El VIN exige 17 caracteres válidos y el propietario debe ser un cliente. | `VehicleController` (`Save`), `VehicleFormViewModel` |
 | E7 | Baja | Algunos mensajes de validación y de Identity salen en inglés. | Registro, usuarios, perfil |
 | E8 | ✅ Corregido | ~~Un `Admin` puede editar horas y tarifa de una reparación completada o entregada, y cambia el coste ya cerrado.~~ Ahora solo puede hacerlo confirmando la acción. | `RepairsController`, `RepairPartsController`, `Views/Shared/_ClosedRepairConfirmation.cshtml` |
-| E9 | Media | La imagen Docker usa `Production` pero carga las cuentas de demostración, porque `SeedData:Enabled` es `true` por defecto. | `appsettings.json`, `Dockerfile` |
+| E9 | ✅ Corregido | ~~La imagen Docker usa `Production` pero carga las cuentas de demostración.~~ El seed y la recreación de la base solo están activos en desarrollo; los roles y el administrador inicial no dependen del seed. | `appsettings*.json`, `DbInitializer`, `Dockerfile` |
 | E10 | ✅ Corregido | ~~La documentación no coincide con el código: dice puerto `10000` (el Dockerfile usa `8080`), bloqueo de 10 minutos (son 15) y una matriz de permisos antigua.~~ Documentación actualizada. | `README.md`, `docs/` |
 
 ### Cosas a medias
@@ -168,7 +168,7 @@ Cada persona corrige primero sus errores y después desarrolla su funcionalidad.
 ### Iván — usuarios, seguridad y citas
 
 1. ~~E1: eliminar usuarios con datos asociados.~~ ✅ Hecho.
-2. E7 y E9: mensajes en español y cuentas de demostración solo en desarrollo.
+2. E7: mensajes en español. (E9 ✅ hecho.)
 3. Funcionalidad 4.1, solicitud de cita.
 4. ~~E10: documentación y README.~~ ✅ Hecho.
 
@@ -194,7 +194,7 @@ Cada persona corrige primero sus errores y después desarrolla su funcionalidad.
 
 ## 7. Si sobra tiempo
 
-- Migraciones de EF Core para no perder los datos en cada arranque.
+- Migraciones de EF Core para actualizar el esquema sin perder datos.
 - Avisos por correo al cliente (cita aceptada, presupuesto, vehículo listo) y confirmación de email real.
 - Factura en PDF con IVA.
 - Panel con indicadores: ingresos, reparaciones por mecánico y recambios más usados.

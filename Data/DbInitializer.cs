@@ -5,23 +5,33 @@ using G3AspNet.Models.Enum;
 
 namespace G3AspNet.Data;
 
-/// <summary>Recrea la base de datos desde las entidades y prepara roles y cuentas demo.</summary>
+/// <summary>
+/// Prepara la base de datos al arrancar: esquema, roles, administrador inicial y, si se pide,
+/// cuentas y datos demo.
+/// </summary>
 public static class DbInitializer
 {
     public static async Task InitializeAsync(IServiceProvider services)
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
-        // Proyecto de clase sin migraciones: la base se borra y se vuelve a crear
-        // desde las entidades en cada arranque (como create-drop con H2 en Spring).
-        context.Database.EnsureDeleted();
-        context.Database.EnsureCreated();
-
         var configuration = services.GetRequiredService<IConfiguration>();
-        if (!configuration.GetValue("SeedData:Enabled", true))
+
+        // Borrar la base solo tiene sentido en desarrollo (como create-drop con H2 en Spring).
+        // Por defecto se conservan los datos.
+        if (configuration.GetValue("Database:RecreateOnStartup", false))
         {
-            return;
+            await context.Database.EnsureDeletedAsync();
         }
 
+        // Proyecto sin migraciones: crea el esquema si la base no tiene tablas.
+        // No actualiza el esquema de una base que ya existe.
+        await context.Database.EnsureCreatedAsync();
+
+        // Los datos demo solo se cargan en una base sin cuentas: nunca se mezclan con datos reales
+        // ni asignan roles a cuentas que alguien haya registrado con el mismo nombre.
+        var isNewDatabase = !await context.Users.AnyAsync();
+
+        // Los roles son necesarios siempre: el registro asigna el rol User.
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         await EnsureRoleAsync(roleManager, RoleNames.User);
         await EnsureRoleAsync(roleManager, RoleNames.Admin);
@@ -29,6 +39,21 @@ public static class DbInitializer
         await EnsureRoleAsync(roleManager, RoleNames.Mechanic);
 
         var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+        var logger = services.GetRequiredService<ILoggerFactory>().CreateLogger(typeof(DbInitializer));
+        await EnsureInitialAdminAsync(userManager, configuration, logger);
+
+        if (!configuration.GetValue("SeedData:Enabled", false))
+        {
+            await WarnIfThereIsNoAdminAsync(userManager, logger);
+            return;
+        }
+
+        if (!isNewDatabase)
+        {
+            logger.LogInformation("La base ya tiene cuentas: no se cargan los datos demo.");
+            return;
+        }
+
         await EnsureUserAsync(
             userManager,
             username: "admin",
@@ -109,6 +134,86 @@ public static class DbInitializer
             {
                 throw new InvalidOperationException($"No se pudo crear el rol {roleName}.");
             }
+        }
+    }
+
+    /// <summary>
+    /// Crea el primer administrador con los datos de la sección <c>AdminAccount</c>. Solo actúa
+    /// mientras no exista ningún administrador: nunca cambia una cuenta ya creada.
+    /// </summary>
+    private static async Task EnsureInitialAdminAsync(
+        UserManager<ApplicationUser> userManager,
+        IConfiguration configuration,
+        ILogger logger)
+    {
+        var username = configuration["AdminAccount:UserName"]?.Trim();
+        var email = configuration["AdminAccount:Email"]?.Trim();
+        var password = configuration["AdminAccount:Password"];
+
+        if (string.IsNullOrEmpty(username) && string.IsNullOrEmpty(email) && string.IsNullOrEmpty(password))
+        {
+            return;
+        }
+
+        if ((await userManager.GetUsersInRoleAsync(RoleNames.Admin)).Count > 0)
+        {
+            return;
+        }
+
+        if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+        {
+            throw new InvalidOperationException(
+                "Para crear el administrador inicial hacen falta AdminAccount:UserName, " +
+                "AdminAccount:Email y AdminAccount:Password.");
+        }
+
+        // No se asciende una cuenta existente: podría haberla registrado cualquiera.
+        if (await userManager.FindByNameAsync(username) is not null ||
+            await userManager.FindByEmailAsync(email) is not null)
+        {
+            logger.LogError(
+                "No se ha creado el administrador inicial: ya existe una cuenta con ese usuario o email. " +
+                "Configura otros valores en AdminAccount.");
+            return;
+        }
+
+        var admin = new ApplicationUser
+        {
+            UserName = username,
+            Email = email,
+            DisplayName = "Administrador",
+            EmailConfirmed = true,
+            IsActive = true
+        };
+
+        var createResult = await userManager.CreateAsync(admin, password);
+        if (!createResult.Succeeded)
+        {
+            // Las descripciones de Identity explican la regla incumplida; no contienen la contraseña.
+            throw new InvalidOperationException(
+                "No se pudo crear el administrador inicial: " +
+                string.Join(" ", createResult.Errors.Select(error => error.Description)));
+        }
+
+        var roleResult = await userManager.AddToRoleAsync(admin, RoleNames.Admin);
+        if (!roleResult.Succeeded)
+        {
+            await userManager.DeleteAsync(admin);
+            throw new InvalidOperationException("No se pudo asignar el rol Admin al administrador inicial.");
+        }
+
+        logger.LogInformation("Administrador inicial creado: {UserId}.", admin.Id);
+    }
+
+    private static async Task WarnIfThereIsNoAdminAsync(
+        UserManager<ApplicationUser> userManager,
+        ILogger logger)
+    {
+        if ((await userManager.GetUsersInRoleAsync(RoleNames.Admin)).Count == 0)
+        {
+            logger.LogWarning(
+                "No hay ningún administrador. Define AdminAccount:UserName, AdminAccount:Email y " +
+                "AdminAccount:Password y reinicia la aplicación.");
         }
     }
 

@@ -23,7 +23,7 @@ dotnet run --project G3AspNet.csproj --launch-profile http
 
 El perfil `http` inicia la aplicación en <http://localhost:5107> con el entorno `Development`. También existe un perfil `https`; si el certificado local no es de confianza, consulta [Problemas frecuentes](problemas-frecuentes.md).
 
-Al iniciar, la aplicación crea la carpeta de datos y ejecuta `DbInitializer`. **La base de datos se elimina y se crea de nuevo en cada arranque.** No uses datos que debas conservar.
+Al iniciar, la aplicación crea la carpeta de datos y ejecuta `DbInitializer`. **En `Development`, que es el entorno de este perfil, la base de datos se elimina y se crea de nuevo en cada arranque.** Consulta [Base de datos](base-de-datos-y-migraciones.md).
 
 ## Compilar y probar
 

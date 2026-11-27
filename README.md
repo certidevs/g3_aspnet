@@ -14,7 +14,7 @@
 Aplicación web para gestionar un taller mecánico: clientes y vehículos, reparaciones, almacén de recambios y un área privada para clientes. Proyecto académico del Grupo 3.
 
 > [!WARNING]
-> La aplicación está en desarrollo. Cada arranque elimina y recrea la base de datos. No uses una base con datos que necesites conservar.
+> La aplicación está en desarrollo. En el entorno `Development` cada arranque elimina y recrea la base de datos. En los demás entornos los datos se conservan, pero no hay migraciones para cambiar el esquema.
 
 ## Funcionalidades
 
@@ -82,11 +82,11 @@ dotnet test G3AspNet.sln
 ### Docker
 
 ```bash
-docker build -t g3-aspnet .
-docker run --rm -p 8080:8080 g3-aspnet
+docker build --pull -t g3-aspnet .
+docker run --rm -p 127.0.0.1:8080:8080 -e SeedData__Enabled=true g3-aspnet
 ```
 
-El contenedor escucha en el puerto `8080`, se ejecuta en entorno `Production`, carga las cuentas de demostración y no configura persistencia para SQLite. No lo expongas en un entorno compartido. Fuera de `Development` la cookie de sesión exige HTTPS: lee la [guía de despliegue](docs/despliegue.md) antes de usarlo.
+Es una demo local en <http://localhost:8080>. La imagen se ejecuta en entorno `Production` con los datos de ejemplo desactivados; el comando los activa para la demo. Para crear un administrador propio, consulta la [guía de despliegue](docs/despliegue.md). La aplicación todavía no está lista para producción: lee la [guía de despliegue](docs/despliegue.md).
 
 ## Configuración
 
@@ -95,7 +95,9 @@ Los valores por defecto están en [`appsettings.json`](appsettings.json). Se pue
 | Clave | Uso |
 |---|---|
 | `ConnectionStrings:DefaultConnection` | Configura la conexión SQLite; consulta la [guía de configuración](docs/configuracion.md). |
-| `SeedData:Enabled` | Activa o desactiva la carga de roles, cuentas y datos demo. |
+| `Database:RecreateOnStartup` | Borra y recrea la base al arrancar. Activado solo en `Development`. |
+| `SeedData:Enabled` | Carga las cuentas y datos demo en una base nueva. Activado solo en `Development`. |
+| `AdminAccount:UserName`, `Email`, `Password` | Crean el primer administrador. Pásalos como variables de entorno. |
 | `FileUploads:Images:MaxFileSizeBytes` | Límite del tamaño de las imágenes subidas. |
 | `FileUploads:Images:AllowedExtensions` | Extensiones admitidas para las imágenes. |
 
@@ -105,11 +107,9 @@ La configuración puede sobrescribirse mediante variables de entorno con `__` co
 
 ## Base de datos y datos de ejemplo
 
-El proyecto no usa migraciones de EF Core. Al arrancar, [`DbInitializer`](Data/DbInitializer.cs) ejecuta `EnsureDeleted` y `EnsureCreated`, de modo que el esquema se genera a partir de las entidades y los datos se pierden en cada inicio. Esto ocurre aunque `SeedData:Enabled` sea `false`.
+El proyecto no usa migraciones de EF Core. Al arrancar, [`DbInitializer`](Data/DbInitializer.cs) crea el esquema a partir de las entidades si la base no tiene tablas, crea los cuatro roles y, si se ha configurado, el primer administrador.
 
-Con `SeedData:Enabled` en `true` (valor por defecto, en cualquier entorno), el arranque carga los cuatro roles, cuentas de ejemplo, vehículos, recambios y reparaciones. Las cuentas y el guion de demostración están en [`docs/demo.md`](docs/demo.md).
-
-Con el seed desactivado la base queda vacía y sin roles, por lo que el registro de cuentas no funciona.
+En `Development` además borra la base en cada arranque y carga cuentas de ejemplo, vehículos, recambios y reparaciones. Las cuentas y el guion de demostración están en [`docs/demo.md`](docs/demo.md). Más detalle en [Base de datos](docs/base-de-datos-y-migraciones.md).
 
 Para el esquema, consulta el [modelo de datos](docs/diagrama-er.md).
 

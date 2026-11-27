@@ -7,12 +7,12 @@ Documentos relacionados: [README](../README.md) · [Guía funcional](guia-funcio
 > [!WARNING]
 > Estas cuentas son de ejemplo y solo para desarrollo.
 > No las uses en producción.
-> `SeedData:Enabled` no está condicionado automáticamente por el entorno; desactívalo en entornos compartidos con `SeedData__Enabled=false`.
+> `SeedData:Enabled` solo está activado en `Development`. No lo actives en entornos compartidos: desactivarlo después no elimina las cuentas ya creadas.
 
 ## Antes de empezar
 
 1. Arranca la aplicación como se indica en el [README](../README.md#instalación-y-ejecución).
-2. Cada arranque borra y recrea la base de datos y vuelve a cargar los datos de ejemplo.
+2. Con el perfil `http` (`Development`), cada arranque borra y recrea la base de datos y vuelve a cargar los datos de ejemplo.
 3. Abre <http://localhost:5107>.
 
 ## Usuarios de ejemplo

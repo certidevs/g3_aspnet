@@ -94,7 +94,7 @@ dotnet run --project G3AspNet.csproj --launch-profile http
 
 Abre <http://localhost:5107>. También puedes seleccionar el perfil `http` en VS Code y usar **Run and Debug** (`F5`). Las tareas **G3: compilar** y **G3: ejecutar tests** están disponibles en **Terminal → Run Task**.
 
-> **Atención:** cada inicio elimina y recrea la base de datos configurada, incluso si se desactivan los datos demo. Consulta el [README](../README.md) para conocer la configuración, las pruebas y las demás limitaciones.
+> **Atención:** en `Development`, cada inicio elimina y recrea la base de datos configurada, incluso si se desactivan los datos demo. Consulta el [README](../README.md) para conocer la configuración, las pruebas y las demás limitaciones.
 
 ## Visual Studio 2026 para Windows
 

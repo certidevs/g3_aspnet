@@ -19,7 +19,7 @@ dotnet test G3AspNet.sln
 | Tipo | Ubicación | Cubre |
 |---|---|---|
 | Unitarias | `tests/G3AspNet.Tests/` | Lógica de dominio, relaciones, almacenamiento de imágenes, modelo de login y autorización de piezas usadas. |
-| Integración | `tests/G3AspNet.Tests/Integration/` | Cuentas, perfil, administración de usuarios, vehículos, recambios, reparaciones, piezas, reparaciones cerradas, portada, datos de ejemplo y regresiones de seguridad. |
+| Integración | `tests/G3AspNet.Tests/Integration/` | Cuentas, perfil, administración de usuarios, vehículos, recambios, reparaciones, piezas, reparaciones cerradas, portada, datos de ejemplo, arranque de la base y regresiones de seguridad. |
 
 Las pruebas de integración arrancan la aplicación en memoria con `WebApplicationFactory` ([`AppFactory`](../tests/G3AspNet.Tests/Integration/AppFactory.cs)). Cada fábrica usa una base SQLite temporal, que se borra al terminar, y carga los datos de ejemplo. No tocan `App_Data/g3.db`.
 

@@ -9,7 +9,9 @@ Documentos relacionados: [Primeros pasos](primeros-pasos.md) · [Autenticación 
 | Clave o variable | Uso |
 |---|---|
 | `ConnectionStrings:DefaultConnection` | Configura la conexión SQLite utilizada por `ApplicationDbContext`. No se documenta aquí su valor. |
-| `SeedData:Enabled` | Activa o desactiva la creación de roles y datos demo; vale `true` por defecto en todos los entornos. Desactivado, la base queda vacía y sin roles. No evita que la base se elimine al iniciar. |
+| `Database:RecreateOnStartup` | Borra y recrea la base al arrancar. `false` en `appsettings.json` y en la imagen Docker; `true` en `Development`. |
+| `SeedData:Enabled` | Carga las cuentas y datos demo en una base sin cuentas. `false` en `appsettings.json` y en la imagen Docker; `true` en `Development`. Los roles se crean siempre. |
+| `AdminAccount:UserName`, `AdminAccount:Email`, `AdminAccount:Password` | Crean el [administrador inicial](base-de-datos-y-migraciones.md#administrador-inicial). No los guardes en archivos versionados. |
 | `FileUploads:Images:MaxFileSizeBytes` | Límite del tamaño de una imagen subida. |
 | `FileUploads:Images:AllowedExtensions` | Extensiones permitidas para las imágenes. |
 | `Invoice:VatRate` | Porcentaje de IVA que se suma en la factura. |
@@ -27,6 +29,6 @@ Estas opciones no se leen de la configuración; están en [`Program.cs`](../Prog
 
 ## Secretos y archivos locales
 
-No se ha configurado `dotnet user-secrets` en el proyecto (no hay `UserSecretsId`). `appsettings.Development.json` solo establece niveles de logging. No añadas contraseñas, tokens ni valores sensibles a archivos versionados o a la wiki; usa un gestor de secretos apropiado al entorno cuando sea necesario.
+No se ha configurado `dotnet user-secrets` en el proyecto (no hay `UserSecretsId`). `appsettings.Development.json` activa la recreación de la base y los datos demo, y ajusta los niveles de logging. No añadas contraseñas, tokens ni valores sensibles a archivos versionados o a la wiki; usa un gestor de secretos apropiado al entorno cuando sea necesario.
 
 Para comprender el impacto de `SeedData:Enabled` y el comportamiento al arrancar, consulta [Base de datos y migraciones](base-de-datos-y-migraciones.md).

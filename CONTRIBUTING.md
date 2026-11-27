@@ -109,7 +109,7 @@ El proyecto no usa migraciones. No las generes.
 3. Añade filas de ejemplo en [`DbInitializer`](Data/DbInitializer.cs).
 4. Actualiza el [modelo de datos](docs/diagrama-er.md).
 
-La base de datos se recrea en cada arranque.
+En `Development` la base de datos se recrea en cada arranque. En otros entornos se conserva y su esquema no se actualiza: avisa si tu cambio afecta a un despliegue con datos.
 
 ## Documentación
 

@@ -31,15 +31,21 @@ El perfil `http` no lo necesita.
 
 La imagen se ejecuta en `Production`, donde la cookie de sesión exige HTTPS. Usa un proxy con TLS; consulta [Despliegue](despliegue.md#limitaciones).
 
-### Falla el registro con el seed desactivado
+### No hay ningún administrador
 
-Con `SeedData:Enabled` en `false` no se crean los roles, y el registro necesita el rol `User`. Activa el seed.
+Fuera de `Development` no se cargan las cuentas demo. Define `AdminAccount__UserName`, `AdminAccount__Email` y `AdminAccount__Password` y reinicia; consulta [Administrador inicial](base-de-datos-y-migraciones.md#administrador-inicial).
+
+### La aplicación no arranca y menciona el administrador inicial
+
+Falta alguna de las tres variables `AdminAccount__*` o la contraseña no cumple las reglas. El mensaje indica cuál es el problema.
 
 ### Los datos desaparecen al reiniciar
 
-Es el comportamiento previsto. Cada arranque ejecuta `EnsureDeleted` y `EnsureCreated`.
-Esto ocurre aunque `SeedData:Enabled` sea `false`.
-En Docker tampoco hay persistencia para SQLite.
+En `Development` es el comportamiento previsto: `Database:RecreateOnStartup` está activado. En Docker, los datos se pierden al recrear el contenedor si no montas un volumen en `/app/App_Data`.
+
+### Errores de base de datos tras actualizar la aplicación
+
+Si el modelo ha cambiado, una base conservada tiene el esquema antiguo. No hay migraciones; consulta [Base de datos](base-de-datos-y-migraciones.md#migraciones).
 
 ### No debo generar migraciones
 
@@ -51,7 +57,7 @@ Un cambio de esquema es un cambio en las entidades y en [`ApplicationDbContext`]
 ### No puedo iniciar sesión
 
 - Comprueba el usuario (o email) y la contraseña. Las cuentas de ejemplo están en [Demostración](demo.md).
-- Tras 5 intentos fallidos, la cuenta se bloquea 15 minutos. Reiniciar la aplicación también la desbloquea, porque la base se recrea.
+- Tras 5 intentos fallidos, la cuenta se bloquea 15 minutos. En `Development`, reiniciar la aplicación también la desbloquea, porque la base se recrea.
 - Una cuenta desactivada por un administrador pierde la sesión.
 
 ### Aparece «Demasiadas peticiones» (429)
@@ -60,7 +66,7 @@ Login, verificación 2FA y registro admiten 10 envíos por minuto e IP. Espera u
 
 ### He perdido el acceso a la app autenticadora
 
-No hay códigos de recuperación. Reiniciar la aplicación recrea la base y elimina la 2FA junto con el resto de datos.
+No hay códigos de recuperación. En `Development`, reiniciar la aplicación recrea la base y elimina la 2FA. En otros entornos no hay forma de recuperarla desde la interfaz.
 
 ### La sesión se cierra poco después de activar o desactivar la 2FA
 

@@ -246,7 +246,7 @@ Estructura alineada con [diapositivas-presentacion-adecco.marp.md](diapositivas-
 
 - Prototipo funcional avanzado
 - Entorno de formación y demo
-- Base de datos recreada en cada arranque (por ahora)
+- Datos persistentes, aún sin migraciones
 
 **Notas:** Tono neutral: siguiente paso claro, no excusa.
 
@@ -258,7 +258,7 @@ Estructura alineada con [diapositivas-presentacion-adecco.marp.md](diapositivas-
 
 **Bullets:**
 
-- Persistencia y migraciones
+- Migraciones y copias de seguridad
 - Cita y presupuesto del cliente
 - Reposición de stock
 - Piloto con empresa colaboradora

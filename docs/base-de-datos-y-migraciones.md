@@ -16,13 +16,48 @@ Documentos relacionados: [Modelo de datos](diagrama-er.md) · [Arquitectura](arq
 
 ## Ciclo de vida de la base
 
-Al arrancar, [`DbInitializer`](../Data/DbInitializer.cs) llama a `EnsureDeleted()` y `EnsureCreated()`. Esto elimina la base configurada y la vuelve a crear a partir del modelo actual. Después, si `SeedData:Enabled` está habilitado, crea roles, usuarios y filas de demostración.
+Al arrancar, [`DbInitializer`](../Data/DbInitializer.cs) sigue estos pasos:
 
-**Este borrado ocurre también cuando el seed está desactivado.** En ese caso tampoco se crean los roles. No ejecutes la aplicación con una base que contenga datos que quieras conservar. El contenedor tampoco configura persistencia para SQLite.
+```mermaid
+flowchart TD
+    A["Arranque"] --> B{"Database:RecreateOnStartup?"}
+    B -->|Sí| C["EnsureDeleted: borra la base"]
+    B -->|No| D["EnsureCreated: crea el esquema si no hay tablas"]
+    C --> D
+    D --> E["Crea los roles que falten"]
+    E --> F{"AdminAccount configurado<br/>y sin ningún Admin?"}
+    F -->|Sí| G["Crea el administrador inicial"]
+    F -->|No| H{"SeedData:Enabled<br/>y base sin cuentas al empezar?"}
+    G --> H
+    H -->|Sí| I["Carga cuentas y datos demo"]
+    H -->|No| J["Lista"]
+    I --> J
+```
+
+| Clave | `appsettings.json` | `Development` |
+|---|:---:|:---:|
+| `Database:RecreateOnStartup` | `false` | `true` |
+| `SeedData:Enabled` | `false` | `true` |
+
+- Los perfiles `http` y `https` usan `Development`: **cada arranque local borra la base**.
+- Fuera de `Development` los datos se conservan. En Docker hace falta además montar un volumen.
+- Los datos demo solo se cargan en una base sin cuentas. Desactivar el seed no elimina las cuentas demo ya creadas.
+
+### Administrador inicial
+
+Se define con `AdminAccount:UserName`, `AdminAccount:Email` y `AdminAccount:Password`.
+
+- Solo se crea si no existe ningún administrador. Después estos valores se ignoran y no cambian la contraseña.
+- Si ya hay una cuenta con ese usuario o email, no se asciende: se registra un error y la aplicación arranca.
+- Si falta alguno de los tres valores, o la contraseña no cumple las reglas, la aplicación no arranca.
+- Si no se define y no hay administrador, el arranque registra un aviso.
 
 ## Migraciones
 
-El proyecto no tiene migraciones de EF Core y no ejecuta `dotnet ef database update`, aunque [`.config/dotnet-tools.json`](../.config/dotnet-tools.json) declara la herramienta `dotnet-ef`. No generes migraciones para el flujo actual: los cambios de esquema se hacen en las entidades y en `ApplicationDbContext`, y el inicializador recrea el esquema al inicio.
+El proyecto no tiene migraciones de EF Core y no ejecuta `dotnet ef database update`, aunque [`.config/dotnet-tools.json`](../.config/dotnet-tools.json) declara la herramienta `dotnet-ef`. Los cambios de esquema se hacen en las entidades y en `ApplicationDbContext`; en `Development` el esquema se recrea al arrancar.
+
+> [!WARNING]
+> `EnsureCreated` no modifica una base que ya existe. Tras cambiar el modelo, una base con datos conservados deja de coincidir con la aplicación y se producen errores. Antes de desplegar un cambio de esquema hay que adoptar migraciones o actualizar la base a mano, con una copia de seguridad.
 
 Para modificar una relación:
 

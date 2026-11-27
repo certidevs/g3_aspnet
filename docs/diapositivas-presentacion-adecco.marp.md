@@ -144,14 +144,14 @@ Se calcula al consultar cada reparación
 
 - Prototipo funcional **avanzado**
 - Ideal para demo y evaluación formativa
-- Persistencia de producción: siguiente fase del roadmap
+- Migraciones y copias de seguridad: siguiente fase
 
 ---
 
 ## Roadmap hacia un piloto
 
-1. Migraciones y datos persistentes
-2. Seed solo en desarrollo
+1. Migraciones y copias de seguridad
+2. Despliegue seguro con HTTPS
 3. Cita previa y presupuesto
 4. Reposición de stock
 5. Licencia y piloto con empresa colaboradora

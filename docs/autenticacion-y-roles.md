@@ -38,7 +38,7 @@ La cookie se revalida contra el sello de seguridad cada 2 minutos. Cambiar el ro
 
 ## Roles
 
-Los nombres definidos en `RoleNames` son `Admin`, `Mechanic`, `Customer` y `User`. El inicializador crea esos roles y las cuentas demo si `SeedData:Enabled` está habilitado. La aplicación trata cada cuenta como si tuviera un único rol. No uses las cuentas de ejemplo fuera de un entorno local controlado; consulta [Demostración](demo.md).
+Los nombres definidos en `RoleNames` son `Admin`, `Mechanic`, `Customer` y `User`. El inicializador crea siempre esos roles, el [administrador inicial](base-de-datos-y-migraciones.md#administrador-inicial) si se configura y las cuentas demo si `SeedData:Enabled` está habilitado. La aplicación trata cada cuenta como si tuviera un único rol. No uses las cuentas de ejemplo fuera de un entorno local controlado; consulta [Demostración](demo.md).
 
 ## Autorización
 
