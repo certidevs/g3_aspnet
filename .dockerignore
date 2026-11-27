@@ -36,3 +36,16 @@ docker-compose*.yml
 .dockerignore
 creacion_entidades.csv
 skills-lock.json
+
+# Herramientas del repositorio que no forman parte de la aplicación
+node_modules
+package.json
+package-lock.json
+scripts
+skills
+docker
+.codex
+.claude
+**/.mcp.json
+*.excalidraw
+**/*.bak
