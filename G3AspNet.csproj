@@ -23,6 +23,12 @@
     <PackageReference Include="QuestPDF" Version="2026.9.2" />
   </ItemGroup>
 
+  <!-- Recursos de la factura en PDF: las fuentes y la ilustración de la portada. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Services/Invoices/Fonts/*.ttf" LogicalName="Invoice.Fonts.%(Filename).ttf" />
+    <EmbeddedResource Include="wwwroot/images/hero-taller.svg" LogicalName="Invoice.hero-taller.svg" />
+  </ItemGroup>
+
   <!-- El SDK incluye todos los archivos bajo la raíz; la carpeta tests pertenece a su
        propio proyecto y no debe compilarse ni copiarse como contenido de la web. -->
   <PropertyGroup>

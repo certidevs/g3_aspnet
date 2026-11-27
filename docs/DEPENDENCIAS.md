@@ -49,6 +49,8 @@ no mediante `dotnet ef migrations add` ni `dotnet ef database update`.
 
 La layout carga además las tipografías Oswald y Roboto desde Google Fonts (CDN).
 
+La factura en PDF incrusta copias estáticas de esas dos familias, guardadas con su licencia (SIL Open Font License 1.1) en [`Services/Invoices/Fonts`](../Services/Invoices/Fonts).
+
 ## 2.2. Herramientas locales (`.config/dotnet-tools.json`)
 
 | Herramienta | Versión | Notas |

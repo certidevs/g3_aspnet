@@ -62,6 +62,22 @@ public sealed class InvoiceTests
         Assert.Throws<InvalidOperationException>(() => Invoice.FromRepair(repair, new InvoiceOptions()));
     }
 
+    /// <summary>Texto fuera de las fuentes incluidas o con signos de XML no debe romper el PDF.</summary>
+    [Theory]
+    [InlineData("TALLER", "Avería 🚗 con 中文 y Ελληνικά")]
+    [InlineData("Talleres <Pérez & Hijos>", "<svg>\"comillas\"</svg>")]
+    public void Generate_AcceptsUnusualText(string issuer, string text)
+    {
+        var invoice = Invoice.FromRepair(ClosedRepair(), new InvoiceOptions
+        {
+            IssuerName = issuer, IssuerTaxId = "B00000000", IssuerAddress = text
+        }) with { CustomerName = text, RepairDescription = text };
+
+        var pdf = InvoicePdf.Generate(invoice);
+
+        Assert.Equal("%PDF-", Encoding.ASCII.GetString(pdf, 0, 5));
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(150)] // Varias páginas.
