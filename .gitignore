@@ -52,3 +52,6 @@ Thumbs.db
 *.snupkg
 packages/
 artifacts/
+
+# Dependencias de npm: se restauran con npm, no se versionan
+node_modules/
